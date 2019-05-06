@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:collection';
 
 // ignore: deprecated_member_use
 import 'package:analyzer/analyzer.dart' show parseDirectives;
@@ -10,14 +11,15 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:analyzer/src/dart/analysis/driver.dart' show AnalysisDriver;
 import 'package:analyzer/src/generated/source.dart';
-import 'package:build/build.dart' show AssetId, BuildStep;
+import 'package:build/build.dart' show AssetId, BuildStep, log;
+import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
 
 const _ignoredSchemes = ['dart', 'dart-ext'];
 
 class BuildAssetUriResolver extends UriResolver {
   final _cachedAssetDependencies = <AssetId, Set<AssetId>>{};
-  final _cachedAssetContents = <AssetId, String>{};
+  final _cachedAssetContents = <AssetId, Digest>{};
   final resourceProvider = MemoryResourceProvider(context: p.posix);
 
   /// The assets which are known to be readable at some point during the build.
@@ -25,56 +27,56 @@ class BuildAssetUriResolver extends UriResolver {
   /// When actions can run out of order an asset can move from being readable
   /// (in the later phase) to being unreadable (in the earlier phase which ran
   /// later). If this happens we don't want to hide the asset from the analyzer.
-  final seenAssets = Set<AssetId>();
+  final seenAssets = HashSet<AssetId>();
 
   Future<void> performResolve(
       BuildStep buildStep, List<AssetId> entryPoints, AnalysisDriver driver) {
     // Basic approach is to start at the first file, update it's contents
     // and see if it changed, then walk all files accessed by it.
-    var visited = Set<AssetId>();
-    var visiting = _FutureGroup();
+    final visited = HashSet<AssetId>();
+    final visiting = _FutureGroup();
+
+    final changedPaths = HashSet<String>();
 
     void processAsset(AssetId assetId) {
       visited.add(assetId);
 
-      visiting.add(buildStep.readAsString(assetId).then((contents) {
-        if (_cachedAssetContents[assetId] != contents) {
+      visiting.add(() async {
+        if (!await buildStep.canRead(assetId)) {
+          if (!seenAssets.contains(assetId)) {
+            _cachedAssetDependencies.remove(assetId);
+            _cachedAssetContents.remove(assetId);
+            final path = assetPath(assetId);
+            if (resourceProvider.getFile(path).exists) {
+              resourceProvider.deleteFile(path);
+            }
+          }
+          return;
+        }
+        final digest = await buildStep.digest(assetId);
+        if (_cachedAssetContents[assetId] != digest) {
+          final contents = await buildStep.readAsString(assetId);
           if (_cachedAssetContents.containsKey(assetId)) {
             var path = assetPath(assetId);
             resourceProvider.updateFile(path, contents);
-            driver.changeFile(path);
+            changedPaths.add(path);
           } else {
             resourceProvider.newFile(assetPath(assetId), contents);
           }
-          _cachedAssetContents[assetId] = contents;
-          var unit = parseDirectives(contents, suppressErrors: true);
-          var dependencies = unit.directives
-              .whereType<UriBasedDirective>()
-              .where((directive) {
-                var uri = Uri.parse(directive.uri.stringValue);
-                return !_ignoredSchemes.any(uri.isScheme);
-              })
-              .map((d) => AssetId.resolve(d.uri.stringValue, from: assetId))
-              .where((id) => id != null)
-              .toSet();
-          _cachedAssetDependencies[assetId] = dependencies;
+          _cachedAssetContents[assetId] = digest;
+          _cachedAssetDependencies[assetId] =
+              _parseDirectives(contents, assetId);
         }
         _cachedAssetDependencies[assetId]
             .where((id) => !visited.contains(id))
             .forEach(processAsset);
-      }, onError: (e) {
-        if (seenAssets.contains(assetId)) return;
-        _cachedAssetDependencies.remove(assetId);
-        _cachedAssetContents.remove(assetId);
-        final path = assetPath(assetId);
-        if (resourceProvider.getFile(path).exists) {
-          resourceProvider.deleteFile(path);
-        }
-      }));
+      }());
     }
 
     entryPoints.forEach(processAsset);
-    return visiting.future;
+    return visiting.future.whenComplete(() {
+      changedPaths.forEach(driver.changeFile);
+    });
   }
 
   /// Attempts to parse [uri] into an [AssetId] and returns it if it is cached.
@@ -110,6 +112,15 @@ class BuildAssetUriResolver extends UriResolver {
   Uri restoreAbsolute(Source source) =>
       lookupAsset(source.uri)?.uri ?? source.uri;
 }
+
+Set<AssetId> _parseDirectives(String contents, AssetId from) =>
+    HashSet.of(parseDirectives(contents, suppressErrors: true)
+        .directives
+        .whereType<UriBasedDirective>()
+        .where((directive) =>
+            !_ignoredSchemes.any(Uri.parse(directive.uri.stringValue).isScheme))
+        .map((d) => AssetId.resolve(d.uri.stringValue, from: from))
+        .where((id) => id != null));
 
 String assetPath(AssetId assetId) =>
     p.posix.join('/${assetId.package}', assetId.path);
