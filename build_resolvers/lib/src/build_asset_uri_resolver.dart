@@ -29,14 +29,14 @@ class BuildAssetUriResolver extends UriResolver {
   /// later). If this happens we don't want to hide the asset from the analyzer.
   final seenAssets = HashSet<AssetId>();
 
-  Future<void> performResolve(
-      BuildStep buildStep, List<AssetId> entryPoints, AnalysisDriver driver) {
+  Future<void> performResolve(BuildStep buildStep, List<AssetId> entryPoints,
+      AnalysisDriver driver) async {
     // Basic approach is to start at the first file, update it's contents
     // and see if it changed, then walk all files accessed by it.
     final visited = HashSet<AssetId>();
     final visiting = _FutureGroup();
 
-    final changedPaths = HashSet<String>();
+    final changes = <_AssetState>[];
 
     void processAsset(AssetId assetId) {
       visited.add(assetId);
@@ -46,10 +46,7 @@ class BuildAssetUriResolver extends UriResolver {
           if (!seenAssets.contains(assetId)) {
             _cachedAssetDependencies.remove(assetId);
             _cachedAssetContents.remove(assetId);
-            final path = assetPath(assetId);
-            if (resourceProvider.getFile(path).exists) {
-              resourceProvider.deleteFile(path);
-            }
+            changes.add(_AssetState.removed(assetId));
           }
           return;
         }
@@ -57,11 +54,9 @@ class BuildAssetUriResolver extends UriResolver {
         if (_cachedAssetContents[assetId] != digest) {
           final contents = await buildStep.readAsString(assetId);
           if (_cachedAssetContents.containsKey(assetId)) {
-            var path = assetPath(assetId);
-            resourceProvider.updateFile(path, contents);
-            changedPaths.add(path);
+            changes.add(_AssetState.updated(assetId, contents));
           } else {
-            resourceProvider.newFile(assetPath(assetId), contents);
+            changes.add(_AssetState.newAsset(assetId, contents));
           }
           _cachedAssetContents[assetId] = digest;
           _cachedAssetDependencies[assetId] =
@@ -74,9 +69,31 @@ class BuildAssetUriResolver extends UriResolver {
     }
 
     entryPoints.forEach(processAsset);
-    return visiting.future.whenComplete(() {
-      changedPaths.forEach(driver.changeFile);
-    });
+
+    await visiting.future;
+
+    final changedPaths = HashSet<String>();
+
+    for (final state in changes) {
+      final path = assetPath(state.id);
+      switch (state.change) {
+        case _Change.removed:
+          if (resourceProvider.getFile(path).exists) {
+            resourceProvider.deleteFile(path);
+          }
+          break;
+        case _Change.updated:
+          resourceProvider.updateFile(path, state.content);
+          changedPaths.add(path);
+          break;
+        case _Change.newAsset:
+          resourceProvider.newFile(path, state.content);
+          break;
+        case _Change.unchanged:
+          break;
+      }
+    }
+    changedPaths.forEach(driver.changeFile);
   }
 
   /// Attempts to parse [uri] into an [AssetId] and returns it if it is cached.
@@ -121,6 +138,23 @@ Set<AssetId> _parseDirectives(String contents, AssetId from) =>
             !_ignoredSchemes.any(Uri.parse(directive.uri.stringValue).isScheme))
         .map((d) => AssetId.resolve(d.uri.stringValue, from: from))
         .where((id) => id != null));
+
+enum _Change { unchanged, removed, newAsset, updated }
+
+class _AssetState {
+  final AssetId id;
+  final _Change change;
+  final String content;
+
+  _AssetState.unchanged(this.id)
+      : change = _Change.unchanged,
+        content = null;
+  _AssetState.removed(this.id)
+      : change = _Change.removed,
+        content = null;
+  _AssetState.newAsset(this.id, this.content) : change = _Change.newAsset;
+  _AssetState.updated(this.id, this.content) : change = _Change.updated;
+}
 
 String assetPath(AssetId assetId) =>
     p.posix.join('/${assetId.package}', assetId.path);
