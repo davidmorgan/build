@@ -18,6 +18,8 @@ workspace:
 - build_runner_core
 - build_test
 - build_web_compilers
+- built_value_25
+- built_value_50
 - example
 - scratch_space
 - tool
