@@ -7,5 +7,5 @@ part 'bv33.g.dart';
 
 abstract class Value implements Built<Value, ValueBuilder> {
   Value._();
-  factory Value(void Function(ValueBuilder) updates) = _$ValueBuilder;
+  factory Value(void Function(ValueBuilder) updates) = _$Value;
 }
