@@ -8,7 +8,6 @@ import 'common/message.dart'
     if (dart.library.io) 'common/message_io.dart'
     if (dart.library.html) 'common/message_html.dart'
     if (dart.library.js_interop) 'common/message_js_without_html.dart';
-
 import 'common/message_export.dart' as exported;
 
 void main() {

@@ -44,7 +44,8 @@ class MultiAssetReader extends AssetReader implements MultiPackageAssetReader {
   /// other implementations of [AssetReader].
   @override
   Stream<AssetId> findAssets(Glob glob, {String? package}) => StreamGroup.merge(
-      _readers.map((reader) => reader.findAssets(glob, package: package)));
+    _readers.map((reader) => reader.findAssets(glob, package: package)),
+  );
 
   /// Returns the first [AssetReader] that contains [id].
   ///

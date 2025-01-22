@@ -36,16 +36,27 @@ void main() {
       var writer = const StubAssetWriter();
       primary = makeAssetId();
       outputs = List.generate(5, (index) => makeAssetId());
-      buildStep = BuildStepImpl(primary, outputs, reader, writer,
-          AnalyzerResolvers.custom(), resourceManager, _unsupported);
+      buildStep = BuildStepImpl(
+        primary,
+        outputs,
+        reader,
+        writer,
+        AnalyzerResolvers.custom(),
+        resourceManager,
+        _unsupported,
+      );
     });
 
     test('doesnt allow non-expected outputs', () {
       var id = makeAssetId();
-      expect(() => buildStep.writeAsString(id, '$id'),
-          throwsA(const TypeMatcher<UnexpectedOutputException>()));
-      expect(() => buildStep.writeAsBytes(id, [0]),
-          throwsA(const TypeMatcher<UnexpectedOutputException>()));
+      expect(
+        () => buildStep.writeAsString(id, '$id'),
+        throwsA(const TypeMatcher<UnexpectedOutputException>()),
+      );
+      expect(
+        () => buildStep.writeAsBytes(id, [0]),
+        throwsA(const TypeMatcher<UnexpectedOutputException>()),
+      );
     });
 
     test('reports allowed outputs', () {
@@ -68,7 +79,9 @@ void main() {
           .having((e) => e.message, 'message', contains('already wrote to'));
 
       expect(
-          () => buildStep.writeAsString(id, 'bar'), throwsA(expectedException));
+        () => buildStep.writeAsString(id, 'bar'),
+        throwsA(expectedException),
+      );
       expect(() => buildStep.writeAsBytes(id, []), throwsA(expectedException));
     });
   });
@@ -85,9 +98,7 @@ void main() {
     test('tracks outputs created by a builder', () async {
       var builder = TestBuilder();
       var primary = makeAssetId('a|web/primary.txt');
-      var inputs = {
-        primary: 'foo',
-      };
+      var inputs = {primary: 'foo'};
       addAssets(inputs, writer);
       var outputId = AssetId.parse('$primary.copy');
       var buildStep = BuildStepImpl(
@@ -122,17 +133,26 @@ void main() {
         addAssets(inputs, writer);
 
         var primary = makeAssetId('a|web/a.dart');
-        var buildStep = BuildStepImpl(primary, [], reader, writer,
-            AnalyzerResolvers.custom(), resourceManager, _unsupported);
+        var buildStep = BuildStepImpl(
+          primary,
+          [],
+          reader,
+          writer,
+          AnalyzerResolvers.custom(),
+          resourceManager,
+          _unsupported,
+        );
         var resolver = buildStep.resolver;
 
         var aLib = await resolver.libraryFor(primary);
         expect(aLib.name, 'a');
         expect(aLib.definingCompilationUnit.libraryImports.length, 2);
         expect(
-            aLib.definingCompilationUnit.libraryImports
-                .any((import) => import.importedLibrary!.name == 'b'),
-            isTrue);
+          aLib.definingCompilationUnit.libraryImports.any(
+            (import) => import.importedLibrary!.name == 'b',
+          ),
+          isTrue,
+        );
 
         var bLib = await resolver.findLibraryByName('b');
         expect(bLib!.name, 'b');
@@ -155,24 +175,30 @@ void main() {
       outputId = makeAssetId('a|test.txt');
       outputContent = '$outputId';
       buildStep = BuildStepImpl(
-          primary,
-          [outputId],
-          StubAssetReader(),
-          assetWriter,
-          AnalyzerResolvers.custom(),
-          resourceManager,
-          _unsupported);
+        primary,
+        [outputId],
+        StubAssetReader(),
+        assetWriter,
+        AnalyzerResolvers.custom(),
+        resourceManager,
+        _unsupported,
+      );
     });
 
     test('Completes only after writes finish', () async {
       unawaited(buildStep.writeAsString(outputId, outputContent));
       var isComplete = false;
-      unawaited(buildStep.complete().then((_) {
-        isComplete = true;
-      }));
+      unawaited(
+        buildStep.complete().then((_) {
+          isComplete = true;
+        }),
+      );
       await Future(() {});
-      expect(isComplete, false,
-          reason: 'File has not written, should not be complete');
+      expect(
+        isComplete,
+        false,
+        reason: 'File has not written, should not be complete',
+      );
       assetWriter.finishWrite();
       await Future(() {});
       expect(isComplete, true, reason: 'File is written, should be complete');
@@ -182,16 +208,24 @@ void main() {
       var outputCompleter = Completer<String>();
       unawaited(buildStep.writeAsString(outputId, outputCompleter.future));
       var isComplete = false;
-      unawaited(buildStep.complete().then((_) {
-        isComplete = true;
-      }));
+      unawaited(
+        buildStep.complete().then((_) {
+          isComplete = true;
+        }),
+      );
       await Future(() {});
-      expect(isComplete, false,
-          reason: 'File has not resolved, should not be complete');
+      expect(
+        isComplete,
+        false,
+        reason: 'File has not resolved, should not be complete',
+      );
       outputCompleter.complete(outputContent);
       await Future(() {});
-      expect(isComplete, false,
-          reason: 'File has not written, should not be complete');
+      expect(
+        isComplete,
+        false,
+        reason: 'File has not written, should not be complete',
+      );
       assetWriter.finishWrite();
       await Future(() {});
       expect(isComplete, true, reason: 'File is written, should be complete');
@@ -208,9 +242,16 @@ void main() {
       var writer = const StubAssetWriter();
       primary = makeAssetId();
       output = makeAssetId();
-      buildStep = BuildStepImpl(primary, [output], reader, writer,
-          AnalyzerResolvers.custom(), resourceManager, _unsupported,
-          stageTracker: NoOpStageTracker.instance);
+      buildStep = BuildStepImpl(
+        primary,
+        [output],
+        reader,
+        writer,
+        AnalyzerResolvers.custom(),
+        resourceManager,
+        _unsupported,
+        stageTracker: NoOpStageTracker.instance,
+      );
     });
 
     test('Captures failed asynchronous writes', () {
@@ -223,14 +264,17 @@ void main() {
     var reader = StubAssetReader();
     var writer = const StubAssetWriter();
     var unused = <AssetId>{};
-    var buildStep = BuildStepImpl(makeAssetId(), [], reader, writer,
-        AnalyzerResolvers.custom(), resourceManager, _unsupported,
-        reportUnusedAssets: unused.addAll);
-    var reported = [
+    var buildStep = BuildStepImpl(
       makeAssetId(),
-      makeAssetId(),
-      makeAssetId(),
-    ];
+      [],
+      reader,
+      writer,
+      AnalyzerResolvers.custom(),
+      resourceManager,
+      _unsupported,
+      reportUnusedAssets: unused.addAll,
+    );
+    var reported = [makeAssetId(), makeAssetId(), makeAssetId()];
     buildStep.reportUnusedAssets(reported);
     expect(unused, equals(reported));
   });
@@ -248,9 +292,11 @@ class SlowAssetWriter implements AssetWriter {
       _writeCompleter.future;
 
   @override
-  Future<void> writeAsString(AssetId id, FutureOr<String> contents,
-          {Encoding encoding = utf8}) =>
-      _writeCompleter.future;
+  Future<void> writeAsString(
+    AssetId id,
+    FutureOr<String> contents, {
+    Encoding encoding = utf8,
+  }) => _writeCompleter.future;
 }
 
 Future<PackageConfig> _unsupported() {

@@ -23,17 +23,18 @@ void main() {
       _terminateServeController = StreamController();
       writer = InMemoryRunnerAssetWriter();
       await writer.writeAsString(
-          makeAssetId('a|.dart_tool/package_config.json'),
-          jsonEncode({
-            'configVersion': 2,
-            'packages': [
-              {
-                'name': 'a',
-                'rootUri': 'file://fake/pkg/path',
-                'packageUri': 'lib/'
-              },
-            ],
-          }));
+        makeAssetId('a|.dart_tool/package_config.json'),
+        jsonEncode({
+          'configVersion': 2,
+          'packages': [
+            {
+              'name': 'a',
+              'rootUri': 'file://fake/pkg/path',
+              'packageUri': 'lib/',
+            },
+          ],
+        }),
+      );
     });
 
     tearDown(() async {
@@ -43,7 +44,10 @@ void main() {
 
     test('does basic builds', () async {
       var handler = await createHandler(
-          [applyToRoot(TestBuilder())], {'a|web/a.txt': 'a'}, writer);
+        [applyToRoot(TestBuilder())],
+        {'a|web/a.txt': 'a'},
+        writer,
+      );
       var results = StreamQueue(handler.buildResults);
       var result = await results.next;
       checkBuild(result, outputs: {'a|web/a.txt.copy': 'a'}, writer: writer);
@@ -59,20 +63,27 @@ void main() {
       var nextBuildBlocker = buildBlocker1.future;
 
       var handler = await createHandler(
-          [applyToRoot(TestBuilder(extraWork: (_, __) => nextBuildBlocker))],
-          {'a|web/a.txt': 'a'},
-          writer);
+        [applyToRoot(TestBuilder(extraWork: (_, __) => nextBuildBlocker))],
+        {'a|web/a.txt': 'a'},
+        writer,
+      );
       var webHandler = handler.handlerFor('web');
       var results = StreamQueue(handler.buildResults);
       // Give the build enough time to get started.
       await wait(100);
 
       var request = Request('GET', Uri.parse('http://localhost:8000/a.txt'));
-      unawaited((webHandler(request) as Future<Response>)
-          .then(expectAsync1((Response response) {
-        expect(buildBlocker1.isCompleted, isTrue,
-            reason: 'Server shouldn\'t respond until builds are done.');
-      })));
+      unawaited(
+        (webHandler(request) as Future<Response>).then(
+          expectAsync1((Response response) {
+            expect(
+              buildBlocker1.isCompleted,
+              isTrue,
+              reason: 'Server shouldn\'t respond until builds are done.',
+            );
+          }),
+        ),
+      );
       await wait(250);
       buildBlocker1.complete();
       var result = await results.next;
@@ -80,11 +91,14 @@ void main() {
 
       /// Next request completes right away.
       var buildBlocker2 = Completer<void>();
-      unawaited((webHandler(request) as Future<Response>)
-          .then(expectAsync1((response) {
-        expect(buildBlocker1.isCompleted, isTrue);
-        expect(buildBlocker2.isCompleted, isFalse);
-      })));
+      unawaited(
+        (webHandler(request) as Future<Response>).then(
+          expectAsync1((response) {
+            expect(buildBlocker1.isCompleted, isTrue);
+            expect(buildBlocker2.isCompleted, isFalse);
+          }),
+        ),
+      );
 
       /// Make an edit to force another build, and we should block again.
       nextBuildBlocker = buildBlocker2.future;
@@ -92,12 +106,15 @@ void main() {
       // Give the build enough time to get started.
       await wait(500);
       var done = Completer<void>();
-      unawaited((webHandler(request) as Future<Response>)
-          .then(expectAsync1((response) {
-        expect(buildBlocker1.isCompleted, isTrue);
-        expect(buildBlocker2.isCompleted, isTrue);
-        done.complete();
-      })));
+      unawaited(
+        (webHandler(request) as Future<Response>).then(
+          expectAsync1((response) {
+            expect(buildBlocker1.isCompleted, isTrue);
+            expect(buildBlocker2.isCompleted, isTrue);
+            done.complete();
+          }),
+        ),
+      );
       await wait(250);
       buildBlocker2.complete();
       result = await results.next;
@@ -113,28 +130,40 @@ final _debounceDelay = const Duration(milliseconds: 10);
 StreamController<ProcessSignal>? _terminateServeController;
 
 /// Start serving files and running builds.
-Future<ServeHandler> createHandler(List<BuilderApplication> builders,
-    Map<String, String> inputs, InMemoryRunnerAssetWriter writer) async {
-  await Future.wait(inputs.keys.map((serializedId) async {
-    await writer.writeAsString(
-        makeAssetId(serializedId), inputs[serializedId]!);
-  }));
-  final packageGraph =
-      buildPackageGraph({rootPackage('a', path: path.absolute('a')): []});
-  final reader = InMemoryRunnerAssetReader.shareAssetCache(writer.assets,
-      rootPackage: packageGraph.root.name);
+Future<ServeHandler> createHandler(
+  List<BuilderApplication> builders,
+  Map<String, String> inputs,
+  InMemoryRunnerAssetWriter writer,
+) async {
+  await Future.wait(
+    inputs.keys.map((serializedId) async {
+      await writer.writeAsString(
+        makeAssetId(serializedId),
+        inputs[serializedId]!,
+      );
+    }),
+  );
+  final packageGraph = buildPackageGraph({
+    rootPackage('a', path: path.absolute('a')): [],
+  });
+  final reader = InMemoryRunnerAssetReader.shareAssetCache(
+    writer.assets,
+    rootPackage: packageGraph.root.name,
+  );
   FakeWatcher watcherFactory(String path) => FakeWatcher(path);
 
-  return watch_impl.watch(builders,
-      deleteFilesByDefault: true,
-      debounceDelay: _debounceDelay,
-      directoryWatcherFactory: watcherFactory,
-      reader: reader,
-      writer: writer,
-      packageGraph: packageGraph,
-      terminateEventStream: _terminateServeController!.stream,
-      logLevel: Level.OFF,
-      skipBuildScriptCheck: true);
+  return watch_impl.watch(
+    builders,
+    deleteFilesByDefault: true,
+    debounceDelay: _debounceDelay,
+    directoryWatcherFactory: watcherFactory,
+    reader: reader,
+    writer: writer,
+    packageGraph: packageGraph,
+    terminateEventStream: _terminateServeController!.stream,
+    logLevel: Level.OFF,
+    skipBuildScriptCheck: true,
+  );
 }
 
 /// Tells the program to terminate.
