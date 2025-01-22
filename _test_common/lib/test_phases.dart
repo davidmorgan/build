@@ -91,10 +91,14 @@ Future<BuildResult> testBuilders(
 }) async {
   packageGraph ??= buildPackageGraph({rootPackage('a'): []});
   writer ??= InMemoryRunnerAssetWriter();
-  reader ??= InMemoryRunnerAssetReader.shareAssetCache(writer.assets,
-      rootPackage: packageGraph.root.name);
-  var pkgConfigId =
-      AssetId(packageGraph.root.name, '.dart_tool/package_config.json');
+  reader ??= InMemoryRunnerAssetReader.shareAssetCache(
+    writer.assets,
+    rootPackage: packageGraph.root.name,
+  );
+  var pkgConfigId = AssetId(
+    packageGraph.root.name,
+    '.dart_tool/package_config.json',
+  );
   if (!await reader.canRead(pkgConfigId)) {
     var packageConfig = {
       'configVersion': 2,
@@ -104,7 +108,7 @@ Future<BuildResult> testBuilders(
             'name': pkgNode.name,
             'rootUri': pkgNode.path,
             'packageUri': 'lib/',
-            'languageVersion': pkgNode.languageVersion.toString()
+            'languageVersion': pkgNode.languageVersion.toString(),
           },
       ],
     };
@@ -121,17 +125,26 @@ Future<BuildResult> testBuilders(
   });
 
   builderConfigOverrides ??= const {};
-  var environment = OverrideableEnvironment(IOEnvironment(packageGraph),
-      reader: reader, writer: writer, onLog: onLog);
-  var logSubscription =
-      LogSubscription(environment, verbose: verbose, logLevel: logLevel);
-  var options = await BuildOptions.create(logSubscription,
-      deleteFilesByDefault: deleteFilesByDefault,
-      packageGraph: packageGraph,
-      skipBuildScriptCheck: true,
-      overrideBuildConfig: overrideBuildConfig ?? const {},
-      enableLowResourcesMode: enableLowResourcesMode,
-      logPerformanceDir: logPerformanceDir);
+  var environment = OverrideableEnvironment(
+    IOEnvironment(packageGraph),
+    reader: reader,
+    writer: writer,
+    onLog: onLog,
+  );
+  var logSubscription = LogSubscription(
+    environment,
+    verbose: verbose,
+    logLevel: logLevel,
+  );
+  var options = await BuildOptions.create(
+    logSubscription,
+    deleteFilesByDefault: deleteFilesByDefault,
+    packageGraph: packageGraph,
+    skipBuildScriptCheck: true,
+    overrideBuildConfig: overrideBuildConfig ?? const {},
+    enableLowResourcesMode: enableLowResourcesMode,
+    logPerformanceDir: logPerformanceDir,
+  );
 
   BuildResult result;
   var build = await BuildRunner.create(
@@ -141,30 +154,37 @@ Future<BuildResult> testBuilders(
     builderConfigOverrides,
     isReleaseBuild: false,
   );
-  result =
-      await build.run({}, buildDirs: buildDirs, buildFilters: buildFilters);
+  result = await build.run(
+    {},
+    buildDirs: buildDirs,
+    buildFilters: buildFilters,
+  );
   await build.beforeExit();
   await options.logListener.cancel();
 
   if (checkBuildStatus) {
-    checkBuild(result,
-        outputs: outputs,
-        writer: writer,
-        status: status,
-        rootPackage: packageGraph.root.name,
-        expectedGeneratedDir: expectedGeneratedDir);
+    checkBuild(
+      result,
+      outputs: outputs,
+      writer: writer,
+      status: status,
+      rootPackage: packageGraph.root.name,
+      expectedGeneratedDir: expectedGeneratedDir,
+    );
   }
   return result;
 }
 
 /// Translates expected outptus which start with `$$` to the build cache and
 /// validates the success and outputs of the build.
-void checkBuild(BuildResult result,
-    {Map<String, Object>? outputs,
-    required InMemoryAssetWriter writer,
-    BuildStatus status = BuildStatus.success,
-    String rootPackage = 'a',
-    String expectedGeneratedDir = 'generated'}) {
+void checkBuild(
+  BuildResult result, {
+  Map<String, Object>? outputs,
+  required InMemoryAssetWriter writer,
+  BuildStatus status = BuildStatus.success,
+  String rootPackage = 'a',
+  String expectedGeneratedDir = 'generated',
+}) {
   expect(result.status, status, reason: '$result');
 
   final unhiddenOutputs = <String, Object>{};
@@ -181,12 +201,18 @@ void checkBuild(BuildResult result,
 
   AssetId mapHidden(AssetId id, String expectedGeneratedDir) =>
       unhiddenAssets.contains(id)
-          ? AssetId(rootPackage,
-              '.dart_tool/build/$expectedGeneratedDir/${id.package}/${id.path}')
+          ? AssetId(
+            rootPackage,
+            '.dart_tool/build/$expectedGeneratedDir/${id.package}/${id.path}',
+          )
           : id;
 
   if (status == BuildStatus.success) {
-    checkOutputs(unhiddenOutputs, result.outputs, writer,
-        mapAssetIds: (id) => mapHidden(id, expectedGeneratedDir));
+    checkOutputs(
+      unhiddenOutputs,
+      result.outputs,
+      writer,
+      mapAssetIds: (id) => mapHidden(id, expectedGeneratedDir),
+    );
   }
 }

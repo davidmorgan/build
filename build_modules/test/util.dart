@@ -11,20 +11,24 @@ import 'package:test/test.dart';
 
 /// Forwards to [testBuilder], and adds all output assets to [assets].
 Future<void> testBuilderAndCollectAssets(
-    Builder builder, Map<String, Object> assets,
-    {Set<String>? generateFor,
-    Map<String, /*String|List<int>|Matcher<String|List<int>>*/ Object>? outputs,
-    void Function(LogRecord log)? onLog,
-    void Function(AssetId, Iterable<AssetId>)?
-        reportUnusedAssetsForInput}) async {
+  Builder builder,
+  Map<String, Object> assets, {
+  Set<String>? generateFor,
+  Map<String, /*String|List<int>|Matcher<String|List<int>>*/ Object>? outputs,
+  void Function(LogRecord log)? onLog,
+  void Function(AssetId, Iterable<AssetId>)? reportUnusedAssetsForInput,
+}) async {
   var writer = InMemoryAssetWriter();
   onLog ??= (log) => printOnFailure('${log.level}: ${log.message}');
-  await testBuilder(builder, assets,
-      generateFor: generateFor,
-      outputs: outputs,
-      onLog: onLog,
-      reportUnusedAssetsForInput: reportUnusedAssetsForInput,
-      writer: writer);
+  await testBuilder(
+    builder,
+    assets,
+    generateFor: generateFor,
+    outputs: outputs,
+    onLog: onLog,
+    reportUnusedAssetsForInput: reportUnusedAssetsForInput,
+    writer: writer,
+  );
   writer.assets.forEach((id, value) {
     assets['${id.package}|${id.path}'] = value;
   });

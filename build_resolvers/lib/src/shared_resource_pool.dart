@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+
 import 'package:pool/pool.dart';
 
 /// A single resource pool which supports an extra [withSharedResource]
@@ -17,8 +18,9 @@ class SharedResourcePool extends Pool {
       throw StateError('Shared resource was released but still has references');
     } else if (resource != null && _sharedResourceCount != 1) {
       throw StateError(
-          'Attempted to create a new shared resource but there are already '
-          '${_sharedResourceCount - 1} references (expected 0).');
+        'Attempted to create a new shared resource but there are already '
+        '${_sharedResourceCount - 1} references (expected 0).',
+      );
     }
     __sharedResource = resource;
   }
@@ -35,7 +37,8 @@ class SharedResourcePool extends Pool {
   Future<T> withSharedResource<T>(FutureOr<T> Function() callback) async {
     if (isClosed) {
       throw StateError(
-          'withSharedResource() may not be called on a closed Pool.');
+        'withSharedResource() may not be called on a closed Pool.',
+      );
     }
     _sharedResourceCount++;
     _sharedResource ??= request();

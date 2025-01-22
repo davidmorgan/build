@@ -10,6 +10,7 @@ import 'package:async/async.dart';
 import 'package:build/build.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
+
 import '../asset_graph/graph.dart';
 import '../asset_graph/node.dart';
 import '../util/async.dart';
@@ -34,16 +35,26 @@ class Readability {
   factory Readability.fromPreviousPhase(bool readable) =>
       readable ? Readability.readable : Readability.notReadable;
 
-  static const Readability notReadable =
-      Readability(canRead: false, inSamePhase: false);
-  static const Readability readable =
-      Readability(canRead: true, inSamePhase: false);
-  static const Readability ownOutput =
-      Readability(canRead: true, inSamePhase: true);
+  static const Readability notReadable = Readability(
+    canRead: false,
+    inSamePhase: false,
+  );
+  static const Readability readable = Readability(
+    canRead: true,
+    inSamePhase: false,
+  );
+  static const Readability ownOutput = Readability(
+    canRead: true,
+    inSamePhase: true,
+  );
 }
 
-typedef IsReadable = FutureOr<Readability> Function(
-    AssetNode node, int phaseNum, AssetWriterSpy? writtenAssets);
+typedef IsReadable =
+    FutureOr<Readability> Function(
+      AssetNode node,
+      int phaseNum,
+      AssetWriterSpy? writtenAssets,
+    );
 
 /// Signature of a function throwing an [InvalidInputException] if the given
 /// asset [id] is an invalid input in a build.
@@ -69,14 +80,25 @@ class SingleStepReader implements AssetReader {
   final IsReadable _isReadableNode;
   final CheckInvalidInput _checkInvalidInput;
   final FutureOr<GlobAssetNode> Function(
-      Glob glob, String package, int phaseNum)? _getGlobNode;
+    Glob glob,
+    String package,
+    int phaseNum,
+  )?
+  _getGlobNode;
 
   /// The assets read during this step.
   final assetsRead = HashSet<AssetId>();
 
-  SingleStepReader(this._delegate, this._assetGraph, this._phaseNumber,
-      this._primaryPackage, this._isReadableNode, this._checkInvalidInput,
-      [this._getGlobNode, this._writtenAssets]);
+  SingleStepReader(
+    this._delegate,
+    this._assetGraph,
+    this._phaseNumber,
+    this._primaryPackage,
+    this._isReadableNode,
+    this._checkInvalidInput, [
+    this._getGlobNode,
+    this._writtenAssets,
+  ]);
 
   /// Checks whether [id] can be read by this step - attempting to build the
   /// asset if necessary.
@@ -102,8 +124,9 @@ class SingleStepReader implements AssetReader {
       return false;
     }
 
-    return doAfter(_isReadableNode(node, _phaseNumber, _writtenAssets),
-        (Readability readability) {
+    return doAfter(_isReadableNode(node, _phaseNumber, _writtenAssets), (
+      Readability readability,
+    ) {
       if (!readability.inSamePhase) {
         assetsRead.add(id);
       }
@@ -115,55 +138,64 @@ class SingleStepReader implements AssetReader {
   @override
   Future<bool> canRead(AssetId id) {
     return toFuture(
-        doAfter(_isReadable(id, catchInvalidInputs: true), (bool isReadable) {
-      if (!isReadable) return false;
-      var node = _assetGraph.get(id);
-      FutureOr<bool> canRead() {
-        if (node is GeneratedAssetNode) {
-          // Short circut, we know this file exists because its readable and it
-          // was output.
-          return true;
-        } else {
-          return _delegate.canRead(id);
+      doAfter(_isReadable(id, catchInvalidInputs: true), (bool isReadable) {
+        if (!isReadable) return false;
+        var node = _assetGraph.get(id);
+        FutureOr<bool> canRead() {
+          if (node is GeneratedAssetNode) {
+            // Short circut, we know this file exists because its readable and it
+            // was output.
+            return true;
+          } else {
+            return _delegate.canRead(id);
+          }
         }
-      }
 
-      return doAfter(canRead(), (bool canRead) {
-        if (!canRead) return false;
-        return doAfter(_ensureDigest(id), (_) => true);
-      });
-    }));
+        return doAfter(canRead(), (bool canRead) {
+          if (!canRead) return false;
+          return doAfter(_ensureDigest(id), (_) => true);
+        });
+      }),
+    );
   }
 
   @override
   Future<Digest> digest(AssetId id) {
-    return toFuture(doAfter(_isReadable(id), (bool isReadable) {
-      if (!isReadable) {
-        return Future.error(AssetNotFoundException(id));
-      }
-      return _ensureDigest(id);
-    }));
+    return toFuture(
+      doAfter(_isReadable(id), (bool isReadable) {
+        if (!isReadable) {
+          return Future.error(AssetNotFoundException(id));
+        }
+        return _ensureDigest(id);
+      }),
+    );
   }
 
   @override
   Future<List<int>> readAsBytes(AssetId id) {
-    return toFuture(doAfter(_isReadable(id), (bool isReadable) {
-      if (!isReadable) {
-        return Future.error(AssetNotFoundException(id));
-      }
-      return doAfter(_ensureDigest(id), (_) => _delegate.readAsBytes(id));
-    }));
+    return toFuture(
+      doAfter(_isReadable(id), (bool isReadable) {
+        if (!isReadable) {
+          return Future.error(AssetNotFoundException(id));
+        }
+        return doAfter(_ensureDigest(id), (_) => _delegate.readAsBytes(id));
+      }),
+    );
   }
 
   @override
   Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) {
-    return toFuture(doAfter(_isReadable(id), (bool isReadable) {
-      if (!isReadable) {
-        return Future.error(AssetNotFoundException(id));
-      }
-      return doAfter(_ensureDigest(id),
-          (_) => _delegate.readAsString(id, encoding: encoding));
-    }));
+    return toFuture(
+      doAfter(_isReadable(id), (bool isReadable) {
+        if (!isReadable) {
+          return Future.error(AssetNotFoundException(id));
+        }
+        return doAfter(
+          _ensureDigest(id),
+          (_) => _delegate.readAsString(id, encoding: encoding),
+        );
+      }),
+    );
   }
 
   @override
@@ -173,8 +205,9 @@ class SingleStepReader implements AssetReader {
     }
     var streamCompleter = StreamCompleter<AssetId>();
 
-    doAfter(_getGlobNode(glob, _primaryPackage, _phaseNumber),
-        (GlobAssetNode globNode) {
+    doAfter(_getGlobNode(glob, _primaryPackage, _phaseNumber), (
+      GlobAssetNode globNode,
+    ) {
       assetsRead.add(globNode.id);
       streamCompleter.setSourceStream(Stream.fromIterable(globNode.results!));
     });

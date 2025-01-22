@@ -8,7 +8,6 @@ import 'dart:io';
 
 import 'package:build/build.dart';
 import 'package:build_runner_core/build_runner_core.dart';
-
 import 'package:glob/glob.dart';
 import 'package:package_config/package_config_types.dart';
 import 'package:test/test.dart';
@@ -25,9 +24,10 @@ void main() {
     final fileWriter = FileBasedAssetWriter(packageGraph);
 
     (reader, writer) = wrapInBatch(
-        reader: fileReader,
-        pathProvidingReader: fileReader,
-        writer: fileWriter);
+      reader: fileReader,
+      pathProvidingReader: fileReader,
+      writer: fileWriter,
+    );
   });
 
   test('delays writes until end', () async {
@@ -55,14 +55,20 @@ void main() {
     final glob = Glob('lib/**');
     await expectLater(reader.readAsString(_sourceAsset), completes);
     await expectLater(
-        reader.findAssets(glob, package: 'root'), emits(_sourceAsset));
+      reader.findAssets(glob, package: 'root'),
+      emits(_sourceAsset),
+    );
 
     await writer.delete(_sourceAsset);
 
-    await expectLater(() => reader.readAsString(_sourceAsset),
-        throwsA(isA<AssetNotFoundException>()));
     await expectLater(
-        reader.findAssets(glob, package: 'root'), neverEmits(_sourceAsset));
+      () => reader.readAsString(_sourceAsset),
+      throwsA(isA<AssetNotFoundException>()),
+    );
+    await expectLater(
+      reader.findAssets(glob, package: 'root'),
+      neverEmits(_sourceAsset),
+    );
   });
 }
 
@@ -77,16 +83,16 @@ name: root
 environment:
   sdk: ^3.6.0
 '''),
-    d.dir('lib', [
-      d.file('source.dart'),
-    ]),
+    d.dir('lib', [d.file('source.dart')]),
   ]).create();
 
-  return PackageGraph.fromRoot(PackageNode(
-    'root',
-    d.path('pkg'),
-    DependencyType.path,
-    LanguageVersion.parse('3.5'),
-    isRoot: true,
-  ));
+  return PackageGraph.fromRoot(
+    PackageNode(
+      'root',
+      d.path('pkg'),
+      DependencyType.path,
+      LanguageVersion.parse('3.5'),
+      isRoot: true,
+    ),
+  );
 }

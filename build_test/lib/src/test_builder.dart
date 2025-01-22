@@ -37,22 +37,28 @@ AssetId _passThrough(AssetId id) => id;
 /// association to a package pass [mapAssetIds] to translate from the logical
 /// location to the actual written location.
 void checkOutputs(
-    Map<String, /*List<int>|String|Matcher<List<int>>*/ Object>? outputs,
-    Iterable<AssetId> actualAssets,
-    RecordingAssetWriter writer,
-    {AssetId Function(AssetId id) mapAssetIds = _passThrough}) {
+  Map<String, /*List<int>|String|Matcher<List<int>>*/ Object>? outputs,
+  Iterable<AssetId> actualAssets,
+  RecordingAssetWriter writer, {
+  AssetId Function(AssetId id) mapAssetIds = _passThrough,
+}) {
   var modifiableActualAssets = Set.of(actualAssets);
   if (outputs != null) {
     outputs.forEach((serializedId, contentsMatcher) {
-      assert(contentsMatcher is String ||
-          contentsMatcher is List<int> ||
-          contentsMatcher is Matcher);
+      assert(
+        contentsMatcher is String ||
+            contentsMatcher is List<int> ||
+            contentsMatcher is Matcher,
+      );
 
       var assetId = makeAssetId(serializedId);
 
       // Check that the asset was produced.
-      expect(modifiableActualAssets, contains(assetId),
-          reason: 'Builder failed to write asset $assetId');
+      expect(
+        modifiableActualAssets,
+        contains(assetId),
+        reason: 'Builder failed to write asset $assetId',
+      );
       modifiableActualAssets.remove(assetId);
       var actual = writer.assets[mapAssetIds(assetId)]!;
       Object expected;
@@ -63,16 +69,24 @@ void checkOutputs(
       } else if (contentsMatcher is Matcher) {
         expected = actual;
       } else {
-        throw ArgumentError('Expected values for `outputs` to be of type '
-            '`String`, `List<int>`, or `Matcher`, but got `$contentsMatcher`.');
+        throw ArgumentError(
+          'Expected values for `outputs` to be of type '
+          '`String`, `List<int>`, or `Matcher`, but got `$contentsMatcher`.',
+        );
       }
-      expect(expected, contentsMatcher,
-          reason: 'Unexpected content for $assetId in result.outputs.');
+      expect(
+        expected,
+        contentsMatcher,
+        reason: 'Unexpected content for $assetId in result.outputs.',
+      );
     });
     // Check that no extra assets were produced.
-    expect(modifiableActualAssets, isEmpty,
-        reason:
-            'Unexpected outputs found `$actualAssets`. Only expected $outputs');
+    expect(
+      modifiableActualAssets,
+      isEmpty,
+      reason:
+          'Unexpected outputs found `$actualAssets`. Only expected $outputs',
+    );
   }
 }
 
@@ -124,21 +138,23 @@ void checkOutputs(
 /// Enabling of language experiments is supported through the
 /// `withEnabledExperiments` method from package:build.
 Future testBuilder(
-    Builder builder, Map<String, /*String|List<int>*/ Object> sourceAssets,
-    {Set<String>? generateFor,
-    bool Function(String assetId)? isInput,
-    String? rootPackage,
-    MultiPackageAssetReader? reader,
-    RecordingAssetWriter? writer,
-    Map<String, /*String|List<int>|Matcher<List<int>>*/ Object>? outputs,
-    void Function(LogRecord log)? onLog,
-    void Function(AssetId, Iterable<AssetId>)? reportUnusedAssetsForInput,
-    PackageConfig? packageConfig}) async {
+  Builder builder,
+  Map<String, /*String|List<int>*/ Object> sourceAssets, {
+  Set<String>? generateFor,
+  bool Function(String assetId)? isInput,
+  String? rootPackage,
+  MultiPackageAssetReader? reader,
+  RecordingAssetWriter? writer,
+  Map<String, /*String|List<int>|Matcher<List<int>>*/ Object>? outputs,
+  void Function(LogRecord log)? onLog,
+  void Function(AssetId, Iterable<AssetId>)? reportUnusedAssetsForInput,
+  PackageConfig? packageConfig,
+}) async {
   onLog ??= (log) => printOnFailure('$log');
   writer ??= InMemoryAssetWriter();
 
   var inputIds = {
-    for (var descriptor in sourceAssets.keys) makeAssetId(descriptor)
+    for (var descriptor in sourceAssets.keys) makeAssetId(descriptor),
   };
   var allPackages = {for (var id in inputIds) id.package};
   if (allPackages.length == 1) rootPackage ??= allPackages.first;
@@ -149,7 +165,7 @@ Future testBuilder(
       AssetId(rootPackage, r'$package$'),
       AssetId(rootPackage, r'test/$test$'),
       AssetId(rootPackage, r'web/$web$'),
-    ]
+    ],
   ]);
 
   final inMemoryReader = InMemoryAssetReader(rootPackage: rootPackage);
@@ -169,9 +185,10 @@ Future testBuilder(
   var writerSpy = AssetWriterSpy(writer);
   var logger = Logger('testBuilder');
   var logSubscription = logger.onRecord.listen(onLog);
-  var resolvers = packageConfig == null && enabledExperiments.isEmpty
-      ? AnalyzerResolvers.sharedInstance
-      : AnalyzerResolvers.custom(packageConfig: packageConfig);
+  var resolvers =
+      packageConfig == null && enabledExperiments.isEmpty
+          ? AnalyzerResolvers.sharedInstance
+          : AnalyzerResolvers.custom(packageConfig: packageConfig);
 
   for (var input in inputIds) {
     // create another writer spy and reader for each input. This prevents writes
@@ -183,8 +200,15 @@ Future testBuilder(
       WrittenAssetReader(writer, spyForStep),
     ]);
 
-    await runBuilder(builder, {input}, readerForStep, spyForStep, resolvers,
-        logger: logger, reportUnusedAssetsForInput: reportUnusedAssetsForInput);
+    await runBuilder(
+      builder,
+      {input},
+      readerForStep,
+      spyForStep,
+      resolvers,
+      logger: logger,
+      reportUnusedAssetsForInput: reportUnusedAssetsForInput,
+    );
   }
 
   await logSubscription.cancel();

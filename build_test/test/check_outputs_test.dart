@@ -14,7 +14,9 @@ void main() {
       var outputs = {'a|lib/a.txt': 'a', 'a|lib/b.txt': 'b'};
 
       expect(
-          () => checkOutputs(outputs, actualAssets, writer), returnsNormally);
+        () => checkOutputs(outputs, actualAssets, writer),
+        returnsNormally,
+      );
     });
     test('with extra output', () async {
       var a = makeAssetId('a|lib/a.txt');
@@ -26,8 +28,10 @@ void main() {
 
       var outputs = {'a|lib/a.txt': 'a'};
 
-      expect(() => checkOutputs(outputs, actualAssets, writer),
-          throwsA(const TypeMatcher<TestFailure>()));
+      expect(
+        () => checkOutputs(outputs, actualAssets, writer),
+        throwsA(const TypeMatcher<TestFailure>()),
+      );
     });
 
     test('with missing output', () async {
@@ -38,8 +42,10 @@ void main() {
 
       var outputs = {'a|lib/a.txt': 'a', 'a|lib/b.txt': 'b'};
 
-      expect(() => checkOutputs(outputs, actualAssets, writer),
-          throwsA(const TypeMatcher<TestFailure>()));
+      expect(
+        () => checkOutputs(outputs, actualAssets, writer),
+        throwsA(const TypeMatcher<TestFailure>()),
+      );
     });
 
     test('with asset mapping', () async {
@@ -54,9 +60,14 @@ void main() {
       var outputs = {'a|lib/a.txt': 'a', 'b|lib/b.txt': 'b'};
 
       expect(
-          () => checkOutputs(outputs, actualAssets, writer,
-              mapAssetIds: (id) => id == b ? bMapped : a),
-          returnsNormally);
+        () => checkOutputs(
+          outputs,
+          actualAssets,
+          writer,
+          mapAssetIds: (id) => id == b ? bMapped : a,
+        ),
+        returnsNormally,
+      );
     });
   });
 }

@@ -33,9 +33,7 @@ Future<T> resolveSource<T>(
 }) {
   inputId ??= AssetId('_resolve_source', 'lib/_resolve_source.dart');
   return _resolveAssets(
-    {
-      '${inputId.package}|${inputId.path}': inputSource,
-    },
+    {'${inputId.package}|${inputId.path}': inputSource},
     inputId.package,
     action,
     packageConfig: packageConfig,
@@ -146,9 +144,7 @@ Future<T> resolveAsset<T>(
   Resolvers? resolvers,
 }) {
   return _resolveAssets(
-    {
-      '${inputId.package}|${inputId.path}': useAssetReader,
-    },
+    {'${inputId.package}|${inputId.path}': useAssetReader},
     inputId.package,
     action,
     packageConfig: packageConfig,
@@ -172,23 +168,22 @@ Future<T> _resolveAssets<T>(
   Future<void>? tearDown,
   Resolvers? resolvers,
 }) async {
-  final resolvedConfig = packageConfig ??
+  final resolvedConfig =
+      packageConfig ??
       await loadPackageConfigUri((await Isolate.packageConfig)!);
   final assetReader = PackageAssetReader(resolvedConfig, rootPackage);
-  final resolveBuilder = _ResolveSourceBuilder(
-    action,
-    resolverFor,
-    tearDown,
-  );
+  final resolveBuilder = _ResolveSourceBuilder(action, resolverFor, tearDown);
   final inputAssets = <AssetId, String>{};
-  await Future.wait(inputs.keys.map((String rawAssetId) async {
-    final assetId = AssetId.parse(rawAssetId);
-    var assetValue = inputs[rawAssetId]!;
-    if (assetValue == useAssetReader) {
-      assetValue = await assetReader.readAsString(assetId);
-    }
-    inputAssets[assetId] = assetValue;
-  }));
+  await Future.wait(
+    inputs.keys.map((String rawAssetId) async {
+      final assetId = AssetId.parse(rawAssetId);
+      var assetValue = inputs[rawAssetId]!;
+      if (assetValue == useAssetReader) {
+        assetValue = await assetReader.readAsString(assetId);
+      }
+      inputAssets[assetId] = assetValue;
+    }),
+  );
   final inMemory = InMemoryAssetReader(
     sourceAssets: inputAssets,
     rootPackage: rootPackage,
@@ -196,9 +191,10 @@ Future<T> _resolveAssets<T>(
 
   // Use the default resolver if no experiments are enabled. This is much
   // faster.
-  resolvers ??= packageConfig == null && enabledExperiments.isEmpty
-      ? AnalyzerResolvers.sharedInstance
-      : AnalyzerResolvers.custom(packageConfig: resolvedConfig);
+  resolvers ??=
+      packageConfig == null && enabledExperiments.isEmpty
+          ? AnalyzerResolvers.sharedInstance
+          : AnalyzerResolvers.custom(packageConfig: resolvedConfig);
 
   // We don't care about the results of this build, but we also can't await
   // it because that would block on the `tearDown` of the `resolveBuilder`.
@@ -208,13 +204,15 @@ Future<T> _resolveAssets<T>(
   //
   // Errors will still be reported through the resolver itself as well as the
   // `onDone` future that we return.
-  unawaited(runBuilder(
-    resolveBuilder,
-    inputAssets.keys,
-    MultiAssetReader([inMemory, assetReader]),
-    InMemoryAssetWriter(),
-    resolvers,
-  ).catchError((_) {}));
+  unawaited(
+    runBuilder(
+      resolveBuilder,
+      inputAssets.keys,
+      MultiAssetReader([inMemory, assetReader]),
+      InMemoryAssetWriter(),
+      resolvers,
+    ).catchError((_) {}),
+  );
   return resolveBuilder.onDone.future;
 }
 
@@ -244,6 +242,6 @@ class _ResolveSourceBuilder<T> implements Builder {
 
   @override
   final buildExtensions = const {
-    '': ['.unused']
+    '': ['.unused'],
   };
 }

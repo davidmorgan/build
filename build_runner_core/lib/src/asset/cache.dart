@@ -21,9 +21,10 @@ import 'reader.dart';
 class CachingAssetReader implements AssetReader {
   /// Cached results of [readAsBytes].
   final _bytesContentCache = LruCache<AssetId, List<int>>(
-      1024 * 1024,
-      1024 * 1024 * 512,
-      (value) => value is Uint8List ? value.lengthInBytes : value.length * 8);
+    1024 * 1024,
+    1024 * 1024 * 512,
+    (value) => value is Uint8List ? value.lengthInBytes : value.length * 8,
+  );
 
   /// Pending [readAsBytes] operations.
   final _pendingBytesContentCache = <AssetId, Future<List<int>>>{};
@@ -39,7 +40,10 @@ class CachingAssetReader implements AssetReader {
   ///
   /// Only files read with [utf8] encoding (the default) will ever be cached.
   final _stringContentCache = LruCache<AssetId, String>(
-      1024 * 1024, 1024 * 1024 * 512, (value) => value.length);
+    1024 * 1024,
+    1024 * 1024 * 512,
+    (value) => value.length,
+  );
 
   /// Pending `readAsString` operations.
   final _pendingStringContentCache = <AssetId, Future<String>>{};
@@ -70,12 +74,13 @@ class CachingAssetReader implements AssetReader {
     if (cached != null) return Future.value(cached);
 
     return _pendingBytesContentCache.putIfAbsent(
-        id,
-        () => _delegate.readAsBytes(id).then((result) {
-              if (cache) _bytesContentCache[id] = result;
-              _pendingBytesContentCache.remove(id);
-              return result;
-            }));
+      id,
+      () => _delegate.readAsBytes(id).then((result) {
+        if (cache) _bytesContentCache[id] = result;
+        _pendingBytesContentCache.remove(id);
+        return result;
+      }),
+    );
   }
 
   @override
@@ -90,13 +95,14 @@ class CachingAssetReader implements AssetReader {
     if (cached != null) return Future.value(cached);
 
     return _pendingStringContentCache.putIfAbsent(
-        id,
-        () => readAsBytes(id, cache: false).then((bytes) {
-              var decoded = encoding.decode(bytes);
-              _stringContentCache[id] = decoded;
-              _pendingStringContentCache.remove(id);
-              return decoded;
-            }));
+      id,
+      () => readAsBytes(id, cache: false).then((bytes) {
+        var decoded = encoding.decode(bytes);
+        _stringContentCache[id] = decoded;
+        _pendingStringContentCache.remove(id);
+        return decoded;
+      }),
+    );
   }
 
   /// Clears all [ids] from all caches.

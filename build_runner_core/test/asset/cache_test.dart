@@ -12,9 +12,7 @@ void main() {
   var missingTxt = AssetId('a', 'missing.txt');
   var fooContent = 'bar';
   var fooutf8Bytes = decodedMatches('bar');
-  var assets = <AssetId, dynamic>{
-    fooTxt: 'bar',
-  };
+  var assets = <AssetId, dynamic>{fooTxt: 'bar'};
   late InMemoryRunnerAssetReader delegate;
   late CachingAssetReader reader;
 
