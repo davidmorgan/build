@@ -19,16 +19,19 @@ void main() {
     setUp(() async {
       toBytesCalls = {};
       fromBytesCalls = {};
-      final resource = DecodingCache.resource<String>((bytes) {
-        var decoded = utf8.decode(bytes);
-        fromBytesCalls.putIfAbsent(decoded, () => 0);
-        fromBytesCalls[decoded] = fromBytesCalls[decoded]! + 1;
-        return decoded;
-      }, (value) {
-        toBytesCalls.putIfAbsent(value, () => 0);
-        toBytesCalls[value] = toBytesCalls[value]! + 1;
-        return utf8.encode(value);
-      });
+      final resource = DecodingCache.resource<String>(
+        (bytes) {
+          var decoded = utf8.decode(bytes);
+          fromBytesCalls.putIfAbsent(decoded, () => 0);
+          fromBytesCalls[decoded] = fromBytesCalls[decoded]! + 1;
+          return decoded;
+        },
+        (value) {
+          toBytesCalls.putIfAbsent(value, () => 0);
+          toBytesCalls[value] = toBytesCalls[value]! + 1;
+          return utf8.encode(value);
+        },
+      );
       resourceManager = ResourceManager();
       cache = await resourceManager.fetch(resource);
     });

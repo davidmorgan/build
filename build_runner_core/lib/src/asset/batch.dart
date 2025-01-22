@@ -30,15 +30,17 @@ final class _FileSystemWriteBatch {
   _FileSystemWriteBatch._();
 
   Future<void> completeWrites(RunnerAssetWriter writer) async {
-    await Future.wait(_pendingWrites.keys.map((id) async {
-      final pending = _pendingWrites[id]!;
+    await Future.wait(
+      _pendingWrites.keys.map((id) async {
+        final pending = _pendingWrites[id]!;
 
-      if (pending.content case final content?) {
-        await writer.writeAsBytes(id, content);
-      } else {
-        await writer.delete(id);
-      }
-    }));
+        if (pending.content case final content?) {
+          await writer.writeAsBytes(id, content);
+        } else {
+          await writer.delete(id);
+        }
+      }),
+    );
 
     _pendingWrites.clear();
   }
@@ -151,8 +153,11 @@ final class BatchWriter extends RunnerAssetWriter {
   }
 
   @override
-  Future<void> writeAsString(AssetId id, String contents,
-      {Encoding encoding = utf8}) async {
+  Future<void> writeAsString(
+    AssetId id,
+    String contents, {
+    Encoding encoding = utf8,
+  }) async {
     _batch._pendingWrites[id] = _PendingFileState(encoding.encode(contents));
   }
 

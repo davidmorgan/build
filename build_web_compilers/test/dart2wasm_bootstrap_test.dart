@@ -27,7 +27,9 @@ void main() {
     for (final platform in [dart2jsPlatform, dart2wasmPlatform]) {
       await testBuilderAndCollectAssets(MetaModuleBuilder(platform), assets);
       await testBuilderAndCollectAssets(
-          MetaModuleCleanBuilder(platform), assets);
+        MetaModuleCleanBuilder(platform),
+        assets,
+      );
       await testBuilderAndCollectAssets(ModuleBuilder(platform), assets);
     }
   });
@@ -36,7 +38,8 @@ void main() {
     test('with old compiler option', () async {
       await testBuilder(
         WebEntrypointBuilder.fromOptions(
-            const BuilderOptions({'compiler': 'dart2wasm'})),
+          const BuilderOptions({'compiler': 'dart2wasm'}),
+        ),
         assets,
         outputs: {
           'a|web/index.mjs': anything,
@@ -50,14 +53,12 @@ void main() {
     test('when using both dart2wasm and dart2js', () async {
       await testBuilder(
         WebEntrypointBuilder.fromOptions(
-          const BuilderOptions(
-            {
-              'compilers': {
-                'dart2js': <String, Object?>{},
-                'dart2wasm': <String, Object?>{},
-              },
+          const BuilderOptions({
+            'compilers': {
+              'dart2js': <String, Object?>{},
+              'dart2wasm': <String, Object?>{},
             },
-          ),
+          }),
         ),
         assets,
         outputs: {
@@ -67,14 +68,12 @@ void main() {
           'a|web/index.dart.js.tar.gz': anything,
           'a|web/index.dart2js.js': decodedMatches(contains('Hello world!')),
           'a|web/index.dart.js': decodedMatches(
-            stringContainsInOrder(
-              [
-                'if (supportsWasmGC())',
-                'compileStreaming',
-                'else',
-                'scriptTag.src = relativeURL("./index.dart2js.js");'
-              ],
-            ),
+            stringContainsInOrder([
+              'if (supportsWasmGC())',
+              'compileStreaming',
+              'else',
+              'scriptTag.src = relativeURL("./index.dart2js.js");',
+            ]),
           ),
         },
       );
@@ -84,15 +83,13 @@ void main() {
   test('can disable generation of loader script', () async {
     await testBuilder(
       WebEntrypointBuilder.fromOptions(
-        const BuilderOptions(
-          {
-            'compilers': {
-              'dart2js': <String, Object?>{},
-              'dart2wasm': <String, Object?>{},
-            },
-            'loader': null,
+        const BuilderOptions({
+          'compilers': {
+            'dart2js': <String, Object?>{},
+            'dart2wasm': <String, Object?>{},
           },
-        ),
+          'loader': null,
+        }),
       ),
       assets,
       outputs: {

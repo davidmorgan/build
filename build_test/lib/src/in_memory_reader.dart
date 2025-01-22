@@ -27,7 +27,7 @@ class InMemoryAssetReader extends AssetReader
   ///
   /// May optionally define a [rootPackage], which is required for some APIs.
   InMemoryAssetReader({Map<AssetId, dynamic>? sourceAssets, this.rootPackage})
-      : assets = _assetsAsBytes(sourceAssets);
+    : assets = _assetsAsBytes(sourceAssets);
 
   /// Create a new asset reader backed by [assets].
   InMemoryAssetReader.shareAssetCache(this.assets, {this.rootPackage});
@@ -74,11 +74,13 @@ class InMemoryAssetReader extends AssetReader
     package ??= rootPackage;
     if (package == null) {
       throw UnsupportedError(
-          'Root package is required to use findAssets without providing an '
-          'explicit package.');
+        'Root package is required to use findAssets without providing an '
+        'explicit package.',
+      );
     }
-    return Stream.fromIterable(assets.keys
-        .where((id) => id.package == package && glob.matches(id.path)));
+    return Stream.fromIterable(
+      assets.keys.where((id) => id.package == package && glob.matches(id.path)),
+    );
   }
 
   void cacheBytesAsset(AssetId id, List<int> bytes) {

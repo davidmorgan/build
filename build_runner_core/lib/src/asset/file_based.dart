@@ -31,13 +31,18 @@ class FileBasedAssetReader extends AssetReader
       _descriptorPool.withResource(() => _fileFor(id, packageGraph).exists());
 
   @override
-  Future<List<int>> readAsBytes(AssetId id) => _fileForOrThrow(id, packageGraph)
-      .then((file) => _descriptorPool.withResource(file.readAsBytes));
+  Future<List<int>> readAsBytes(AssetId id) => _fileForOrThrow(
+    id,
+    packageGraph,
+  ).then((file) => _descriptorPool.withResource(file.readAsBytes));
 
   @override
   Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) =>
-      _fileForOrThrow(id, packageGraph).then((file) => _descriptorPool
-          .withResource(() => file.readAsString(encoding: encoding)));
+      _fileForOrThrow(id, packageGraph).then(
+        (file) => _descriptorPool.withResource(
+          () => file.readAsString(encoding: encoding),
+        ),
+      );
 
   @override
   Stream<AssetId> findAssets(Glob glob, {String? package}) {
@@ -45,9 +50,10 @@ class FileBasedAssetReader extends AssetReader
         package == null ? packageGraph.root : packageGraph[package];
     if (packageNode == null) {
       throw ArgumentError(
-          "Could not find package '$package' which was listed as "
-          'an input. Please ensure you have that package in your deps, or '
-          'remove it from your input sets.');
+        "Could not find package '$package' which was listed as "
+        'an input. Please ensure you have that package in your deps, or '
+        'remove it from your input sets.',
+      );
     }
     return glob
         .list(followLinks: true, root: packageNode.path)
@@ -84,8 +90,11 @@ class FileBasedAssetWriter implements RunnerAssetWriter {
   }
 
   @override
-  Future writeAsString(AssetId id, String contents,
-      {Encoding encoding = utf8}) async {
+  Future writeAsString(
+    AssetId id,
+    String contents, {
+    Encoding encoding = utf8,
+  }) async {
     var file = _fileFor(id, packageGraph);
     await _descriptorPool.withResource(() async {
       await file.create(recursive: true);
@@ -97,7 +106,9 @@ class FileBasedAssetWriter implements RunnerAssetWriter {
   Future delete(AssetId id) {
     if (id.package != packageGraph.root.name) {
       throw InvalidOutputException(
-          id, 'Should not delete assets outside of ${packageGraph.root.name}');
+        id,
+        'Should not delete assets outside of ${packageGraph.root.name}',
+      );
     }
 
     var file = _fileFor(id, packageGraph);

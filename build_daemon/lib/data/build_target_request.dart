@@ -4,6 +4,7 @@
 
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
+
 import 'build_target.dart';
 
 part 'build_target_request.g.dart';
@@ -16,9 +17,9 @@ abstract class BuildTargetRequest
   static Serializer<BuildTargetRequest> get serializer =>
       _$buildTargetRequestSerializer;
 
-  factory BuildTargetRequest(
-          [void Function(BuildTargetRequestBuilder b) updates]) =
-      _$BuildTargetRequest;
+  factory BuildTargetRequest([
+    void Function(BuildTargetRequestBuilder b) updates,
+  ]) = _$BuildTargetRequest;
 
   BuildTargetRequest._();
 

@@ -20,11 +20,13 @@ class InMemoryRunnerAssetReader extends InMemoryAssetReader
     return super.canRead(id);
   }
 
-  InMemoryRunnerAssetReader(
-      [Map<AssetId, dynamic>? sourceAssets, String? rootPackage])
-      : super(sourceAssets: sourceAssets, rootPackage: rootPackage);
+  InMemoryRunnerAssetReader([
+    Map<AssetId, dynamic>? sourceAssets,
+    String? rootPackage,
+  ]) : super(sourceAssets: sourceAssets, rootPackage: rootPackage);
 
-  InMemoryRunnerAssetReader.shareAssetCache(super.assetCache,
-      {super.rootPackage})
-      : super.shareAssetCache();
+  InMemoryRunnerAssetReader.shareAssetCache(
+    super.assetCache, {
+    super.rootPackage,
+  }) : super.shareAssetCache();
 }

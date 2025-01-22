@@ -23,8 +23,11 @@ class InMemoryAssetWriter implements RecordingAssetWriter {
   }
 
   @override
-  Future writeAsString(AssetId id, String contents,
-      {Encoding encoding = utf8}) async {
+  Future writeAsString(
+    AssetId id,
+    String contents, {
+    Encoding encoding = utf8,
+  }) async {
     assets[id] = encoding.encode(contents);
   }
 }
