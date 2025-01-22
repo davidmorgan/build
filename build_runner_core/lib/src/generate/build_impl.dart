@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:build/build.dart';
+import 'package:build_experimental/debug.dart' as debug;
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 import 'package:logging/logging.dart';
@@ -300,6 +301,7 @@ class _SingleBuild {
         '${result.outputs.length} outputs '
         '($actionsCompletedCount actions)\n',
       );
+      _logger.info(debug.summarize());
     } else {
       _logger.severe('Failed after ${humanReadable(watch.elapsed)}');
     }

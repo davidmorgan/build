@@ -1,6 +1,7 @@
 // Copyright (c) 2016, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+import 'package:build_experimental/debug.dart' as debug;
 import 'package:path/path.dart' as p;
 
 /// Identifies an asset within a package.
@@ -124,7 +125,10 @@ class AssetId implements Comparable<AssetId> {
       other is AssetId && package == other.package && path == other.path;
 
   @override
-  int get hashCode => package.hashCode ^ path.hashCode;
+  int get hashCode {
+    debug.log('AssetId.hashCode', toString());
+    return package.hashCode ^ path.hashCode;
+  }
 
   @override
   int compareTo(AssetId other) {
