@@ -1040,8 +1040,9 @@ class _SingleBuild {
     Set<AssetId>? unusedAssets,
   }) async {
     if (outputs.isEmpty) return;
+
     var usedInputs =
-        unusedAssets != null
+        unusedAssets != null && unusedAssets.isNotEmpty
             ? reader.assetsRead.difference(unusedAssets)
             : reader.assetsRead;
 

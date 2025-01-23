@@ -2,6 +2,7 @@ import 'dart:io';
 
 Map<String, int> _eventCounts = {};
 Map<String, int> _eventMessageCounts = {};
+Map<String, int> _eventStackCounts = {};
 Map<String, int> _eventMessageStackCounts = {};
 
 void log(String event, [String? message]) {
@@ -12,13 +13,20 @@ void log(String event, [String? message]) {
       _eventMessageCounts[eventMessage] =
           (_eventMessageCounts[eventMessage] ?? 0) + 1;
 
-  final stackTrace =
-      StackTrace.current
-          .toString()
-          .split('\n')
-          .skip(2)
-          .firstWhere((m) => m.contains('package:'), orElse: () => '(none)')
-          .sanitizeStackFrame();
+  final stackTrace = StackTrace.current
+      .toString()
+      .split('\n')
+      // Skip the stack frames for this file and for the immediate caller.
+      .skip(2)
+      // Skip SDK stack frames.
+      .where((m) => m.contains('package:'))
+      .map((f) => f.sanitizeStackFrame())
+      .take(2)
+      .join(' ');
+
+  final eventStack = '$event $stackTrace';
+  _eventStackCounts[eventStack] = (_eventStackCounts[eventStack] ?? 0) + 1;
+
   final eventMessageStack = '$event $message $stackTrace';
   final eventMessageStackCount =
       _eventMessageStackCounts[eventMessageStack] =
@@ -41,6 +49,8 @@ String summarize() {
   result.write(
     _summarize(_eventCounts.keys.toList(), _eventMessageStackCounts),
   );
+  result.write('\n');
+  result.write(_summarize(_eventCounts.keys.toList(), _eventStackCounts));
   return result.toString();
 }
 
