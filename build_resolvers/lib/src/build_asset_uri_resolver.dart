@@ -108,32 +108,36 @@ class BuildAssetUriResolver extends UriResolver {
     List<AssetId> entryPoints,
   ) async {
     final transitivelyResolved = _transitivelyResolved(buildStep);
-    final uncrawledIds = entryPoints.where(
-      (id) => !transitivelyResolved.contains(id),
-    );
-    return await crawlAsync<AssetId, _AssetState?>(
-      uncrawledIds,
-      (id) => _updateCachedAssetState(
-        id,
+    final nextIds =
+        entryPoints.where((id) => !transitivelyResolved.contains(id)).toList();
+
+    final result = <_AssetState>[];
+    while (nextIds.isNotEmpty) {
+      final nextId = nextIds.removeAt(0);
+      final state = await _updateCachedAssetState(
+        nextId,
         buildStep,
         transitivelyResolved: transitivelyResolved,
-      ),
-      (id, state) async {
-        if (state == null) return const [];
-        // Establishes a dependency on the transitive deps digest.
-        final hasTransitiveDigestAsset = await buildStep.canRead(
-          id.addExtension(transitiveDigestExtension),
+      );
+      if (state == null) continue;
+      final hasTransitiveDigestAsset = await buildStep.canRead(
+        nextId.addExtension(transitiveDigestExtension),
+      );
+      Iterable<AssetId> moreIds;
+      if (hasTransitiveDigestAsset) {
+        // Only crawl assets that we haven't yet loaded into the
+        // analyzer if we are using transitive digests for invalidation.
+        moreIds = state.dependencies.whereNot(_cachedAssetDigests.containsKey);
+      } else {
+        moreIds = state.dependencies.where(
+          (id) => !transitivelyResolved.contains(id),
         );
-        return hasTransitiveDigestAsset
-            // Only crawl assets that we haven't yet loaded into the
-            // analyzer if we are using transitive digests for invalidation.
-            ? state.dependencies.whereNot(_cachedAssetDigests.containsKey)
-            // Otherwise fall back on crawling all source deps.
-            : state.dependencies.where(
-              (id) => !transitivelyResolved.contains(id),
-            );
-      },
-    ).whereType<_AssetState>().toList();
+      }
+      result.add(state);
+      nextIds.addAll(moreIds);
+    }
+
+    return result;
   }
 
   /// Updates the internal state for [id], if it has changed.
