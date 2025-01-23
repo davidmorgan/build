@@ -80,34 +80,12 @@ class BuildAssetUriResolver extends UriResolver {
     withDriverResource, {
     required bool transitive,
   }) async {
-    final transitivelyResolved = _buildStepTransitivelyResolvedAssets
-        .putIfAbsent(buildStep, HashSet.new);
-    bool notCrawled(AssetId asset) => !transitivelyResolved.contains(asset);
-
-    final uncrawledIds = entryPoints.where(notCrawled);
+    final uncrawledIds = entryPoints.where(
+      (id) => !_transitivelyResolved(buildStep).contains(id),
+    );
     final assetStates =
         transitive
-            ? await crawlAsync<AssetId, _AssetState?>(
-              uncrawledIds,
-              (id) => _updateCachedAssetState(
-                id,
-                buildStep,
-                transitivelyResolved: transitivelyResolved,
-              ),
-              (id, state) async {
-                if (state == null) return const [];
-                // Establishes a dependency on the transitive deps digest.
-                final hasTransitiveDigestAsset = await buildStep.canRead(
-                  id.addExtension(transitiveDigestExtension),
-                );
-                return hasTransitiveDigestAsset
-                    // Only crawl assets that we haven't yet loaded into the
-                    // analyzer if we are using transitive digests for invalidation.
-                    ? state.dependencies.whereNot(_cachedAssetDigests.containsKey)
-                    // Otherwise fall back on crawling all source deps.
-                    : state.dependencies.where(notCrawled);
-              },
-            ).whereType<_AssetState>().toList()
+            ? await _resolveTransitive(buildStep, entryPoints)
             : [
               for (final id in uncrawledIds)
                 (await _updateCachedAssetState(id, buildStep))!,
@@ -120,6 +98,42 @@ class BuildAssetUriResolver extends UriResolver {
       }
       await driver.applyPendingFileChanges();
     });
+  }
+
+  HashSet<AssetId> _transitivelyResolved(BuildStep buildStep) =>
+      _buildStepTransitivelyResolvedAssets.putIfAbsent(buildStep, HashSet.new);
+
+  Future<List<_AssetState>> _resolveTransitive(
+    BuildStep buildStep,
+    List<AssetId> entryPoints,
+  ) async {
+    final transitivelyResolved = _transitivelyResolved(buildStep);
+    final uncrawledIds = entryPoints.where(
+      (id) => !transitivelyResolved.contains(id),
+    );
+    return await crawlAsync<AssetId, _AssetState?>(
+      uncrawledIds,
+      (id) => _updateCachedAssetState(
+        id,
+        buildStep,
+        transitivelyResolved: transitivelyResolved,
+      ),
+      (id, state) async {
+        if (state == null) return const [];
+        // Establishes a dependency on the transitive deps digest.
+        final hasTransitiveDigestAsset = await buildStep.canRead(
+          id.addExtension(transitiveDigestExtension),
+        );
+        return hasTransitiveDigestAsset
+            // Only crawl assets that we haven't yet loaded into the
+            // analyzer if we are using transitive digests for invalidation.
+            ? state.dependencies.whereNot(_cachedAssetDigests.containsKey)
+            // Otherwise fall back on crawling all source deps.
+            : state.dependencies.where(
+              (id) => !transitivelyResolved.contains(id),
+            );
+      },
+    ).whereType<_AssetState>().toList();
   }
 
   /// Updates the internal state for [id], if it has changed.

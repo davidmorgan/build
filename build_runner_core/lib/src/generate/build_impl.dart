@@ -626,7 +626,6 @@ class _SingleBuild {
             .putIfAbsent(phaseNumber, () => <String>{})
             .add(actionDescription);
 
-        var unusedAssets = <AssetId>{};
         await tracker.trackStage(
           'Build',
           () => runBuilder(
@@ -638,8 +637,6 @@ class _SingleBuild {
             logger: logger,
             resourceManager: _resourceManager,
             stageTracker: tracker,
-            reportUnusedAssetsForInput:
-                (_, assets) => unusedAssets.addAll(assets),
             packageConfig: _packageGraph.asPackageConfig,
           ).catchError((void _) {
             // Errors tracked through the logger
@@ -659,7 +656,6 @@ class _SingleBuild {
             wrappedWriter,
             actionDescription,
             logger.errorsSeen,
-            unusedAssets: unusedAssets,
           ),
         );
 
@@ -1036,18 +1032,13 @@ class _SingleBuild {
     SingleStepReader reader,
     AssetWriterSpy writer,
     String actionDescription,
-    Iterable<ErrorReport> errors, {
-    Set<AssetId>? unusedAssets,
-  }) async {
+    Iterable<ErrorReport> errors,
+  ) async {
     if (outputs.isEmpty) return;
 
-    var usedInputs =
-        unusedAssets != null && unusedAssets.isNotEmpty
-            ? reader.assetsRead.difference(unusedAssets)
-            : reader.assetsRead;
-
+    final inputs = reader.assetsRead;
     final inputsDigest = await _computeCombinedDigest(
-      usedInputs,
+      inputs,
       (_assetGraph.get(outputs.first) as GeneratedAssetNode).builderOptionsId,
       reader,
     );
@@ -1062,8 +1053,8 @@ class _SingleBuild {
       // **IMPORTANT**: All updates to `node` must be synchronous. With lazy
       // builders we can run arbitrary code between updates otherwise, at which
       // time a node might not be in a valid state.
-      _removeOldInputs(node, usedInputs);
-      _addNewInputs(node, usedInputs);
+      _removeOldInputs(node, inputs);
+      _addNewInputs(node, inputs);
       node
         ..state = NodeState.upToDate
         ..wasOutput = wasOutput
