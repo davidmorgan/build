@@ -1,0 +1,5 @@
+#!/bin/bash --
+
+random="$RANDOM$RANDOM$RANDOM"
+sed -i -e "s#CACHE_BUSTER.*#CACHE_BUSTER$random#" lib/*.dart
+dart run build_runner build -d
