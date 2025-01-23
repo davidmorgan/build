@@ -4,6 +4,7 @@
 import 'dart:convert';
 
 import 'package:build/build.dart';
+import 'package:build_experimental/sets_cache.dart';
 import 'package:glob/glob.dart';
 
 /// An [AssetReader] that records which assets have been read to [assetsRead].
@@ -54,6 +55,9 @@ class InMemoryAssetReader extends AssetReader
     assetsRead.add(id);
     return assets.containsKey(id);
   }
+
+  @override
+  void dedupeAssetsRead(SetsCache setsCache) {}
 
   @override
   Future<List<int>> readAsBytes(AssetId id) async {

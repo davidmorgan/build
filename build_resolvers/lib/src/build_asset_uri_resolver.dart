@@ -13,6 +13,7 @@ import 'package:analyzer/source/file_source.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/clients/build_resolvers/build_resolvers.dart';
 import 'package:build/build.dart' show AssetId, BuildStep;
+import 'package:build_experimental/sets_cache.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:graphs/graphs.dart';
@@ -36,6 +37,8 @@ class BuildAssetUriResolver extends UriResolver {
   /// [_cachedAssetState] only when the actual content of the library
   /// changed.
   final _cachedAssetDigests = <AssetId, Digest>{};
+
+  var _setsCache = SetsCache();
 
   /// Asset paths which have been updated in [resourceProvider] but not yet
   /// updated in the analysis driver.
@@ -136,6 +139,8 @@ class BuildAssetUriResolver extends UriResolver {
       result.add(state);
       nextIds.addAll(moreIds);
     }
+
+    buildStep.dedupeAssetsRead(_setsCache);
 
     return result;
   }
@@ -245,6 +250,7 @@ class BuildAssetUriResolver extends UriResolver {
     );
     globallySeenAssets.clear();
     _needsChangeFile.clear();
+    _setsCache = SetsCache();
   }
 
   @override

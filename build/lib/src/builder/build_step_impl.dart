@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:async/async.dart';
+import 'package:build_experimental/sets_cache.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 import 'package:package_config/package_config_types.dart';
@@ -104,6 +105,10 @@ class BuildStepImpl implements BuildStep {
     if (_isComplete) throw BuildStepCompletedException();
     return _reader.canRead(id);
   }
+
+  @override
+  void dedupeAssetsRead(SetsCache setsCache) =>
+      _reader.dedupeAssetsRead(setsCache);
 
   @override
   Future<T> fetchResource<T>(Resource<T> resource) {

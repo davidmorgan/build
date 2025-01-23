@@ -2,5 +2,8 @@ name: build_experimental
 publish_to: none
 resolution: workspace
 
+dependencies:
+  build: any
+
 environment:
   sdk: ^3.6.0

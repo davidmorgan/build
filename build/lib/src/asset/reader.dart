@@ -4,6 +4,7 @@
 
 import 'dart:convert';
 
+import 'package:build_experimental/sets_cache.dart';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
@@ -32,6 +33,8 @@ abstract class AssetReader {
 
   /// Indicates whether asset at [id] is readable.
   Future<bool> canRead(AssetId id);
+
+  void dedupeAssetsRead(SetsCache setsCache);
 
   /// Returns all readable assets matching [glob] under the current package.
   Stream<AssetId> findAssets(Glob glob);

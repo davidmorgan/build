@@ -293,10 +293,13 @@ class GlobAssetNode extends InternalAssetNode implements NodeWithInputs {
     this.results,
   }) : inputs = inputs ?? HashSet();
 
-  static AssetId createId(String package, Glob glob, int phaseNum) => AssetId(
-    package,
-    'glob.$phaseNum.${base64.encode(utf8.encode(glob.pattern))}',
-  );
+  static AssetId createId(String package, Glob glob, int phaseNum) {
+    print(glob.pattern);
+    return AssetId(
+      package,
+      'glob.$phaseNum.${base64.encode(utf8.encode(glob.pattern))}',
+    );
+  }
 }
 
 /// A node which has [inputs], a [NodeState], and a [phaseNumber].

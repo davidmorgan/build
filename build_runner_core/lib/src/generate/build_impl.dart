@@ -612,7 +612,7 @@ class _SingleBuild {
 
         // We may have read some inputs in the call to `_buildShouldRun`, we
         // want to remove those.
-        wrappedReader.assetsRead.clear();
+        wrappedReader.resetAssetsRead();
 
         var actionDescription = _actionLoggerName(
           phase,
@@ -740,7 +740,7 @@ class _SingleBuild {
     }
     // We may have read some inputs in the call to `_buildShouldRun`, we want
     // to remove those.
-    wrappedReader.assetsRead.clear();
+    wrappedReader.resetAssetsRead();
 
     // Clean out the impacts of the previous run
     await FailureReporter.clean(phaseNum, input);
@@ -976,6 +976,9 @@ class _SingleBuild {
     });
   }
 
+  static final Map<Iterable<AssetId>, Digest> _cachedCombinedDigests =
+      Map.identity();
+
   /// Computes a single [Digest] based on the combined [Digest]s of [ids] and
   /// [builderOptionsId].
   Future<Digest> _computeCombinedDigest(
@@ -983,6 +986,14 @@ class _SingleBuild {
     AssetId builderOptionsId,
     AssetReader reader,
   ) async {
+    final maybeResult = _cachedCombinedDigests[ids];
+    if (maybeResult != null) {
+      print('Combined digest cache hit!');
+      return maybeResult;
+    } else {
+      print('Combined digest cache miss ${ids.first}.');
+    }
+
     var combinedBytes = Uint8List.fromList(List.filled(16, 0));
     void combine(Uint8List other) {
       assert(other.length == 16);
@@ -1015,7 +1026,10 @@ class _SingleBuild {
       }),
     );
 
-    return Digest(combinedBytes);
+    final result = Digest(combinedBytes);
+    print('Combined digest cache write ${ids.first}.');
+    _cachedCombinedDigests[ids] = result;
+    return result;
   }
 
   /// Sets the state for all [outputs] of a build step, by:
@@ -1090,8 +1104,11 @@ class _SingleBuild {
 
   /// Removes old inputs from [node] based on [updatedInputs], and cleans up all
   /// the old edges.
-  void _removeOldInputs(GeneratedAssetNode node, Set<AssetId> updatedInputs) {
-    var removedInputs = node.inputs.difference(updatedInputs);
+  void _removeOldInputs(
+    GeneratedAssetNode node,
+    Iterable<AssetId> updatedInputs,
+  ) {
+    var removedInputs = node.inputs.difference(updatedInputs as Set<AssetId>);
     node.inputs.removeAll(removedInputs);
     for (var input in removedInputs) {
       var inputNode = _assetGraph.get(input)!;
@@ -1101,8 +1118,8 @@ class _SingleBuild {
 
   /// Adds new inputs to [node] based on [updatedInputs], and adds the
   /// appropriate edges.
-  void _addNewInputs(GeneratedAssetNode node, Set<AssetId> updatedInputs) {
-    var newInputs = updatedInputs.difference(node.inputs);
+  void _addNewInputs(GeneratedAssetNode node, Iterable<AssetId> updatedInputs) {
+    var newInputs = (updatedInputs as Set<AssetId>).difference(node.inputs);
     node.inputs.addAll(newInputs);
     for (var input in newInputs) {
       var inputNode = _assetGraph.get(input)!;
