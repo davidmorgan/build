@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:build/build.dart';
+import 'package:build_experimental/sets_cache.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:path/path.dart' as path;
@@ -29,6 +30,9 @@ class FileBasedAssetReader extends AssetReader
   @override
   Future<bool> canRead(AssetId id) =>
       _descriptorPool.withResource(() => _fileFor(id, packageGraph).exists());
+
+  @override
+  void dedupeAssetsRead(SetsCache setsCache) {}
 
   @override
   Future<List<int>> readAsBytes(AssetId id) => _fileForOrThrow(

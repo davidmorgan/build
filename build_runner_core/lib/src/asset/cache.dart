@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:build/build.dart';
+import 'package:build_experimental/sets_cache.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 
@@ -18,7 +19,7 @@ import 'reader.dart';
 /// Assets are cached until [invalidate] is invoked.
 ///
 /// Does not implement [findAssets].
-class CachingAssetReader implements AssetReader {
+class CachingAssetReader extends AssetReader {
   /// Cached results of [readAsBytes].
   final _bytesContentCache = LruCache<AssetId, List<int>>(
     1024 * 1024,
@@ -60,6 +61,9 @@ class CachingAssetReader implements AssetReader {
   @override
   Future<bool> canRead(AssetId id) =>
       _canReadCache.putIfAbsent(id, () => _delegate.canRead(id));
+
+  @override
+  void dedupeAssetsRead(SetsCache cache) => _delegate.dedupeAssetsRead(cache);
 
   @override
   Future<Digest> digest(AssetId id) => _delegate.digest(id);

@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:build/build.dart';
+import 'package:build_experimental/sets_cache.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 
@@ -17,7 +18,7 @@ import '../generate/phase.dart';
 import '../package_graph/target_graph.dart';
 
 /// An [AssetReader] which ignores deleted files.
-class FinalizedReader implements AssetReader {
+class FinalizedReader extends AssetReader {
   final AssetReader _delegate;
   final AssetGraph _assetGraph;
   final TargetGraph _targetGraph;
@@ -64,6 +65,9 @@ class FinalizedReader implements AssetReader {
   @override
   Future<bool> canRead(AssetId id) async =>
       (await unreadableReason(id)) == null;
+
+  @override
+  void dedupeAssetsRead(SetsCache setsCache) {}
 
   @override
   Future<Digest> digest(AssetId id) => _delegate.digest(id);

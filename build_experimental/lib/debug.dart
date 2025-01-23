@@ -18,11 +18,19 @@ void log(String event, [String? message]) {
       .split('\n')
       // Skip the stack frames for this file and for the immediate caller.
       .skip(2)
-      // Skip SDK stack frames.
-      .where((m) => m.contains('package:'))
+      // Skip SDK stack frames, wrappers.
+      .where(
+        (m) =>
+            m.contains('package:') &&
+            [
+              'src/util/async.dart',
+              'pool/pool.dart',
+              'logging/logging.dart',
+            ].every((u) => !m.contains(u)),
+      )
       .map((f) => f.sanitizeStackFrame())
-      .take(2)
-      .join(' ');
+      .take(4)
+      .join('\n    ');
 
   final eventStack = '$event $stackTrace';
   _eventStackCounts[eventStack] = (_eventStackCounts[eventStack] ?? 0) + 1;

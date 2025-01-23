@@ -13,6 +13,7 @@ import 'package:analyzer/source/file_source.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/clients/build_resolvers/build_resolvers.dart';
 import 'package:build/build.dart' show AssetId, BuildStep;
+import 'package:build_experimental/sets_cache.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:graphs/graphs.dart';
@@ -36,6 +37,8 @@ class BuildAssetUriResolver extends UriResolver {
   /// [_cachedAssetState] only when the actual content of the library
   /// changed.
   final _cachedAssetDigests = <AssetId, Digest>{};
+
+  var _setsCache = SetsCache();
 
   /// Asset paths which have been updated in [resourceProvider] but not yet
   /// updated in the analysis driver.
@@ -80,34 +83,12 @@ class BuildAssetUriResolver extends UriResolver {
     withDriverResource, {
     required bool transitive,
   }) async {
-    final transitivelyResolved = _buildStepTransitivelyResolvedAssets
-        .putIfAbsent(buildStep, HashSet.new);
-    bool notCrawled(AssetId asset) => !transitivelyResolved.contains(asset);
-
-    final uncrawledIds = entryPoints.where(notCrawled);
+    final uncrawledIds = entryPoints.where(
+      (id) => !_transitivelyResolved(buildStep).contains(id),
+    );
     final assetStates =
         transitive
-            ? await crawlAsync<AssetId, _AssetState?>(
-              uncrawledIds,
-              (id) => _updateCachedAssetState(
-                id,
-                buildStep,
-                transitivelyResolved: transitivelyResolved,
-              ),
-              (id, state) async {
-                if (state == null) return const [];
-                // Establishes a dependency on the transitive deps digest.
-                final hasTransitiveDigestAsset = await buildStep.canRead(
-                  id.addExtension(transitiveDigestExtension),
-                );
-                return hasTransitiveDigestAsset
-                    // Only crawl assets that we haven't yet loaded into the
-                    // analyzer if we are using transitive digests for invalidation.
-                    ? state.dependencies.whereNot(_cachedAssetDigests.containsKey)
-                    // Otherwise fall back on crawling all source deps.
-                    : state.dependencies.where(notCrawled);
-              },
-            ).whereType<_AssetState>().toList()
+            ? await _resolveTransitive(buildStep, entryPoints)
             : [
               for (final id in uncrawledIds)
                 (await _updateCachedAssetState(id, buildStep))!,
@@ -120,6 +101,48 @@ class BuildAssetUriResolver extends UriResolver {
       }
       await driver.applyPendingFileChanges();
     });
+  }
+
+  HashSet<AssetId> _transitivelyResolved(BuildStep buildStep) =>
+      _buildStepTransitivelyResolvedAssets.putIfAbsent(buildStep, HashSet.new);
+
+  Future<List<_AssetState>> _resolveTransitive(
+    BuildStep buildStep,
+    List<AssetId> entryPoints,
+  ) async {
+    final transitivelyResolved = _transitivelyResolved(buildStep);
+    final nextIds =
+        entryPoints.where((id) => !transitivelyResolved.contains(id)).toList();
+
+    final result = <_AssetState>[];
+    while (nextIds.isNotEmpty) {
+      final nextId = nextIds.removeAt(0);
+      final state = await _updateCachedAssetState(
+        nextId,
+        buildStep,
+        transitivelyResolved: transitivelyResolved,
+      );
+      if (state == null) continue;
+      final hasTransitiveDigestAsset = await buildStep.canRead(
+        nextId.addExtension(transitiveDigestExtension),
+      );
+      Iterable<AssetId> moreIds;
+      if (hasTransitiveDigestAsset) {
+        // Only crawl assets that we haven't yet loaded into the
+        // analyzer if we are using transitive digests for invalidation.
+        moreIds = state.dependencies.whereNot(_cachedAssetDigests.containsKey);
+      } else {
+        moreIds = state.dependencies.where(
+          (id) => !transitivelyResolved.contains(id),
+        );
+      }
+      result.add(state);
+      nextIds.addAll(moreIds);
+    }
+
+    buildStep.dedupeAssetsRead(_setsCache);
+
+    return result;
   }
 
   /// Updates the internal state for [id], if it has changed.
@@ -227,6 +250,7 @@ class BuildAssetUriResolver extends UriResolver {
     );
     globallySeenAssets.clear();
     _needsChangeFile.clear();
+    _setsCache = SetsCache();
   }
 
   @override

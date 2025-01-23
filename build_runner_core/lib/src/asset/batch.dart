@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:build/build.dart';
+import 'package:build_experimental/sets_cache.dart';
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
 
@@ -95,6 +96,9 @@ final class BatchReader extends AssetReader
       return await _inner.canRead(id);
     }
   }
+
+  @override
+  void dedupeAssetsRead(SetsCache setsCache) {}
 
   @override
   Stream<AssetId> findAssets(Glob glob, {String? package}) {

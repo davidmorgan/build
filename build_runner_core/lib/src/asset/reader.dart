@@ -8,6 +8,7 @@ import 'dart:convert';
 
 import 'package:async/async.dart';
 import 'package:build/build.dart';
+import 'package:build_experimental/sets_cache.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 
@@ -87,7 +88,27 @@ class SingleStepReader implements AssetReader {
   _getGlobNode;
 
   /// The assets read during this step.
-  final assetsRead = HashSet<AssetId>();
+  var _assetsRead = HashSet<AssetId>();
+
+  var _assetsReadIsFrozen = false;
+  void _addAsset(AssetId id) {
+    final actuallyAdded = _assetsRead.add(id);
+    if (actuallyAdded && _assetsReadIsFrozen) {
+      print('Unfreeze! ${_assetsRead.first} ${StackTrace.current}');
+      final oldAssetsRead = _assetsRead;
+      _assetsRead = HashSet.of(_assetsRead);
+      oldAssetsRead.remove(id);
+      _assetsReadIsFrozen = false;
+    }
+  }
+
+  /// Please don't write to me.
+  Iterable<AssetId> get assetsRead => _assetsRead;
+
+  void resetAssetsRead() {
+    _assetsRead = HashSet<AssetId>();
+    _assetsReadIsFrozen = false;
+  }
 
   SingleStepReader(
     this._delegate,
@@ -119,7 +140,7 @@ class SingleStepReader implements AssetReader {
 
     final node = _assetGraph.get(id);
     if (node == null) {
-      assetsRead.add(id);
+      _addAsset(id);
       _assetGraph.add(SyntheticSourceAssetNode(id));
       return false;
     }
@@ -128,7 +149,7 @@ class SingleStepReader implements AssetReader {
       Readability readability,
     ) {
       if (!readability.inSamePhase) {
-        assetsRead.add(id);
+        _addAsset(id);
       }
 
       return readability.canRead;
@@ -157,6 +178,12 @@ class SingleStepReader implements AssetReader {
         });
       }),
     );
+  }
+
+  @override
+  void dedupeAssetsRead(SetsCache setsCache) {
+    _assetsRead = setsCache.dedupe(_assetsRead);
+    _assetsReadIsFrozen = true;
   }
 
   @override
@@ -208,7 +235,7 @@ class SingleStepReader implements AssetReader {
     doAfter(_getGlobNode(glob, _primaryPackage, _phaseNumber), (
       GlobAssetNode globNode,
     ) {
-      assetsRead.add(globNode.id);
+      _addAsset(globNode.id);
       streamCompleter.setSourceStream(Stream.fromIterable(globNode.results!));
     });
     return streamCompleter.stream;
