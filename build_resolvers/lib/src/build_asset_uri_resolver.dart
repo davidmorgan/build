@@ -26,7 +26,7 @@ const _ignoredSchemes = ['dart', 'dart-ext'];
 const transitiveDigestExtension = '.transitive_digest';
 
 class BuildAssetUriResolver extends UriResolver {
-  var _importGraph = ImportGraph();
+  final importGraph = ImportGraph();
 
   /// A cache of the directives for each Dart library.
   ///
@@ -40,8 +40,6 @@ class BuildAssetUriResolver extends UriResolver {
   /// [_cachedAssetState] only when the actual content of the library
   /// changed.
   final _cachedAssetDigests = <AssetId, Digest>{};
-
-  var _setsCache = SetsCache();
 
   /// Asset paths which have been updated in [resourceProvider] but not yet
   /// updated in the analysis driver.
@@ -88,9 +86,9 @@ class BuildAssetUriResolver extends UriResolver {
   }) async {
     List<_AssetState> assetStates;
     if (transitive) {
-      await _importGraph.resolve(buildStep, entryPoints);
+      await importGraph.resolve(buildStep, entryPoints);
       await withDriverResource((driver) async {
-        for (final node in _importGraph.nodes) {
+        for (final node in importGraph.nodes) {
           final path = assetPath(node.id);
           final exists = resourceProvider.getFile(path).exists;
           if (node.missing) {
@@ -137,45 +135,6 @@ class BuildAssetUriResolver extends UriResolver {
 
   HashSet<AssetId> _transitivelyResolved(BuildStep buildStep) =>
       _buildStepTransitivelyResolvedAssets.putIfAbsent(buildStep, HashSet.new);
-
-  Future<List<_AssetState>> _resolveTransitive(
-    BuildStep buildStep,
-    List<AssetId> entryPoints,
-  ) async {
-    final transitivelyResolved = _transitivelyResolved(buildStep);
-    final nextIds =
-        entryPoints.where((id) => !transitivelyResolved.contains(id)).toList();
-
-    final result = <_AssetState>[];
-    while (nextIds.isNotEmpty) {
-      final nextId = nextIds.removeAt(0);
-      final state = await _updateCachedAssetState(
-        nextId,
-        buildStep,
-        transitivelyResolved: transitivelyResolved,
-      );
-      if (state == null) continue;
-      final hasTransitiveDigestAsset = await buildStep.canRead(
-        nextId.addExtension(transitiveDigestExtension),
-      );
-      Iterable<AssetId> moreIds;
-      if (hasTransitiveDigestAsset) {
-        // Only crawl assets that we haven't yet loaded into the
-        // analyzer if we are using transitive digests for invalidation.
-        moreIds = state.dependencies.whereNot(_cachedAssetDigests.containsKey);
-      } else {
-        moreIds = state.dependencies.where(
-          (id) => !transitivelyResolved.contains(id),
-        );
-      }
-      result.add(state);
-      nextIds.addAll(moreIds);
-    }
-
-    // buildStep.dedupeAssetsRead(_setsCache);
-
-    return result;
-  }
 
   /// Updates the internal state for [id], if it has changed.
   ///
@@ -282,7 +241,6 @@ class BuildAssetUriResolver extends UriResolver {
     );
     globallySeenAssets.clear();
     _needsChangeFile.clear();
-    _setsCache = SetsCache();
   }
 
   @override

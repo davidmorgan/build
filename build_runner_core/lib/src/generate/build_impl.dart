@@ -9,6 +9,7 @@ import 'dart:typed_data';
 
 import 'package:build/build.dart';
 import 'package:build_experimental/debug.dart' as debug;
+import 'package:build_resolvers/src/build_asset_uri_resolver.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 import 'package:logging/logging.dart';
@@ -345,6 +346,7 @@ class _SingleBuild {
         }
         // Run a fresh build.
         var result = await logTimedAsync(_logger, 'Running build', _runPhases);
+        _cachedDigestCompleters.clear();
 
         // Write out the dependency graph file.
         await logTimedAsync(
@@ -602,7 +604,7 @@ class _SingleBuild {
 
         if (!await tracker.trackStage(
           'Setup',
-          () => _buildShouldRun(builderOutputs, wrappedReader),
+          () => _buildShouldRun(builderOutputs, wrappedReader, input: input),
         )) {
           return <AssetId>[];
         }
@@ -656,6 +658,7 @@ class _SingleBuild {
             wrappedWriter,
             actionDescription,
             logger.errorsSeen,
+            input: input,
           ),
         );
 
@@ -706,6 +709,7 @@ class _SingleBuild {
           actionNum,
           action.builder,
           anchorNode,
+          input: anchorNode.id,
         ),
       ),
     );
@@ -719,8 +723,9 @@ class _SingleBuild {
     int phaseNum,
     int actionNum,
     PostProcessBuilder builder,
-    PostProcessAnchorNode anchorNode,
-  ) async {
+    PostProcessAnchorNode anchorNode, {
+    required AssetId input,
+  }) async {
     var input = anchorNode.primaryInput;
     var inputNode = _assetGraph.get(input)!;
     var wrappedWriter = AssetWriterSpy(_writer);
@@ -811,6 +816,7 @@ class _SingleBuild {
       wrappedWriter,
       actionDescription,
       logger.errorsSeen,
+      input: input,
     );
 
     return assetsWritten;
@@ -819,8 +825,9 @@ class _SingleBuild {
   /// Checks and returns whether any [outputs] need to be updated.
   Future<bool> _buildShouldRun(
     Iterable<AssetId> outputs,
-    AssetReader reader,
-  ) async {
+    AssetReader reader, {
+    required AssetId input,
+  }) async {
     assert(
       outputs.every(_assetGraph.contains),
       'Outputs should be known statically. Missing '
@@ -863,6 +870,7 @@ class _SingleBuild {
       firstNode.inputs,
       firstNode.builderOptionsId,
       reader,
+      input: input,
     );
     if (digest != firstNode.previousInputsDigest) {
       return true;
@@ -884,6 +892,7 @@ class _SingleBuild {
       [anchorNode.primaryInput],
       anchorNode.builderOptionsId,
       reader,
+      input: anchorNode.primaryInput,
     );
 
     if (inputsDigest != anchorNode.previousInputsDigest) {
@@ -978,14 +987,16 @@ class _SingleBuild {
 
   static final Map<Iterable<AssetId>, Digest> _cachedCombinedDigests =
       Map.identity();
+  static final Map<AssetId, Completer<Digest>> _cachedDigestCompleters = {};
 
   /// Computes a single [Digest] based on the combined [Digest]s of [ids] and
   /// [builderOptionsId].
   Future<Digest> _computeCombinedDigest(
     Iterable<AssetId> ids,
     AssetId builderOptionsId,
-    AssetReader reader,
-  ) async {
+    AssetReader reader, {
+    required AssetId input,
+  }) async {
     /*final maybeResult = _cachedCombinedDigests[ids];
     if (maybeResult != null) {
       //print('Combined digest cache hit!');
@@ -993,6 +1004,18 @@ class _SingleBuild {
     } else {
       print('Combined digest cache miss ${ids.first}.');
     }*/
+
+    final importGraph = BuildAssetUriResolver.sharedInstance.importGraph;
+    final maybeLoopOwner = importGraph.loopOwner(input);
+    if (maybeLoopOwner != null) {
+      if (!_cachedDigestCompleters.containsKey(maybeLoopOwner)) {
+        print("I'm $input computing loop $maybeLoopOwner!");
+        _cachedDigestCompleters[maybeLoopOwner] = Completer();
+      } else {
+        print('Waiting for loop $maybeLoopOwner');
+        return _cachedDigestCompleters[maybeLoopOwner]!.future;
+      }
+    }
 
     var combinedBytes = Uint8List.fromList(List.filled(16, 0));
     void combine(Uint8List other) {
@@ -1028,7 +1051,11 @@ class _SingleBuild {
 
     final result = Digest(combinedBytes);
     //print('Combined digest cache write ${ids.first}.');
-    _cachedCombinedDigests[ids] = result;
+    // _cachedCombinedDigests[ids] = result;
+    if (maybeLoopOwner != null) {
+      print('Completing for loop $maybeLoopOwner');
+      _cachedDigestCompleters[maybeLoopOwner]!.complete(result);
+    }
     return result;
   }
 
@@ -1046,8 +1073,9 @@ class _SingleBuild {
     SingleStepReader reader,
     AssetWriterSpy writer,
     String actionDescription,
-    Iterable<ErrorReport> errors,
-  ) async {
+    Iterable<ErrorReport> errors, {
+    required AssetId input,
+  }) async {
     if (outputs.isEmpty) return;
 
     final inputs = reader.assetsRead;
@@ -1055,6 +1083,7 @@ class _SingleBuild {
       inputs,
       (_assetGraph.get(outputs.first) as GeneratedAssetNode).builderOptionsId,
       reader,
+      input: input,
     );
 
     final isFailure = errors.isNotEmpty;
