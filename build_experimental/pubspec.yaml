@@ -3,6 +3,7 @@ publish_to: none
 resolution: workspace
 
 dependencies:
+  analyzer: any
   build: any
 
 environment:

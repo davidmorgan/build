@@ -11,14 +11,14 @@ class SetsCache {
     final possibleMatches = _cache[hash] ??= [];
     for (final map in possibleMatches) {
       if (_matches(map, ids)) {
-        print('Deduped! ${ids.length} ${ids.first}');
+        // print('Deduped! ${ids.length} ${ids.first}');
         return map;
       }
     }
     possibleMatches.add(ids);
-    print(
+    /*print(
       'Failed to dedupe! ${ids.length} ${ids.first} against ${possibleMatches.length} possible',
-    );
+    );*/
     //print(ids.toString());
     //print(possibleMatches.first);
     return ids;
@@ -30,7 +30,7 @@ class SetsCache {
     final rights = right.toList()..sort();
     for (var i = 0; i != left.length; ++i) {
       if (lefts[i] != rights[i]) {
-        print('Left: ${lefts[i]}, right: ${rights[i]}');
+        // print('Left: ${lefts[i]}, right: ${rights[i]}');
         return false;
       }
     }

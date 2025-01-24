@@ -13,6 +13,7 @@ import 'package:analyzer/source/file_source.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/clients/build_resolvers/build_resolvers.dart';
 import 'package:build/build.dart' show AssetId, BuildStep;
+import 'package:build_experimental/import_graph.dart';
 import 'package:build_experimental/sets_cache.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
@@ -25,6 +26,8 @@ const _ignoredSchemes = ['dart', 'dart-ext'];
 const transitiveDigestExtension = '.transitive_digest';
 
 class BuildAssetUriResolver extends UriResolver {
+  var _importGraph = ImportGraph();
+
   /// A cache of the directives for each Dart library.
   ///
   /// This is stored across builds and is only invalidated if we read a file and
@@ -83,24 +86,53 @@ class BuildAssetUriResolver extends UriResolver {
     withDriverResource, {
     required bool transitive,
   }) async {
-    final uncrawledIds = entryPoints.where(
-      (id) => !_transitivelyResolved(buildStep).contains(id),
-    );
-    final assetStates =
-        transitive
-            ? await _resolveTransitive(buildStep, entryPoints)
-            : [
-              for (final id in uncrawledIds)
-                (await _updateCachedAssetState(id, buildStep))!,
-            ];
-    await withDriverResource((driver) async {
-      for (final state in assetStates) {
-        if (_needsChangeFile.remove(state.path)) {
-          driver.changeFile(state.path);
+    List<_AssetState> assetStates;
+    if (transitive) {
+      await _importGraph.resolve(buildStep, entryPoints);
+      await withDriverResource((driver) async {
+        for (final node in _importGraph.nodes) {
+          final path = assetPath(node.id);
+          final exists = resourceProvider.getFile(path).exists;
+          if (node.missing) {
+            if (exists) {
+              resourceProvider.deleteFile(path);
+            }
+          } else {
+            if (exists) {
+              resourceProvider.modifyFile(
+                path,
+                await buildStep.readAsString(node.id),
+              );
+            } else {
+              resourceProvider.newFile(
+                path,
+                await buildStep.readAsString(node.id),
+              );
+            }
+          }
+          driver.changeFile(path);
         }
-      }
-      await driver.applyPendingFileChanges();
-    });
+        await driver.applyPendingFileChanges();
+      });
+    } else {
+      final uncrawledIds = entryPoints.where(
+        (id) => !_transitivelyResolved(buildStep).contains(id),
+      );
+
+      assetStates = [
+        for (final id in uncrawledIds)
+          (await _updateCachedAssetState(id, buildStep))!,
+      ];
+
+      await withDriverResource((driver) async {
+        for (final state in assetStates) {
+          if (_needsChangeFile.remove(state.path)) {
+            driver.changeFile(state.path);
+          }
+        }
+        await driver.applyPendingFileChanges();
+      });
+    }
   }
 
   HashSet<AssetId> _transitivelyResolved(BuildStep buildStep) =>

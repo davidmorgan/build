@@ -988,7 +988,7 @@ class _SingleBuild {
   ) async {
     /*final maybeResult = _cachedCombinedDigests[ids];
     if (maybeResult != null) {
-      print('Combined digest cache hit!');
+      //print('Combined digest cache hit!');
       return maybeResult;
     } else {
       print('Combined digest cache miss ${ids.first}.');
@@ -1027,8 +1027,8 @@ class _SingleBuild {
     );
 
     final result = Digest(combinedBytes);
-    /*print('Combined digest cache write ${ids.first}.');
-    _cachedCombinedDigests[ids] = result;*/
+    //print('Combined digest cache write ${ids.first}.');
+    _cachedCombinedDigests[ids] = result;
     return result;
   }
 
