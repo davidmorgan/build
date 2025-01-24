@@ -140,7 +140,7 @@ class BuildAssetUriResolver extends UriResolver {
       nextIds.addAll(moreIds);
     }
 
-    buildStep.dedupeAssetsRead(_setsCache);
+    // buildStep.dedupeAssetsRead(_setsCache);
 
     return result;
   }
