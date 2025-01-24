@@ -88,7 +88,8 @@ class BuildAssetUriResolver extends UriResolver {
     if (transitive) {
       await importGraph.resolve(buildStep, entryPoints);
       await withDriverResource((driver) async {
-        for (final node in importGraph.nodes) {
+        // TODO: this can be updated while read.
+        for (final node in importGraph.nodes.toList()) {
           final path = assetPath(node.id);
           final exists = resourceProvider.getFile(path).exists;
           if (node.missing) {

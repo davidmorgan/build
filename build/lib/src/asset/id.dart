@@ -126,7 +126,7 @@ class AssetId implements Comparable<AssetId> {
 
   @override
   int get hashCode {
-    debug.log('AssetId.hashCode', toString());
+    //debug.log('AssetId.hashCode', toString());
     return package.hashCode ^ path.hashCode;
   }
 

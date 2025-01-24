@@ -3,14 +3,13 @@ import 'dart:collection';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:build/build.dart';
+import 'package:graphs/graphs.dart';
 import 'package:pool/pool.dart';
 
 class ImportGraph {
   final pool = Pool(1);
 
   final Map<AssetId, ImportGraphNode> _nodes = {};
-
-  final Map<AssetId, Set<AssetId>> _transitiveDependencies = {};
 
   final Map<AssetId, List<AssetId>> _loops = {};
 
@@ -38,7 +37,7 @@ class ImportGraph {
 
     if (anyChanges) {
       print('Resolved $entryPoints with ${_nodes.length} nodes');
-      if (anyChanges) findLoops();
+      findLoops();
     } else {
       print('No changes to import graph');
     }
@@ -50,43 +49,16 @@ class ImportGraph {
 
   void findLoops() {
     _loops.clear();
-    _transitiveDependencies.clear();
+    final loops = stronglyConnectedComponents(
+      _nodes.keys,
+      (id) => _nodes[id]!.dependencies,
+    );
 
-    for (final id in _nodes.keys) {
-      _computeTransitiveDependencies(id);
-    }
-
-    for (final id in _nodes.keys) {
-      if (_loops.containsKey(id)) continue;
-      final transitiveDeps = _transitiveDependencies[id]!;
-      if (transitiveDeps.contains(id)) {
-        final loop =
-            transitiveDeps
-                .where((dep) => _transitiveDependencies[dep]!.contains(id))
-                .toList()
-              ..sort();
-        for (final loopMember in loop) {
-          _loops[loopMember] = loop;
-        }
-        print('Found loop: $loop');
-      }
-    }
-  }
-
-  void _computeTransitiveDependencies(AssetId id) {
-    if (_transitiveDependencies.containsKey(id)) return;
-    final result = <AssetId>{};
-    _addDepsRecursively(id, result);
-    _transitiveDependencies[id] = result;
-  }
-
-  void _addDepsRecursively(AssetId id, Set<AssetId> result) {
-    if (!_nodes.containsKey(id))
-      print('wut? $id not in ${_nodes.keys.toList()..sort()}');
-    final nextDeps = _nodes[id]!.dependencies;
-    for (final nextDep in nextDeps) {
-      if (result.add(nextDep)) {
-        _addDepsRecursively(nextDep, result);
+    for (final loop in loops) {
+      if (loop.length == 1) continue;
+      loop.sort();
+      for (final id in loop) {
+        _loops[id] = loop;
       }
     }
   }
