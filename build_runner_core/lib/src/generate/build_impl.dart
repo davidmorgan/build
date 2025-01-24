@@ -986,13 +986,13 @@ class _SingleBuild {
     AssetId builderOptionsId,
     AssetReader reader,
   ) async {
-    final maybeResult = _cachedCombinedDigests[ids];
+    /*final maybeResult = _cachedCombinedDigests[ids];
     if (maybeResult != null) {
       print('Combined digest cache hit!');
       return maybeResult;
     } else {
       print('Combined digest cache miss ${ids.first}.');
-    }
+    }*/
 
     var combinedBytes = Uint8List.fromList(List.filled(16, 0));
     void combine(Uint8List other) {
@@ -1027,8 +1027,8 @@ class _SingleBuild {
     );
 
     final result = Digest(combinedBytes);
-    print('Combined digest cache write ${ids.first}.');
-    _cachedCombinedDigests[ids] = result;
+    /*print('Combined digest cache write ${ids.first}.');
+    _cachedCombinedDigests[ids] = result;*/
     return result;
   }
 
