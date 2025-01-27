@@ -13,6 +13,8 @@ import 'package:analyzer/source/file_source.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/clients/build_resolvers/build_resolvers.dart';
 import 'package:build/build.dart' show AssetId, BuildStep;
+import 'package:build_experimental/debug.dart' as debug;
+import 'package:build_experimental/import_graph.dart';
 import 'package:build_experimental/sets_cache.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
@@ -25,6 +27,8 @@ const _ignoredSchemes = ['dart', 'dart-ext'];
 const transitiveDigestExtension = '.transitive_digest';
 
 class BuildAssetUriResolver extends UriResolver {
+  final importGraph = ImportGraph();
+
   /// A cache of the directives for each Dart library.
   ///
   /// This is stored across builds and is only invalidated if we read a file and
@@ -38,11 +42,13 @@ class BuildAssetUriResolver extends UriResolver {
   /// changed.
   final _cachedAssetDigests = <AssetId, Digest>{};
 
-  var _setsCache = SetsCache();
+  final _cachedAssetDigests2 = <AssetId, Digest>{};
 
   /// Asset paths which have been updated in [resourceProvider] but not yet
   /// updated in the analysis driver.
   final _needsChangeFile = HashSet<String>();
+
+  final _seenMissingFile = HashSet<AssetId>();
 
   final resourceProvider = MemoryResourceProvider(context: p.posix);
 
@@ -83,24 +89,69 @@ class BuildAssetUriResolver extends UriResolver {
     withDriverResource, {
     required bool transitive,
   }) async {
-    final uncrawledIds = entryPoints.where(
-      (id) => !_transitivelyResolved(buildStep).contains(id),
-    );
-    final assetStates =
-        transitive
-            ? await _resolveTransitive(buildStep, entryPoints)
-            : [
-              for (final id in uncrawledIds)
-                (await _updateCachedAssetState(id, buildStep))!,
-            ];
-    await withDriverResource((driver) async {
-      for (final state in assetStates) {
-        if (_needsChangeFile.remove(state.path)) {
-          driver.changeFile(state.path);
+    List<_AssetState> assetStates;
+    if (transitive) {
+      await importGraph.resolve(buildStep, entryPoints);
+      /*await withDriverResource((driver) async {
+        // TODO: this can be updated while read.
+        for (final node in importGraph.nodes.toList()) {
+          final path = assetPath(node.id);
+          final exists = resourceProvider.getFile(path).exists;
+          if (node.missing) {
+            if (exists) {
+              resourceProvider.deleteFile(path);
+            }
+          } else {
+            if (exists) {
+              final newDigest = await buildStep.digest(node.id);
+              if (newDigest != _cachedAssetDigests2[node.id]) {
+                _cachedAssetDigests2[node.id] = newDigest;
+                resourceProvider.modifyFile(
+                  path,
+                  await buildStep.readAsString(node.id),
+                );
+              }
+            } else {
+              _cachedAssetDigests2[node.id] = await buildStep.digest(node.id);
+              resourceProvider.newFile(
+                path,
+                await buildStep.readAsString(node.id),
+              );
+            }
+          }
+          driver.changeFile(path);
         }
-      }
-      await driver.applyPendingFileChanges();
-    });
+        await driver.applyPendingFileChanges();
+      });*/
+
+      assetStates = await _resolveTransitive(buildStep, entryPoints);
+      await withDriverResource((driver) async {
+        for (final state in assetStates) {
+          if (_needsChangeFile.remove(state.path)) {
+            driver.changeFile(state.path);
+          }
+        }
+        await driver.applyPendingFileChanges();
+      });
+    } else {
+      final uncrawledIds = entryPoints.where(
+        (id) => !_transitivelyResolved(buildStep).contains(id),
+      );
+
+      assetStates = [
+        for (final id in uncrawledIds)
+          (await _updateCachedAssetState(id, buildStep))!,
+      ];
+
+      await withDriverResource((driver) async {
+        for (final state in assetStates) {
+          if (_needsChangeFile.remove(state.path)) {
+            driver.changeFile(state.path);
+          }
+        }
+        await driver.applyPendingFileChanges();
+      });
+    }
   }
 
   HashSet<AssetId> _transitivelyResolved(BuildStep buildStep) =>
@@ -111,6 +162,34 @@ class BuildAssetUriResolver extends UriResolver {
     List<AssetId> entryPoints,
   ) async {
     final transitivelyResolved = _transitivelyResolved(buildStep);
+    final uncrawledIds = entryPoints.where(
+      (id) => !_transitivelyResolved(buildStep).contains(id),
+    );
+
+    return await crawlAsync<AssetId, _AssetState?>(
+      uncrawledIds,
+      (id) => _updateCachedAssetState(
+        id,
+        buildStep,
+        transitivelyResolved: transitivelyResolved,
+      ),
+      (id, state) async {
+        if (state == null) return const [];
+        // Establishes a dependency on the transitive deps digest.
+        final hasTransitiveDigestAsset = await buildStep.canRead(
+          id.addExtension(transitiveDigestExtension),
+        );
+        return hasTransitiveDigestAsset
+            // Only crawl assets that we haven't yet loaded into the
+            // analyzer if we are using transitive digests for invalidation.
+            ? state.dependencies.whereNot(_cachedAssetDigests.containsKey)
+            // Otherwise fall back on crawling all source deps.
+            : state.dependencies.where(
+              (id) => !_transitivelyResolved(buildStep).contains(id),
+            );
+      },
+    ).whereType<_AssetState>().toList();
+    /*final transitivelyResolved = _transitivelyResolved(buildStep);
     final nextIds =
         entryPoints.where((id) => !transitivelyResolved.contains(id)).toList();
 
@@ -139,10 +218,7 @@ class BuildAssetUriResolver extends UriResolver {
       result.add(state);
       nextIds.addAll(moreIds);
     }
-
-    // buildStep.dedupeAssetsRead(_setsCache);
-
-    return result;
+    return result;*/
   }
 
   /// Updates the internal state for [id], if it has changed.
@@ -161,19 +237,23 @@ class BuildAssetUriResolver extends UriResolver {
     BuildStep buildStep, {
     Set<AssetId>? transitivelyResolved,
   }) async {
-    late final path = assetPath(id);
+    late final path = id.assetPath;
+
+    if (debug.kLog) debug.justLog('canRead $id [updateCachedAssetState]');
     if (!await buildStep.canRead(id)) {
-      if (globallySeenAssets.contains(id)) {
-        // ignore from this graph, some later build step may still be using it
-        // so it shouldn't be removed from [resourceProvider], but we also
-        // don't care about it's transitive imports.
-        return null;
-      }
-      _cachedAssetState.remove(id);
-      _cachedAssetDigests.remove(id);
-      if (resourceProvider.getFile(path).exists) {
-        resourceProvider.deleteFile(path);
-        _needsChangeFile.add(path);
+      if (_seenMissingFile.add(id)) {
+        if (globallySeenAssets.contains(id)) {
+          // ignore from this graph, some later build step may still be using it
+          // so it shouldn't be removed from [resourceProvider], but we also
+          // don't care about it's transitive imports.
+          return null;
+        }
+        _cachedAssetState.remove(id);
+        _cachedAssetDigests.remove(id);
+        if (resourceProvider.getFile(path).exists) {
+          resourceProvider.deleteFile(path);
+          _needsChangeFile.add(path);
+        }
       }
       return _AssetState(path, const {});
     }
@@ -250,7 +330,7 @@ class BuildAssetUriResolver extends UriResolver {
     );
     globallySeenAssets.clear();
     _needsChangeFile.clear();
-    _setsCache = SetsCache();
+    _seenMissingFile.clear();
   }
 
   @override
@@ -258,7 +338,7 @@ class BuildAssetUriResolver extends UriResolver {
     final assetId = parseAsset(uri);
     if (assetId == null) return null;
 
-    var file = resourceProvider.getFile(assetPath(assetId));
+    var file = resourceProvider.getFile(assetId.assetPath);
     return FileSource(file, assetId.uri);
   }
 
@@ -280,8 +360,8 @@ class BuildAssetUriResolver extends UriResolver {
   }
 }
 
-String assetPath(AssetId assetId) =>
-    p.posix.join('/${assetId.package}', assetId.path);
+/*String assetPath(AssetId assetId) =>
+    p.posix.join('/${assetId.package}', assetId.path);*/
 
 Future<String> packagePath(String package) async {
   var libRoot = await Isolate.resolvePackageUri(Uri.parse('package:$package/'));

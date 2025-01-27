@@ -8,6 +8,7 @@ import 'dart:convert';
 
 import 'package:async/async.dart';
 import 'package:build/build.dart';
+import 'package:build_experimental/debug.dart' as debug;
 import 'package:build_experimental/sets_cache.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
@@ -128,18 +129,34 @@ class SingleStepReader implements AssetReader {
   /// [InvalidInputException], this method will return `false` instead of
   /// throwing.
   FutureOr<bool> _isReadable(AssetId id, {bool catchInvalidInputs = false}) {
+    if (debug.kLog) {
+      debug.justLog(
+        '_isReadable $id [SingleStepReader calling $_checkInvalidInput]',
+      );
+    }
     try {
       _checkInvalidInput(id);
     } on InvalidInputException {
+      if (debug.kLog) {
+        debug.justLog('_isReadable $id [SingleStepReader catch and false 1]');
+      }
       if (catchInvalidInputs) return false;
       rethrow;
     } on PackageNotFoundException {
+      if (debug.kLog) {
+        debug.justLog('_isReadable $id [SingleStepReader catch and false 2]');
+      }
       if (catchInvalidInputs) return false;
       rethrow;
     }
 
     final node = _assetGraph.get(id);
     if (node == null) {
+      if (debug.kLog) {
+        debug.justLog(
+          '_isReadable $id [SingleStepReader add SyntheticSourceAssetNode]',
+        );
+      }
       _addAsset(id);
       _assetGraph.add(SyntheticSourceAssetNode(id));
       return false;
@@ -158,6 +175,7 @@ class SingleStepReader implements AssetReader {
 
   @override
   Future<bool> canRead(AssetId id) {
+    if (debug.kLog) debug.justLog('canRead $id [SingleStepReader]');
     return toFuture(
       doAfter(_isReadable(id, catchInvalidInputs: true), (bool isReadable) {
         if (!isReadable) return false;
@@ -168,6 +186,11 @@ class SingleStepReader implements AssetReader {
             // was output.
             return true;
           } else {
+            if (debug.kLog) {
+              debug.justLog(
+                'canRead $id [SingleStepReader to delegate $_delegate]',
+              );
+            }
             return _delegate.canRead(id);
           }
         }

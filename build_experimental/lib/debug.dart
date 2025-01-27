@@ -5,7 +5,16 @@ Map<String, int> _eventMessageCounts = {};
 Map<String, int> _eventStackCounts = {};
 Map<String, int> _eventMessageStackCounts = {};
 
+const bool kLog = false;
+
+void justLog(String event) {
+  File(
+    '/tmp/build_debug_log.txt',
+  ).writeAsStringSync('$event\n', mode: FileMode.append);
+}
+
 void log(String event, [String? message]) {
+  if (1 == 1) return;
   final eventCount = _eventCounts[event] = (_eventCounts[event] ?? 0) + 1;
 
   final eventMessage = '$event $message';
@@ -51,6 +60,7 @@ void log(String event, [String? message]) {
 }
 
 String summarize() {
+  if (1 == 1) return '';
   final result = StringBuffer('\n');
   result.write(_summarize(_eventCounts.keys.toList(), _eventMessageCounts));
   result.write('\n');

@@ -54,10 +54,10 @@ Packages _buildAnalyzerPackages(
       // make them match the paths that we give it, so we use the
       // `assetPath` function to create those.
       rootFolder: resourceProvider.getFolder(
-        p.url.normalize(assetPath(AssetId(package.name, ''))),
+        p.url.normalize(AssetId(package.name, '').assetPath),
       ),
       libFolder: resourceProvider.getFolder(
-        p.url.normalize(assetPath(AssetId(package.name, 'lib'))),
+        p.url.normalize(AssetId(package.name, 'lib').assetPath),
       ),
     ),
 });

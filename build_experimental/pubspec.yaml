@@ -3,7 +3,9 @@ publish_to: none
 resolution: workspace
 
 dependencies:
+  analyzer: any
   build: any
+  pool: any
 
 environment:
   sdk: ^3.6.0

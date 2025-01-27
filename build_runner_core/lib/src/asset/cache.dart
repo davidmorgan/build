@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:build/build.dart';
+import 'package:build_experimental/debug.dart' as debug;
 import 'package:build_experimental/sets_cache.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
@@ -59,8 +60,17 @@ class CachingAssetReader extends AssetReader {
           : CachingAssetReader._(delegate);
 
   @override
-  Future<bool> canRead(AssetId id) =>
-      _canReadCache.putIfAbsent(id, () => _delegate.canRead(id));
+  Future<bool> canRead(AssetId id) {
+    if (debug.kLog) debug.justLog('canRead $id [CachingAssetReader]');
+    return _canReadCache.putIfAbsent(id, () {
+      if (debug.kLog) {
+        debug.justLog(
+          'canRead $id [CachingAssetReader cache miss to $_delegate]',
+        );
+      }
+      return _delegate.canRead(id);
+    });
+  }
 
   @override
   void dedupeAssetsRead(SetsCache cache) => _delegate.dedupeAssetsRead(cache);
