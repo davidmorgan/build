@@ -1006,13 +1006,13 @@ class _SingleBuild {
     }*/
 
     final importGraph = BuildAssetUriResolver.sharedInstance.importGraph;
-    final maybeLoopOwner = importGraph.loopOwner(input);
+    final maybeLoopOwner = await importGraph.loopOwner(input);
     if (maybeLoopOwner != null) {
       if (!_cachedDigestCompleters.containsKey(maybeLoopOwner)) {
-        print("I'm $input computing loop $maybeLoopOwner!");
+        //print("I'm $input computing loop $maybeLoopOwner!");
         _cachedDigestCompleters[maybeLoopOwner] = Completer();
       } else {
-        print('Waiting for loop $maybeLoopOwner');
+        //print('Waiting for loop $maybeLoopOwner');
         return _cachedDigestCompleters[maybeLoopOwner]!.future;
       }
     }
@@ -1053,7 +1053,7 @@ class _SingleBuild {
     //print('Combined digest cache write ${ids.first}.');
     // _cachedCombinedDigests[ids] = result;
     if (maybeLoopOwner != null) {
-      print('Completing for loop $maybeLoopOwner');
+      //print('Completing for loop $maybeLoopOwner');
       _cachedDigestCompleters[maybeLoopOwner]!.complete(result);
     }
     return result;

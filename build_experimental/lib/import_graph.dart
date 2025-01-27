@@ -11,7 +11,7 @@ class ImportGraph {
 
   final Map<AssetId, ImportGraphNode> _nodes = {};
 
-  final Map<AssetId, List<AssetId>> _loops = {};
+  Map<AssetId, List<AssetId>>? _loops;
 
   Future<void> resolve(
     AssetReader reader,
@@ -37,7 +37,7 @@ class ImportGraph {
 
     if (anyChanges) {
       print('Resolved $entryPoints with ${_nodes.length} nodes');
-      findLoops();
+      _loops = null;
     } else {
       print('No changes to import graph');
     }
@@ -45,10 +45,20 @@ class ImportGraph {
 
   Iterable<ImportGraphNode> get nodes => _nodes.values;
 
-  AssetId? loopOwner(AssetId id) => _loops[id]?.first;
+  Future<AssetId?> loopOwner(AssetId id) async {
+    return await pool.withResource(() => _loopOwner(id));
+  }
+
+  Future<AssetId?> _loopOwner(AssetId id) async {
+    if (_loops == null) findLoops();
+    return _loops![id]?.first;
+  }
+
+  static Duration totalDuration = Duration.zero;
 
   void findLoops() {
-    _loops.clear();
+    final stopwatch = Stopwatch()..start();
+    _loops = {};
     final loops = stronglyConnectedComponents(
       _nodes.keys,
       (id) => _nodes[id]!.dependencies,
@@ -58,9 +68,15 @@ class ImportGraph {
       if (loop.length == 1) continue;
       loop.sort();
       for (final id in loop) {
-        _loops[id] = loop;
+        _loops![id] = loop;
       }
     }
+    final elapsed = stopwatch.elapsed;
+    totalDuration += elapsed;
+    print(
+      'Computed loops in ${elapsed.inMilliseconds}ms,'
+      ' total ${totalDuration.inMilliseconds}ms',
+    );
   }
 }
 
