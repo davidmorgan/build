@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:async/async.dart';
+import 'package:build_experimental/debug.dart' as debug;
 import 'package:build_experimental/sets_cache.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
@@ -102,6 +103,7 @@ class BuildStepImpl implements BuildStep {
 
   @override
   Future<bool> canRead(AssetId id) {
+    if (debug.kLog) debug.justLog('canRead $id [build_step_impl]');
     if (_isComplete) throw BuildStepCompletedException();
     return _reader.canRead(id);
   }

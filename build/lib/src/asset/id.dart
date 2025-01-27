@@ -21,6 +21,8 @@ class AssetId implements Comparable<AssetId> {
   /// is they will never contain "../".
   final String path;
 
+  late String assetPath = p.posix.join('/${package}', path);
+
   /// Splits [path] into its components.
   List<String> get pathSegments => p.url.split(path);
 

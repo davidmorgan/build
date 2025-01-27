@@ -211,7 +211,7 @@ class AnalyzerResolver implements ReleasableResolver {
     return _driverPool.withResource(() {
       if (!_driver.isUriOfExistingFile(assetId.uri)) return false;
       var result =
-          _driver.currentSession.getFile(assetPath(assetId)) as FileResult;
+          _driver.currentSession.getFile(assetId.assetPath) as FileResult;
       return !result.isPart;
     });
   }
@@ -258,7 +258,7 @@ class AnalyzerResolver implements ReleasableResolver {
         throw AssetNotFoundException(assetId);
       }
 
-      var path = assetPath(assetId);
+      var path = assetId.assetPath;
 
       var parsedResult =
           _driver.currentSession.getParsedUnit(path) as ParsedUnitResult;
@@ -283,7 +283,7 @@ class AnalyzerResolver implements ReleasableResolver {
           throw AssetNotFoundException(assetId);
         }
 
-        var path = assetPath(assetId);
+        var path = assetId.assetPath;
         var parsedResult = _driver.currentSession.getParsedUnit(path);
         if (parsedResult is! ParsedUnitResult || parsedResult.isPart) {
           throw NonLibraryAssetException(assetId);
@@ -322,7 +322,7 @@ class AnalyzerResolver implements ReleasableResolver {
     final paths = existingSources
         .map((source) => _uriResolver.lookupCachedAsset(source.uri))
         .whereType<AssetId>() // filter out nulls
-        .map(assetPath);
+        .map((a) => a.assetPath);
 
     final relevantResults = <ErrorsResult>[];
 

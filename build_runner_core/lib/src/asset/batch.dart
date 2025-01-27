@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:build/build.dart';
+import 'package:build_experimental/debug.dart' as debug;
 import 'package:build_experimental/sets_cache.dart';
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
@@ -90,9 +91,12 @@ final class BatchReader extends AssetReader
 
   @override
   Future<bool> canRead(AssetId id) async {
+    if (debug.kLog) debug.justLog('canRead $id [BatchReader]');
     if (_stateFor(id) case final state?) {
       return !state.isDeleted;
     } else {
+      if (debug.kLog)
+        debug.justLog('canRead $id [BatchReader miss to $_inner]');
       return await _inner.canRead(id);
     }
   }

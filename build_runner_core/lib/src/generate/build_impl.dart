@@ -174,6 +174,9 @@ CheckInvalidInput _checkInvalidInputFactory(
   PackageGraph packageGraph,
 ) {
   return (AssetId id) {
+    // This should be cached per asset, just do nothing for now.
+    if (1 == 1) return;
+    debug.justLog('checkInvalidInput $id [build_impl]');
     final packageNode = packageGraph[id.package];
 
     if (packageNode == null) {

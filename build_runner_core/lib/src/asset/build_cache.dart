@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:build/build.dart';
+import 'package:build_experimental/debug.dart' as debug;
 import 'package:build_experimental/sets_cache.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
@@ -31,8 +32,11 @@ class BuildCacheReader implements AssetReader {
           : BuildCacheReader._(delegate, assetGraph, rootPackage);
 
   @override
-  Future<bool> canRead(AssetId id) =>
-      _delegate.canRead(_cacheLocation(id, _assetGraph, _rootPackage));
+  Future<bool> canRead(AssetId id) {
+    if (debug.kLog)
+      debug.justLog('canRead $id [BuildCacheReader over $_delegate]');
+    return _delegate.canRead(_cacheLocation(id, _assetGraph, _rootPackage));
+  }
 
   @override
   void dedupeAssetsRead(SetsCache setsCache) =>

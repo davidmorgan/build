@@ -13,6 +13,7 @@ import 'package:analyzer/source/file_source.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/clients/build_resolvers/build_resolvers.dart';
 import 'package:build/build.dart' show AssetId, BuildStep;
+import 'package:build_experimental/debug.dart' as debug;
 import 'package:build_experimental/import_graph.dart';
 import 'package:build_experimental/sets_cache.dart';
 import 'package:collection/collection.dart';
@@ -46,6 +47,8 @@ class BuildAssetUriResolver extends UriResolver {
   /// Asset paths which have been updated in [resourceProvider] but not yet
   /// updated in the analysis driver.
   final _needsChangeFile = HashSet<String>();
+
+  final _seenMissingFile = HashSet<AssetId>();
 
   final resourceProvider = MemoryResourceProvider(context: p.posix);
 
@@ -234,19 +237,23 @@ class BuildAssetUriResolver extends UriResolver {
     BuildStep buildStep, {
     Set<AssetId>? transitivelyResolved,
   }) async {
-    late final path = assetPath(id);
+    late final path = id.assetPath;
+
+    if (debug.kLog) debug.justLog('canRead $id [updateCachedAssetState]');
     if (!await buildStep.canRead(id)) {
-      if (globallySeenAssets.contains(id)) {
-        // ignore from this graph, some later build step may still be using it
-        // so it shouldn't be removed from [resourceProvider], but we also
-        // don't care about it's transitive imports.
-        return null;
-      }
-      _cachedAssetState.remove(id);
-      _cachedAssetDigests.remove(id);
-      if (resourceProvider.getFile(path).exists) {
-        resourceProvider.deleteFile(path);
-        _needsChangeFile.add(path);
+      if (_seenMissingFile.add(id)) {
+        if (globallySeenAssets.contains(id)) {
+          // ignore from this graph, some later build step may still be using it
+          // so it shouldn't be removed from [resourceProvider], but we also
+          // don't care about it's transitive imports.
+          return null;
+        }
+        _cachedAssetState.remove(id);
+        _cachedAssetDigests.remove(id);
+        if (resourceProvider.getFile(path).exists) {
+          resourceProvider.deleteFile(path);
+          _needsChangeFile.add(path);
+        }
       }
       return _AssetState(path, const {});
     }
@@ -323,6 +330,7 @@ class BuildAssetUriResolver extends UriResolver {
     );
     globallySeenAssets.clear();
     _needsChangeFile.clear();
+    _seenMissingFile.clear();
   }
 
   @override
@@ -330,7 +338,7 @@ class BuildAssetUriResolver extends UriResolver {
     final assetId = parseAsset(uri);
     if (assetId == null) return null;
 
-    var file = resourceProvider.getFile(assetPath(assetId));
+    var file = resourceProvider.getFile(assetId.assetPath);
     return FileSource(file, assetId.uri);
   }
 
@@ -352,8 +360,8 @@ class BuildAssetUriResolver extends UriResolver {
   }
 }
 
-String assetPath(AssetId assetId) =>
-    p.posix.join('/${assetId.package}', assetId.path);
+/*String assetPath(AssetId assetId) =>
+    p.posix.join('/${assetId.package}', assetId.path);*/
 
 Future<String> packagePath(String package) async {
   var libRoot = await Isolate.resolvePackageUri(Uri.parse('package:$package/'));
