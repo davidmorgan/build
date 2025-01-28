@@ -15,9 +15,9 @@ import 'package:analyzer/src/clients/build_resolvers/build_resolvers.dart';
 import 'package:build/build.dart' show AssetId, BuildStep;
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
-import 'package:graphs/graphs.dart';
 import 'package:path/path.dart' as p;
-import 'package:stream_transform/stream_transform.dart';
+
+import 'crawl_sync.dart';
 
 const _ignoredSchemes = ['dart', 'dart-ext'];
 
@@ -87,14 +87,14 @@ class BuildAssetUriResolver extends UriResolver {
     final uncrawledIds = entryPoints.where(notCrawled);
     final assetStates =
         transitive
-            ? await crawlAsync<AssetId, _AssetState?>(
+            ? crawlSync<AssetId, _AssetState?>(
               uncrawledIds,
               (id) => _updateCachedAssetState(
                 id,
                 buildStep,
                 transitivelyResolved: transitivelyResolved,
               ),
-              (id, state) async {
+              (id, state) {
                 if (state == null) return const [];
                 // Establishes a dependency on the transitive deps digest.
                 final hasTransitiveDigestAsset = buildStep.canRead(
@@ -282,10 +282,9 @@ Set<AssetId> _parseDependencies(String content, AssetId from) => HashSet.of(
 /// Read the (potentially) cached dependencies of [id] based on parsing the
 /// directives, and cache the results if they weren't already cached.
 Iterable<AssetId>? dependenciesOf(AssetId id, BuildStep buildStep) =>
-    (BuildAssetUriResolver.sharedInstance._updateCachedAssetState(
-      id,
-      buildStep,
-    ))?.dependencies;
+    BuildAssetUriResolver.sharedInstance
+        ._updateCachedAssetState(id, buildStep)
+        ?.dependencies;
 
 class _AssetState {
   final String path;

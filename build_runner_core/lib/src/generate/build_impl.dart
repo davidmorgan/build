@@ -32,7 +32,6 @@ import '../package_graph/apply_builders.dart';
 import '../package_graph/package_graph.dart';
 import '../package_graph/target_graph.dart';
 import '../performance_tracking/performance_tracking_resolvers.dart';
-import '../util/async.dart';
 import '../util/build_dirs.dart';
 import '../util/constants.dart';
 import 'build_definition.dart';
@@ -196,7 +195,6 @@ class _SingleBuild {
   final List<Pool> _buildPhasePool;
   final BuildEnvironment _environment;
   final _lazyPhases = <String, Future<Iterable<AssetId>>>{};
-  final _lazyGlobs = <AssetId, Future<void>>{};
   final PackageGraph _packageGraph;
   final TargetGraph _targetGraph;
   final CheckInvalidInput _checkInvalidInput;
@@ -858,7 +856,7 @@ class _SingleBuild {
     // This is a fresh build or the first time we've seen this output.
     if (firstNode.previousInputsDigest == null) return true;
 
-    var digest = await _computeCombinedDigest(
+    var digest = _computeCombinedDigest(
       firstNode.inputs,
       firstNode.builderOptionsId,
       reader,
@@ -879,7 +877,7 @@ class _SingleBuild {
     PostProcessAnchorNode anchorNode,
     AssetReader reader,
   ) async {
-    var inputsDigest = await _computeCombinedDigest(
+    var inputsDigest = _computeCombinedDigest(
       [anchorNode.primaryInput],
       anchorNode.builderOptionsId,
       reader,
@@ -906,11 +904,7 @@ class _SingleBuild {
         .map((n) => _delete(n.id)),
   );
 
-  Future<GlobAssetNode> _getUpdatedGlobNode(
-    Glob glob,
-    String package,
-    int phaseNum,
-  ) {
+  GlobAssetNode _getUpdatedGlobNode(Glob glob, String package, int phaseNum) {
     var globNodeId = GlobAssetNode.createId(package, glob, phaseNum);
     var globNode = _assetGraph.get(globNodeId) as GlobAssetNode?;
     if (globNode == null) {
@@ -923,65 +917,50 @@ class _SingleBuild {
       _assetGraph.add(globNode);
     }
 
-    return toFuture(
-      doAfter(
-        // ignore: void_checks
-        _updateGlobNodeIfNecessary(globNode),
-        (_) => globNode!,
-      ),
-    );
+    _updateGlobNodeIfNecessary(globNode);
+    return globNode;
   }
 
-  FutureOr<void> _updateGlobNodeIfNecessary(GlobAssetNode globNode) {
-    if (globNode.state == NodeState.upToDate) return null;
+  void _updateGlobNodeIfNecessary(GlobAssetNode globNode) {
+    if (globNode.state == NodeState.upToDate) return;
 
-    return _lazyGlobs.putIfAbsent(globNode.id, () async {
-      var potentialNodes =
-          _assetGraph
-              .packageNodes(globNode.id.package)
-              .where((n) => n.isReadable && n.isValidInput)
-              .where(
-                (n) =>
-                    n is! GeneratedAssetNode ||
-                    n.phaseNumber < globNode.phaseNumber,
-              )
-              .where((n) => globNode.glob.matches(n.id.path))
-              .toList();
+    var potentialNodes =
+        _assetGraph
+            .packageNodes(globNode.id.package)
+            .where((n) => n.isReadable && n.isValidInput)
+            .where(
+              (n) =>
+                  n is! GeneratedAssetNode ||
+                  n.phaseNumber < globNode.phaseNumber,
+            )
+            .where((n) => globNode.glob.matches(n.id.path))
+            .toList();
 
-      await Future.wait(
-        potentialNodes
-            .whereType<GeneratedAssetNode>()
-            .map(_ensureAssetIsBuilt)
-            .map(toFuture),
-      );
+    potentialNodes.whereType<GeneratedAssetNode>().map(_ensureAssetIsBuilt);
 
-      var actualMatches = <AssetId>[];
-      for (var node in potentialNodes) {
-        node.outputs.add(globNode.id);
-        if (node is GeneratedAssetNode && (!node.wasOutput || node.isFailure)) {
-          continue;
-        }
-        actualMatches.add(node.id);
+    var actualMatches = <AssetId>[];
+    for (var node in potentialNodes) {
+      node.outputs.add(globNode.id);
+      if (node is GeneratedAssetNode && (!node.wasOutput || node.isFailure)) {
+        continue;
       }
+      actualMatches.add(node.id);
+    }
 
-      globNode
-        ..results = actualMatches
-        ..inputs = HashSet.of(potentialNodes.map((n) => n.id))
-        ..state = NodeState.upToDate
-        ..lastKnownDigest = md5.convert(utf8.encode(actualMatches.join(' ')));
-
-      // TODO: remove ?? fallback after 2.15 sdk.
-      unawaited(_lazyGlobs.remove(globNode.id) ?? Future.value());
-    });
+    globNode
+      ..results = actualMatches
+      ..inputs = HashSet.of(potentialNodes.map((n) => n.id))
+      ..state = NodeState.upToDate
+      ..lastKnownDigest = md5.convert(utf8.encode(actualMatches.join(' ')));
   }
 
   /// Computes a single [Digest] based on the combined [Digest]s of [ids] and
   /// [builderOptionsId].
-  Future<Digest> _computeCombinedDigest(
+  Digest _computeCombinedDigest(
     Iterable<AssetId> ids,
     AssetId builderOptionsId,
     AssetReader reader,
-  ) async {
+  ) {
     var combinedBytes = Uint8List.fromList(List.filled(16, 0));
     void combine(Uint8List other) {
       assert(other.length == 16);
@@ -995,24 +974,23 @@ class _SingleBuild {
 
     // Limit the total number of digests we are computing at a time. Otherwise
     // this can overload the event queue.
-    await Future.wait(
-      ids.map((id) async {
-        var node = _assetGraph.get(id)!;
-        if (node is GlobAssetNode) {
-          await _updateGlobNodeIfNecessary(node);
-        } else if (!reader.canRead(id)) {
-          // We want to add something here, a missing/unreadable input should be
-          // different from no input at all.
-          //
-          // This needs to be unique per input so we use the md5 hash of the id.
-          combine(md5.convert(id.toString().codeUnits).bytes as Uint8List);
-          return;
-        } else {
-          node.lastKnownDigest ??= reader.digest(id);
-        }
-        combine(node.lastKnownDigest!.bytes as Uint8List);
-      }),
-    );
+
+    ids.forEach((id) {
+      var node = _assetGraph.get(id)!;
+      if (node is GlobAssetNode) {
+        _updateGlobNodeIfNecessary(node);
+      } else if (!reader.canRead(id)) {
+        // We want to add something here, a missing/unreadable input should be
+        // different from no input at all.
+        //
+        // This needs to be unique per input so we use the md5 hash of the id.
+        combine(md5.convert(id.toString().codeUnits).bytes as Uint8List);
+        return;
+      } else {
+        node.lastKnownDigest ??= reader.digest(id);
+      }
+      combine(node.lastKnownDigest!.bytes as Uint8List);
+    });
 
     return Digest(combinedBytes);
   }
@@ -1040,7 +1018,7 @@ class _SingleBuild {
             ? reader.assetsRead.difference(unusedAssets)
             : reader.assetsRead;
 
-    final inputsDigest = await _computeCombinedDigest(
+    final inputsDigest = _computeCombinedDigest(
       usedInputs,
       (_assetGraph.get(outputs.first) as GeneratedAssetNode).builderOptionsId,
       reader,
