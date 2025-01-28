@@ -41,7 +41,7 @@ Future<void> bootstrapDdc(
   var dartEntrypointId = buildStep.inputId;
   var moduleId = buildStep.inputId.changeExtension(moduleExtension(platform));
   var module = Module.fromJson(
-    json.decode(await buildStep.readAsString(moduleId)) as Map<String, dynamic>,
+    json.decode(buildStep.readAsString(moduleId)) as Map<String, dynamic>,
   );
 
   // First, ensure all transitive modules are built.
@@ -165,7 +165,7 @@ https://github.com/dart-lang/build/blob/master/docs/faq.md#how-can-i-resolve-ski
   var moduleDigests = <String, String>{};
   for (var jsId in transitiveJsModules) {
     mergedMetadataContent.writeln(
-      await buildStep.readAsString(jsId.changeExtension('.js.metadata')),
+      buildStep.readAsString(jsId.changeExtension('.js.metadata')),
     );
     moduleDigests[_moduleDigestKey(jsId)] = '${await buildStep.digest(jsId)}';
   }
@@ -207,7 +207,7 @@ Future<List<AssetId>> _ensureTransitiveJsModules(
         return;
       }
       var errorsId = jsId.addExtension('.errors');
-      await buildStep.canRead(errorsId);
+      buildStep.canRead(errorsId);
       log.warning(
         'Unable to read $jsId, check your console or the '
         '`.dart_tool/build/generated/${errorsId.package}/${errorsId.path}` '
@@ -567,7 +567,7 @@ Future<void> _ensureResources(
   Iterable<AssetId> resources,
 ) async {
   for (var resource in resources) {
-    if (!await buildStep.canRead(resource)) {
+    if (!buildStep.canRead(resource)) {
       throw StateError('Unable to locate required sdk resource $resource');
     }
   }

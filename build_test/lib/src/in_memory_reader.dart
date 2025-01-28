@@ -56,15 +56,15 @@ class InMemoryAssetReader extends AssetReader
   }
 
   @override
-  Future<List<int>> readAsBytes(AssetId id) async {
-    if (!await canRead(id)) throw AssetNotFoundException(id);
+  List<int> readAsBytes(AssetId id) {
+    if (!canRead(id)) throw AssetNotFoundException(id);
     assetsRead.add(id);
     return assets[id]!;
   }
 
   @override
-  Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) async {
-    if (!await canRead(id)) throw AssetNotFoundException(id);
+  String readAsString(AssetId id, {Encoding encoding = utf8}) {
+    if (!canRead(id)) throw AssetNotFoundException(id);
     assetsRead.add(id);
     return encoding.decode(assets[id]!);
   }

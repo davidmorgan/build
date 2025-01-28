@@ -97,7 +97,7 @@ class BuildAssetUriResolver extends UriResolver {
               (id, state) async {
                 if (state == null) return const [];
                 // Establishes a dependency on the transitive deps digest.
-                final hasTransitiveDigestAsset = await buildStep.canRead(
+                final hasTransitiveDigestAsset = buildStep.canRead(
                   id.addExtension(transitiveDigestExtension),
                 );
                 return hasTransitiveDigestAsset
@@ -139,7 +139,7 @@ class BuildAssetUriResolver extends UriResolver {
     Set<AssetId>? transitivelyResolved,
   }) async {
     late final path = assetPath(id);
-    if (!await buildStep.canRead(id)) {
+    if (!buildStep.canRead(id)) {
       if (globallySeenAssets.contains(id)) {
         // ignore from this graph, some later build step may still be using it
         // so it shouldn't be removed from [resourceProvider], but we also
@@ -163,7 +163,7 @@ class BuildAssetUriResolver extends UriResolver {
       return _cachedAssetState[id];
     } else {
       final isChange = cachedAsset != null;
-      final content = await buildStep.readAsString(id);
+      final content = buildStep.readAsString(id);
       if (_cachedAssetDigests[id] == digest) {
         // Cache may have been updated while reading asset content
         return _cachedAssetState[id];

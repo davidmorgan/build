@@ -45,7 +45,7 @@ class ModuleBuilder implements Builder {
       (m) => m.primarySource == buildStep.inputId,
     );
     if (outputModule == null) {
-      final serializedLibrary = await buildStep.readAsString(
+      final serializedLibrary = buildStep.readAsString(
         buildStep.inputId.changeExtension(moduleLibraryExtension),
       );
       final libraryModule = ModuleLibrary.deserialize(

@@ -31,7 +31,7 @@ class ModuleLibraryBuilder implements Builder {
   Future build(BuildStep buildStep) async {
     final library = ModuleLibrary.fromSource(
       buildStep.inputId,
-      await buildStep.readAsString(buildStep.inputId),
+      buildStep.readAsString(buildStep.inputId),
     );
     if (!library.isImportable) return;
     await buildStep.writeAsString(

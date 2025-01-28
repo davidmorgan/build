@@ -30,18 +30,12 @@ class FileBasedAssetReader extends AssetReader
   bool canRead(AssetId id) => _fileFor(id, packageGraph).existsSync();
 
   @override
-  Future<List<int>> readAsBytes(AssetId id) => _fileForOrThrow(
-    id,
-    packageGraph,
-  ).then((file) => _descriptorPool.withResource(file.readAsBytes));
+  List<int> readAsBytes(AssetId id) =>
+      _fileForOrThrow(id, packageGraph).readAsBytesSync();
 
   @override
-  Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) =>
-      _fileForOrThrow(id, packageGraph).then(
-        (file) => _descriptorPool.withResource(
-          () => file.readAsString(encoding: encoding),
-        ),
-      );
+  String readAsString(AssetId id, {Encoding encoding = utf8}) =>
+      _fileForOrThrow(id, packageGraph).readAsStringSync(encoding: encoding);
 
   @override
   Stream<AssetId> findAssets(Glob glob, {String? package}) {
@@ -139,13 +133,11 @@ File _fileFor(AssetId id, PackageGraph packageGraph) {
 /// Returns a `File` for the asset reference by [id] given [packageGraph].
 ///
 /// Throws an `AssetNotFoundException` if it doesn't exist.
-Future<File> _fileForOrThrow(AssetId id, PackageGraph packageGraph) {
+File _fileForOrThrow(AssetId id, PackageGraph packageGraph) {
   if (packageGraph[id.package] == null) {
-    return Future.error(PackageNotFoundException(id.package));
+    throw PackageNotFoundException(id.package);
   }
   var file = _fileFor(id, packageGraph);
-  return _descriptorPool.withResource(file.exists).then((exists) {
-    if (!exists) throw AssetNotFoundException(id);
-    return file;
-  });
+  if (!file.existsSync()) throw AssetNotFoundException(id);
+  return file;
 }

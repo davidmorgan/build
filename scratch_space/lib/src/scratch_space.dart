@@ -122,7 +122,7 @@ class ScratchSpace {
                   await file.delete();
                 }
                 await file.create(recursive: true);
-                await file.writeAsBytes(await reader.readAsBytes(id));
+                await file.writeAsBytes(reader.readAsBytes(id));
               }),
             );
           } finally {

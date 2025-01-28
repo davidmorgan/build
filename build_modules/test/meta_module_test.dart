@@ -39,8 +39,7 @@ void main() {
       sources
           .where((s) => s.package != r'$sdk')
           .map(
-            (s) async =>
-                ModuleLibrary.fromSource(s, await reader.readAsString(s)),
+            (s) async => ModuleLibrary.fromSource(s, reader.readAsString(s)),
           ),
     )).where((l) => l.isImportable);
     for (final library in libraries) {

@@ -112,13 +112,13 @@ class BuildStepImpl implements BuildStep {
   }
 
   @override
-  Future<List<int>> readAsBytes(AssetId id) {
+  List<int> readAsBytes(AssetId id) {
     if (_isComplete) throw BuildStepCompletedException();
     return _reader.readAsBytes(id);
   }
 
   @override
-  Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) {
+  String readAsString(AssetId id, {Encoding encoding = utf8}) {
     if (_isComplete) throw BuildStepCompletedException();
     return _reader.readAsString(id, encoding: encoding);
   }

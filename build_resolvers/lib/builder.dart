@@ -38,13 +38,13 @@ class _TransitiveDigestsBuilder extends Builder {
       // If we have a transitive digest ID available, just add that digest and
       // continue.
       final transitiveDigestId = next.addExtension(transitiveDigestExtension);
-      if (await buildStep.canRead(transitiveDigestId)) {
-        byteSink.add(await buildStep.readAsBytes(transitiveDigestId));
+      if (buildStep.canRead(transitiveDigestId)) {
+        byteSink.add(buildStep.readAsBytes(transitiveDigestId));
         continue;
       }
 
       // We warn here but do not fail, the downside is slower builds.
-      if (!(await buildStep.canRead(next))) {
+      if (!buildStep.canRead(next)) {
         log.warning(
           '''
 Unable to read asset, could not compute transitive deps: $next

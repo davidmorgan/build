@@ -115,7 +115,7 @@ class AssetTracker {
       '.dart_tool/package_config.json',
     );
 
-    if (await _reader.canRead(packageConfigId)) {
+    if (_reader.canRead(packageConfigId)) {
       ids.add(packageConfigId);
     }
     return ids;
@@ -392,14 +392,14 @@ class _Loader {
       _options.packageGraph.root.name,
       assetGraphPath,
     );
-    if (!await _environment.reader.canRead(assetGraphId)) {
+    if (!_environment.reader.canRead(assetGraphId)) {
       return null;
     }
 
     return logTimedAsync(_logger, 'Reading cached asset graph', () async {
       try {
         var cachedGraph = AssetGraph.deserialize(
-          await _environment.reader.readAsBytes(assetGraphId),
+          _environment.reader.readAsBytes(assetGraphId),
         );
         var buildPhasesChanged =
             computeBuildPhasesDigest(_buildPhases) !=

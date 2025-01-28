@@ -370,8 +370,8 @@ class AssetHandler {
   }) async {
     try {
       try {
-        if (!await _reader.canRead(assetId)) {
-          var reason = await _reader.unreadableReason(assetId);
+        if (!_reader.canRead(assetId)) {
+          var reason = _reader.unreadableReason(assetId);
           switch (reason) {
             case UnreadableReason.failed:
               return shelf.Response.internalServerError(
@@ -417,7 +417,7 @@ class AssetHandler {
       }
       List<int>? body;
       if (request.method != 'HEAD') {
-        body = await _reader.readAsBytes(assetId);
+        body = _reader.readAsBytes(assetId);
         headers[HttpHeaders.contentLengthHeader] = '${body.length}';
       }
       return shelf.Response.ok(body, headers: headers);

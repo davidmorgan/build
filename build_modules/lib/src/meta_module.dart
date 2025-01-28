@@ -243,7 +243,7 @@ class MetaModule {
       libraries.add(
         ModuleLibrary.deserialize(
           id.changeExtension('').changeExtension('.dart'),
-          await reader.readAsString(id),
+          reader.readAsString(id),
         ),
       );
     }

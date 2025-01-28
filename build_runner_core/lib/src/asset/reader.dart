@@ -159,30 +159,21 @@ class SingleStepReader implements AssetReader {
   }
 
   @override
-  Future<List<int>> readAsBytes(AssetId id) {
-    return toFuture(
-      doAfter(_isReadable(id), (bool isReadable) {
-        if (!isReadable) {
-          return Future.error(AssetNotFoundException(id));
-        }
-        return doAfter(_ensureDigest(id), (_) => _delegate.readAsBytes(id));
-      }),
-    );
+  List<int> readAsBytes(AssetId id) {
+    if (!_isReadable(id)) {
+      throw AssetNotFoundException(id);
+    }
+    _ensureDigest(id);
+    return _delegate.readAsBytes(id);
   }
 
   @override
-  Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) {
-    return toFuture(
-      doAfter(_isReadable(id), (bool isReadable) {
-        if (!isReadable) {
-          return Future.error(AssetNotFoundException(id));
-        }
-        return doAfter(
-          _ensureDigest(id),
-          (_) => _delegate.readAsString(id, encoding: encoding),
-        );
-      }),
-    );
+  String readAsString(AssetId id, {Encoding encoding = utf8}) {
+    if (!_isReadable(id)) {
+      throw AssetNotFoundException(id);
+    }
+    _ensureDigest(id);
+    return _delegate.readAsString(id, encoding: encoding);
   }
 
   @override

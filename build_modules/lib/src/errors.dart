@@ -102,7 +102,7 @@ Future<String?> _missingImportMessage(
   AssetId missingId,
   AssetReader reader,
 ) async {
-  var contents = await reader.readAsString(sourceId);
+  var contents = reader.readAsString(sourceId);
   var parsed = parseString(content: contents, throwIfDiagnostics: false).unit;
   var import = parsed.directives
       .whereType<UriBasedDirective>()
@@ -129,10 +129,10 @@ class UnsupportedModules implements Exception {
       for (var source in module.sources) {
         var libraryId = source.changeExtension(moduleLibraryExtension);
         ModuleLibrary library;
-        if (await reader.canRead(libraryId)) {
+        if (reader.canRead(libraryId)) {
           library = ModuleLibrary.deserialize(
             libraryId,
-            await reader.readAsString(libraryId),
+            reader.readAsString(libraryId),
           );
         } else {
           // A missing .module.library file indicates a part file, which can't

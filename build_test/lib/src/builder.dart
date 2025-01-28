@@ -20,7 +20,7 @@ Future<void> _defaultBehavior(
 ) => _copyToAll(buildStep, buildExtensions);
 
 T _identity<T>(T value) => value;
-Future<String> _readAsset(BuildStep buildStep, AssetId assetId) =>
+String _readAsset(BuildStep buildStep, AssetId assetId) =>
     buildStep.readAsString(assetId);
 
 /// Pass the input assetId through [readFrom] and duplicate the results of
@@ -29,8 +29,7 @@ Future<void> _copyToAll(
   BuildStep buildStep,
   Map<String, List<String>> buildExtensions, {
   AssetId Function(AssetId assetId) readFrom = _identity,
-  Future<String> Function(BuildStep buildStep, AssetId assetId) read =
-      _readAsset,
+  String Function(BuildStep buildStep, AssetId assetId) read = _readAsset,
 }) {
   final outputs = buildStep.allowedOutputs;
   if (outputs.isEmpty) {
@@ -60,15 +59,13 @@ BuildBehavior copyFrom(AssetId assetId) =>
 /// A build behavior which writes either 'true' or 'false' depending on whether
 /// [assetId] can be read.
 BuildBehavior writeCanRead(AssetId assetId) =>
-    (
-      BuildStep buildStep,
-      Map<String, List<String>> buildExtensions,
-    ) => _copyToAll(
-      buildStep,
-      buildExtensions,
-      readFrom: (_) => assetId,
-      read: (buildStep, assetId) async => '${await buildStep.canRead(assetId)}',
-    );
+    (BuildStep buildStep, Map<String, List<String>> buildExtensions) =>
+        _copyToAll(
+          buildStep,
+          buildExtensions,
+          readFrom: (_) => assetId,
+          read: (buildStep, assetId) => '${buildStep.canRead(assetId)}',
+        );
 
 /// A [Builder.buildExtensions] which operats on assets ending in [from] and
 /// creates outputs with [postFix] appended as the extension.
@@ -119,7 +116,7 @@ class TestBuilder implements Builder {
 
   @override
   Future build(BuildStep buildStep) async {
-    if (!await buildStep.canRead(buildStep.inputId)) return;
+    if (!buildStep.canRead(buildStep.inputId)) return;
     _buildInputsController.add(buildStep.inputId);
     await _build(buildStep, buildExtensions);
     await _extraWork?.call(buildStep, buildExtensions);

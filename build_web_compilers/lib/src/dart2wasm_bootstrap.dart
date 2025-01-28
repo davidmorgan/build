@@ -47,8 +47,7 @@ Future<void> _bootstrapDart2Wasm(
   var args = <String>[];
   {
     var module = Module.fromJson(
-      json.decode(await buildStep.readAsString(moduleId))
-          as Map<String, dynamic>,
+      json.decode(buildStep.readAsString(moduleId)) as Map<String, dynamic>,
     );
     List<Module> allDeps;
     try {

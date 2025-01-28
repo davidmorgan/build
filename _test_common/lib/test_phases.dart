@@ -99,7 +99,7 @@ Future<BuildResult> testBuilders(
     packageGraph.root.name,
     '.dart_tool/package_config.json',
   );
-  if (!await reader.canRead(pkgConfigId)) {
+  if (!reader.canRead(pkgConfigId)) {
     var packageConfig = {
       'configVersion': 2,
       'packages': [

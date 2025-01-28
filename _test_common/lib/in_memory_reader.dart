@@ -15,7 +15,7 @@ class InMemoryRunnerAssetReader extends InMemoryAssetReader
   Stream<AssetId> get onCanRead => _onCanReadController.stream;
 
   @override
-  Future<bool> canRead(AssetId id) {
+  bool canRead(AssetId id) {
     _onCanReadController.add(id);
     return super.canRead(id);
   }

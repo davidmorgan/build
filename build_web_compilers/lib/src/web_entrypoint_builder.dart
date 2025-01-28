@@ -425,7 +425,7 @@ Future<bool> _isAppEntryPoint(AssetId dartId, AssetReader reader) async {
   // formatting.
   var parsed =
       parseString(
-        content: await reader.readAsString(dartId),
+        content: reader.readAsString(dartId),
         throwIfDiagnostics: false,
       ).unit;
   // Allow two or fewer arguments so that entrypoints intended for use with

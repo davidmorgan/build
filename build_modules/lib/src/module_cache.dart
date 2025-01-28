@@ -65,12 +65,12 @@ class DecodingCache<T> {
   /// `null`. If the instance is cached it will not be decoded again, but the
   /// content dependencies will be tracked through [reader].
   Future<T?> find(AssetId id, AssetReader reader) async {
-    if (!await reader.canRead(id)) return null;
+    if (!reader.canRead(id)) return null;
     _Entry<T> entry;
     if (!_cached.containsKey(id)) {
       entry =
           _cached[id] = _Entry(
-            Result.capture(reader.readAsBytes(id).then(_fromBytes)),
+            Result.capture(Future.value(_fromBytes(reader.readAsBytes(id)))),
             digest: Result.capture(reader.digest(id)),
           );
     } else {
@@ -82,7 +82,7 @@ class DecodingCache<T> {
           entry.digest = Result.capture(reader.digest(id));
           if (await Result.release(entry.digest!) != previousDigest) {
             entry.value = Result.capture(
-              reader.readAsBytes(id).then(_fromBytes),
+              Future.value(_fromBytes(reader.readAsBytes(id))),
             );
           }
           entry

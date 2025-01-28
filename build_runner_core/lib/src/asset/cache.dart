@@ -26,9 +26,6 @@ class CachingAssetReader implements AssetReader {
     (value) => value is Uint8List ? value.lengthInBytes : value.length * 8,
   );
 
-  /// Pending [readAsBytes] operations.
-  final _pendingBytesContentCache = <AssetId, Future<List<int>>>{};
-
   /// Cached results of [canRead].
   ///
   /// Don't bother using an LRU cache for this since it's just booleans.
@@ -44,9 +41,6 @@ class CachingAssetReader implements AssetReader {
     1024 * 1024 * 512,
     (value) => value.length,
   );
-
-  /// Pending `readAsString` operations.
-  final _pendingStringContentCache = <AssetId, Future<String>>{};
 
   final AssetReader _delegate;
 
@@ -69,40 +63,28 @@ class CachingAssetReader implements AssetReader {
       throw UnimplementedError('unimplemented!');
 
   @override
-  Future<List<int>> readAsBytes(AssetId id, {bool cache = true}) {
+  List<int> readAsBytes(AssetId id, {bool cache = true}) {
     var cached = _bytesContentCache[id];
-    if (cached != null) return Future.value(cached);
-
-    return _pendingBytesContentCache.putIfAbsent(
-      id,
-      () => _delegate.readAsBytes(id).then((result) {
-        if (cache) _bytesContentCache[id] = result;
-        _pendingBytesContentCache.remove(id);
-        return result;
-      }),
-    );
+    if (cached != null) return cached;
+    final result = _delegate.readAsBytes(id);
+    if (cache) _bytesContentCache[id] = result;
+    return result;
   }
 
   @override
-  Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) {
+  String readAsString(AssetId id, {Encoding encoding = utf8}) {
     if (encoding != utf8) {
       // Fallback case, we never cache the String value for the non-default,
       // encoding but we do allow it to cache the bytes.
-      return readAsBytes(id).then(encoding.decode);
+      return encoding.decode(readAsBytes(id));
     }
 
     var cached = _stringContentCache[id];
-    if (cached != null) return Future.value(cached);
-
-    return _pendingStringContentCache.putIfAbsent(
-      id,
-      () => readAsBytes(id, cache: false).then((bytes) {
-        var decoded = encoding.decode(bytes);
-        _stringContentCache[id] = decoded;
-        _pendingStringContentCache.remove(id);
-        return decoded;
-      }),
-    );
+    if (cached != null) return cached;
+    final bytes = readAsBytes(id, cache: false);
+    var decoded = encoding.decode(bytes);
+    _stringContentCache[id] = decoded;
+    return decoded;
   }
 
   /// Clears all [ids] from all caches.
@@ -111,9 +93,6 @@ class CachingAssetReader implements AssetReader {
       _bytesContentCache.remove(id);
       _canReadCache.remove(id);
       _stringContentCache.remove(id);
-
-      _pendingBytesContentCache.remove(id);
-      _pendingStringContentCache.remove(id);
     }
   }
 }

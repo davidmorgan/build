@@ -1053,8 +1053,8 @@ int? get x => 1;
         },
         build: expectAsync2((buildStep, _) async {
           var other = buildStep.inputId.changeExtension('.notdart');
-          expect(await buildStep.canRead(other), true);
-          expect(await buildStep.resolver.isLibrary(other), false);
+          expect(buildStep.canRead(other), true);
+          expect(buildStep.resolver.isLibrary(other), false);
         }),
       );
       var resolvers = AnalyzerResolvers();

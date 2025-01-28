@@ -109,7 +109,7 @@ final class BatchReader extends AssetReader
   }
 
   @override
-  Future<List<int>> readAsBytes(AssetId id) async {
+  List<int> readAsBytes(AssetId id) {
     if (_stateFor(id) case final state?) {
       if (state.isDeleted) {
         throw AssetNotFoundException(id);
@@ -117,12 +117,12 @@ final class BatchReader extends AssetReader
         return state.content!;
       }
     } else {
-      return await _inner.readAsBytes(id);
+      return _inner.readAsBytes(id);
     }
   }
 
   @override
-  Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) async {
+  String readAsString(AssetId id, {Encoding encoding = utf8}) {
     if (_stateFor(id) case final state?) {
       if (state.isDeleted) {
         throw AssetNotFoundException(id);
@@ -130,7 +130,7 @@ final class BatchReader extends AssetReader
         return encoding.decode(state.content!);
       }
     } else {
-      return await _inner.readAsString(id, encoding: encoding);
+      return _inner.readAsString(id, encoding: encoding);
     }
   }
 }

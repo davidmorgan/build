@@ -23,25 +23,25 @@ void main() {
 
   group('canRead', () {
     test('should read from the delegate', () async {
-      expect(await reader.canRead(fooTxt), isTrue);
-      expect(await reader.canRead(missingTxt), isFalse);
+      expect(reader.canRead(fooTxt), isTrue);
+      expect(reader.canRead(missingTxt), isFalse);
       expect(delegate.assetsRead, [fooTxt, missingTxt]);
     });
 
     test('should not re-read from the delegate', () async {
-      expect(await reader.canRead(fooTxt), isTrue);
+      expect(reader.canRead(fooTxt), isTrue);
       delegate.assetsRead.clear();
-      expect(await reader.canRead(fooTxt), isTrue);
+      expect(reader.canRead(fooTxt), isTrue);
       expect(delegate.assetsRead, isEmpty);
     });
 
     test('can be invalidated with invalidate', () async {
-      expect(await reader.canRead(fooTxt), isTrue);
+      expect(reader.canRead(fooTxt), isTrue);
       delegate.assetsRead.clear();
       expect(delegate.assetsRead, isEmpty);
 
       reader.invalidate([fooTxt]);
-      expect(await reader.canRead(fooTxt), isTrue);
+      expect(reader.canRead(fooTxt), isTrue);
       expect(delegate.assetsRead, [fooTxt]);
     });
   });

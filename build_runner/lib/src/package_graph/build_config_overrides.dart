@@ -35,7 +35,7 @@ Future<Map<String, BuildConfig>> findBuildConfigOverrides(
       );
       continue;
     }
-    final yaml = await reader.readAsString(id);
+    final yaml = reader.readAsString(id);
     final config = BuildConfig.parse(
       packageName,
       packageNode.dependencies.map((n) => n.name),
@@ -46,11 +46,11 @@ Future<Map<String, BuildConfig>> findBuildConfigOverrides(
   }
   if (configKey != null) {
     final id = AssetId(packageGraph.root.name, 'build.$configKey.yaml');
-    if (!await reader.canRead(id)) {
+    if (!reader.canRead(id)) {
       _log.warning('Cannot find ${id.path} for specified config.');
       throw const CannotBuildException();
     }
-    final yaml = await reader.readAsString(id);
+    final yaml = reader.readAsString(id);
     final config = BuildConfig.parse(
       packageGraph.root.name,
       packageGraph.root.dependencies.map((n) => n.name),

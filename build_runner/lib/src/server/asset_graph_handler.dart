@@ -50,7 +50,7 @@ class AssetGraphHandler {
       case '':
         if (!request.url.hasQuery) {
           return shelf.Response.ok(
-            await _reader.readAsString(
+            _reader.readAsString(
               AssetId('build_runner', 'lib/src/server/graph_viz.html'),
             ),
             headers: {HttpHeaders.contentTypeHeader: 'text/html'},

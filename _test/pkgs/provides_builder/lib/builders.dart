@@ -59,7 +59,7 @@ class _ThrowingBuilder extends Builder {
 
   @override
   Future<void> build(BuildStep buildStep) async {
-    throw UnsupportedError(await buildStep.readAsString(buildStep.inputId));
+    throw UnsupportedError(buildStep.readAsString(buildStep.inputId));
   }
 }
 

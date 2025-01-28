@@ -120,7 +120,7 @@ void main() {
           // to 0, using the scratchSpace.
           var reader = RecursiveScratchSpaceAssetReader(scratchSpace);
           var first = AssetId('a', 'lib/100');
-          expect(await reader.readAsBytes(first), utf8.encode('0'));
+          expect(reader.readAsBytes(first), utf8.encode('0'));
         },
       );
     });
@@ -160,12 +160,12 @@ class RecursiveScratchSpaceAssetReader implements AssetReader {
   bool canRead(_) => true;
 
   @override
-  Future<List<int>> readAsBytes(AssetId id) async {
+  List<int> readAsBytes(AssetId id) {
     var idNum = int.parse(p.split(id.path).last);
     if (idNum > 0) {
       var readFrom = AssetId(id.package, 'lib/${idNum - 1}');
-      await scratchSpace.ensureAssets([readFrom], this);
-      return scratchSpace.fileFor(readFrom).readAsBytes();
+      scratchSpace.ensureAssets([readFrom], this);
+      return scratchSpace.fileFor(readFrom).readAsBytesSync();
     } else {
       return utf8.encode('0');
     }
@@ -175,9 +175,9 @@ class RecursiveScratchSpaceAssetReader implements AssetReader {
   Stream<AssetId> findAssets(_) => throw UnimplementedError();
 
   @override
-  Future<String> readAsString(_, {Encoding encoding = utf8}) =>
+  String readAsString(_, {Encoding encoding = utf8}) =>
       throw UnimplementedError();
 
   @override
-  Future<Digest> digest(AssetId id) async => Digest(await readAsBytes(id));
+  Future<Digest> digest(AssetId id) async => Digest(readAsBytes(id));
 }

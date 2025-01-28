@@ -269,7 +269,7 @@ Future<AssetId> _writeAsset(
           recursive: true,
         );
       } else {
-        await _writeAsBytes(outputDir, outputId, await reader.readAsBytes(id));
+        await _writeAsBytes(outputDir, outputId, reader.readAsBytes(id));
       }
     } on AssetNotFoundException catch (e) {
       if (p.basename(id.path).startsWith('.')) {

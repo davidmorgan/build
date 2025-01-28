@@ -134,7 +134,7 @@ Future<Set<Module>> _transitiveModules(
         continue;
       }
       seenMetas.add(depMetaAsset);
-      if (!await buildStep.canRead(depMetaAsset)) {
+      if (!buildStep.canRead(depMetaAsset)) {
         log.warning(
           'Unable to read module information for '
           'package:${depMetaAsset.package}, make sure you have a dependency '

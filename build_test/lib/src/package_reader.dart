@@ -153,11 +153,11 @@ class PackageAssetReader extends AssetReader
   bool canRead(AssetId id) => _resolve(id)?.existsSync() ?? false;
 
   @override
-  Future<List<int>> readAsBytes(AssetId id) =>
-      _resolve(id)?.readAsBytes() ?? (throw AssetNotFoundException(id));
+  List<int> readAsBytes(AssetId id) =>
+      _resolve(id)?.readAsBytesSync() ?? (throw AssetNotFoundException(id));
 
   @override
-  Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) =>
-      _resolve(id)?.readAsString(encoding: encoding) ??
+  String readAsString(AssetId id, {Encoding encoding = utf8}) =>
+      _resolve(id)?.readAsStringSync(encoding: encoding) ??
       (throw AssetNotFoundException(id));
 }

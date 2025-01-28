@@ -104,7 +104,7 @@ class PerActionResolver implements ReleasableResolver {
   @override
   Future<bool> isLibrary(AssetId assetId) =>
       _step.trackStage('isLibrary $assetId', () async {
-        if (!await _step.canRead(assetId)) return false;
+        if (!_step.canRead(assetId)) return false;
         await _resolveIfNecessary(assetId, transitive: false);
         return _delegate.isLibrary(assetId);
       });
@@ -121,7 +121,7 @@ class PerActionResolver implements ReleasableResolver {
     AssetId assetId, {
     bool allowSyntaxErrors = false,
   }) => _step.trackStage('compilationUnitFor $assetId', () async {
-    if (!await _step.canRead(assetId)) {
+    if (!_step.canRead(assetId)) {
       throw AssetNotFoundException(assetId);
     }
     await _resolveIfNecessary(assetId, transitive: false);
@@ -136,7 +136,7 @@ class PerActionResolver implements ReleasableResolver {
     AssetId assetId, {
     bool allowSyntaxErrors = false,
   }) => _step.trackStage('libraryFor $assetId', () async {
-    if (!await _step.canRead(assetId)) {
+    if (!_step.canRead(assetId)) {
       throw AssetNotFoundException(assetId);
     }
     await _resolveIfNecessary(assetId, transitive: true);

@@ -47,15 +47,15 @@ class WrittenAssetReader extends MultiPackageAssetReader {
   }
 
   @override
-  Future<List<int>> readAsBytes(AssetId id) {
+  List<int> readAsBytes(AssetId id) {
     if (!source.assets.containsKey(id)) {
       throw AssetNotFoundException(id);
     }
-    return Future.value(source.assets[id]!);
+    return source.assets[id]!;
   }
 
   @override
-  Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) async {
-    return encoding.decode(await readAsBytes(id));
+  String readAsString(AssetId id, {Encoding encoding = utf8}) {
+    return encoding.decode(readAsBytes(id));
   }
 }

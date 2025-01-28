@@ -1000,7 +1000,7 @@ class _SingleBuild {
         var node = _assetGraph.get(id)!;
         if (node is GlobAssetNode) {
           await _updateGlobNodeIfNecessary(node);
-        } else if (!await reader.canRead(id)) {
+        } else if (!reader.canRead(id)) {
           // We want to add something here, a missing/unreadable input should be
           // different from no input at all.
           //

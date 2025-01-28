@@ -107,7 +107,7 @@ class DevCompilerBuilder implements Builder {
   @override
   Future build(BuildStep buildStep) async {
     var module = Module.fromJson(
-      json.decode(await buildStep.readAsString(buildStep.inputId))
+      json.decode(buildStep.readAsString(buildStep.inputId))
           as Map<String, dynamic>,
     );
     // Entrypoints always have a `.module` file for ease of looking them up,

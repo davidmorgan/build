@@ -45,9 +45,9 @@ class PostProcessBuildStep {
           ? _reader.digest(id)
           : Future.error(InvalidInputException(id));
 
-  Future<List<int>> readInputAsBytes() => _reader.readAsBytes(inputId);
+  List<int> readInputAsBytes() => _reader.readAsBytes(inputId);
 
-  Future<String> readInputAsString({Encoding encoding = utf8}) =>
+  String readInputAsString({Encoding encoding = utf8}) =>
       _reader.readAsString(inputId, encoding: encoding);
 
   Future<void> writeAsBytes(AssetId id, FutureOr<List<int>> bytes) {
