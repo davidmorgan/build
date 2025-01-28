@@ -18,12 +18,15 @@ import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
 
 import 'crawl_sync.dart';
+import 'import_graph.dart';
 
 const _ignoredSchemes = ['dart', 'dart-ext'];
 
 const transitiveDigestExtension = '.transitive_digest';
 
 class BuildAssetUriResolver extends UriResolver {
+  final importGraph = ImportGraph();
+
   /// A cache of the directives for each Dart library.
   ///
   /// This is stored across builds and is only invalidated if we read a file and
@@ -87,6 +90,7 @@ class BuildAssetUriResolver extends UriResolver {
     bool notCrawled(AssetId asset) => !transitivelyResolved.contains(asset);
 
     final uncrawledIds = entryPoints.where(notCrawled);
+    if (transitive) importGraph.resolve(buildStep, entryPoints);
     final assetStates =
         transitive
             ? crawlSync<AssetId, _AssetState?>(

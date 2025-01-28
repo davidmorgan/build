@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:build/build.dart';
+import 'package:build_resolvers/src/build_asset_uri_resolver.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 import 'package:logging/logging.dart';
@@ -396,6 +397,7 @@ class _SingleBuild {
   Future<BuildResult> _runPhases() {
     return _performanceTracker.track(() async {
       final outputs = <AssetId>[];
+      _cachedDigests.clear();
       for (var phaseNum = 0; phaseNum < _buildPhases.length; phaseNum++) {
         var phase = _buildPhases[phaseNum];
         if (phase.isOptional) continue;
@@ -595,7 +597,7 @@ class _SingleBuild {
 
         if (!await tracker.trackStage(
           'Setup',
-          () => _buildShouldRun(builderOutputs, wrappedReader),
+          () => _buildShouldRun(builderOutputs, wrappedReader, input: input),
         )) {
           return <AssetId>[];
         }
@@ -653,6 +655,7 @@ class _SingleBuild {
             actionDescription,
             logger.errorsSeen,
             unusedAssets: unusedAssets,
+            input: input,
           ),
         );
 
@@ -808,6 +811,7 @@ class _SingleBuild {
       wrappedWriter,
       actionDescription,
       logger.errorsSeen,
+      input: input,
     );
 
     return assetsWritten;
@@ -816,8 +820,9 @@ class _SingleBuild {
   /// Checks and returns whether any [outputs] need to be updated.
   Future<bool> _buildShouldRun(
     Iterable<AssetId> outputs,
-    AssetReader reader,
-  ) async {
+    AssetReader reader, {
+    required AssetId input,
+  }) async {
     assert(
       outputs.every(_assetGraph.contains),
       'Outputs should be known statically. Missing '
@@ -860,6 +865,7 @@ class _SingleBuild {
       firstNode.inputs,
       firstNode.builderOptionsId,
       reader,
+      input: input,
     );
     if (digest != firstNode.previousInputsDigest) {
       return true;
@@ -881,6 +887,7 @@ class _SingleBuild {
       [anchorNode.primaryInput],
       anchorNode.builderOptionsId,
       reader,
+      input: anchorNode.primaryInput,
     );
 
     if (inputsDigest != anchorNode.previousInputsDigest) {
@@ -954,13 +961,23 @@ class _SingleBuild {
       ..lastKnownDigest = md5.convert(utf8.encode(actualMatches.join(' ')));
   }
 
+  static final Map<AssetId, Digest> _cachedDigests = {};
+
   /// Computes a single [Digest] based on the combined [Digest]s of [ids] and
   /// [builderOptionsId].
   Digest _computeCombinedDigest(
     Iterable<AssetId> ids,
     AssetId builderOptionsId,
-    AssetReader reader,
-  ) {
+    AssetReader reader, {
+    required AssetId input,
+  }) {
+    final importGraph = BuildAssetUriResolver.sharedInstance.importGraph;
+    final maybeLoopOwner = importGraph.loopOwner(input);
+    if (maybeLoopOwner != null) {
+      final maybeResult = _cachedDigests[maybeLoopOwner];
+      if (maybeResult != null) return maybeResult;
+    }
+
     var combinedBytes = Uint8List.fromList(List.filled(16, 0));
     void combine(Uint8List other) {
       assert(other.length == 16);
@@ -992,7 +1009,11 @@ class _SingleBuild {
       combine(node.lastKnownDigest!.bytes as Uint8List);
     });
 
-    return Digest(combinedBytes);
+    final result = Digest(combinedBytes);
+    if (maybeLoopOwner != null) {
+      _cachedDigests[maybeLoopOwner] = result;
+    }
+    return result;
   }
 
   /// Sets the state for all [outputs] of a build step, by:
@@ -1011,6 +1032,7 @@ class _SingleBuild {
     String actionDescription,
     Iterable<ErrorReport> errors, {
     Set<AssetId>? unusedAssets,
+    required AssetId input,
   }) async {
     if (outputs.isEmpty) return;
     var usedInputs =
@@ -1022,6 +1044,7 @@ class _SingleBuild {
       usedInputs,
       (_assetGraph.get(outputs.first) as GeneratedAssetNode).builderOptionsId,
       reader,
+      input: input,
     );
 
     final isFailure = errors.isNotEmpty;
