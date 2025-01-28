@@ -27,8 +27,7 @@ class FileBasedAssetReader extends AssetReader
   FileBasedAssetReader(this.packageGraph);
 
   @override
-  Future<bool> canRead(AssetId id) =>
-      _descriptorPool.withResource(() => _fileFor(id, packageGraph).exists());
+  bool canRead(AssetId id) => _fileFor(id, packageGraph).existsSync();
 
   @override
   Future<List<int>> readAsBytes(AssetId id) => _fileForOrThrow(

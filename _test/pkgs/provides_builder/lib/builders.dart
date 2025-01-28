@@ -23,7 +23,7 @@ class _SomeBuilder implements Builder {
 
   @override
   Future build(BuildStep buildStep) async {
-    if (!await buildStep.canRead(buildStep.inputId)) return;
+    if (!buildStep.canRead(buildStep.inputId)) return;
 
     await buildStep.writeAsBytes(
       buildStep.inputId.changeExtension('.something.dart'),

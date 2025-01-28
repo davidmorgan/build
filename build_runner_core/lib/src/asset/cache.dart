@@ -32,7 +32,7 @@ class CachingAssetReader implements AssetReader {
   /// Cached results of [canRead].
   ///
   /// Don't bother using an LRU cache for this since it's just booleans.
-  final _canReadCache = <AssetId, Future<bool>>{};
+  final _canReadCache = <AssetId, bool>{};
 
   /// Cached results of [readAsString].
   ///
@@ -58,7 +58,7 @@ class CachingAssetReader implements AssetReader {
           : CachingAssetReader._(delegate);
 
   @override
-  Future<bool> canRead(AssetId id) =>
+  bool canRead(AssetId id) =>
       _canReadCache.putIfAbsent(id, () => _delegate.canRead(id));
 
   @override

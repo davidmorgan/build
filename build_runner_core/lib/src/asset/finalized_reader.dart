@@ -44,7 +44,7 @@ class FinalizedReader implements AssetReader {
   );
 
   /// Returns a reason why [id] is not readable, or null if it is readable.
-  Future<UnreadableReason?> unreadableReason(AssetId id) async {
+  UnreadableReason? unreadableReason(AssetId id) {
     if (!_assetGraph.contains(id)) return UnreadableReason.notFound;
     var node = _assetGraph.get(id)!;
     if (_optionalOutputTracker != null &&
@@ -57,13 +57,12 @@ class FinalizedReader implements AssetReader {
       if (node.isFailure) return UnreadableReason.failed;
       if (!node.wasOutput) return UnreadableReason.notOutput;
     }
-    if (await _delegate.canRead(id)) return null;
+    if (_delegate.canRead(id)) return null;
     return UnreadableReason.unknown;
   }
 
   @override
-  Future<bool> canRead(AssetId id) async =>
-      (await unreadableReason(id)) == null;
+  bool canRead(AssetId id) => unreadableReason(id) == null;
 
   @override
   Future<Digest> digest(AssetId id) => _delegate.digest(id);
@@ -89,7 +88,7 @@ class FinalizedReader implements AssetReader {
     var potentialIds = potentialNodes.map((n) => n.id).toList();
 
     for (var id in potentialIds) {
-      if (await _delegate.canRead(id)) {
+      if (_delegate.canRead(id)) {
         yield id;
       }
     }

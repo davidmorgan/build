@@ -50,7 +50,7 @@ class Readability {
 }
 
 typedef IsReadable =
-    FutureOr<Readability> Function(
+    Readability Function(
       AssetNode node,
       int phaseNum,
       AssetWriterSpy? writtenAssets,
@@ -106,7 +106,7 @@ class SingleStepReader implements AssetReader {
   /// If [catchInvalidInputs] is set to true and [_checkInvalidInput] throws an
   /// [InvalidInputException], this method will return `false` instead of
   /// throwing.
-  FutureOr<bool> _isReadable(AssetId id, {bool catchInvalidInputs = false}) {
+  bool _isReadable(AssetId id, {bool catchInvalidInputs = false}) {
     try {
       _checkInvalidInput(id);
     } on InvalidInputException {
@@ -124,39 +124,26 @@ class SingleStepReader implements AssetReader {
       return false;
     }
 
-    return doAfter(_isReadableNode(node, _phaseNumber, _writtenAssets), (
-      Readability readability,
-    ) {
-      if (!readability.inSamePhase) {
-        assetsRead.add(id);
-      }
+    final readability = _isReadableNode(node, _phaseNumber, _writtenAssets);
+    if (!readability.inSamePhase) {
+      assetsRead.add(id);
+    }
 
-      return readability.canRead;
-    });
+    return readability.canRead;
   }
 
   @override
-  Future<bool> canRead(AssetId id) {
-    return toFuture(
-      doAfter(_isReadable(id, catchInvalidInputs: true), (bool isReadable) {
-        if (!isReadable) return false;
-        var node = _assetGraph.get(id);
-        FutureOr<bool> canRead() {
-          if (node is GeneratedAssetNode) {
-            // Short circut, we know this file exists because its readable and it
-            // was output.
-            return true;
-          } else {
-            return _delegate.canRead(id);
-          }
-        }
+  bool canRead(AssetId id) {
+    if (!_isReadable(id, catchInvalidInputs: true)) return false;
 
-        return doAfter(canRead(), (bool canRead) {
-          if (!canRead) return false;
-          return doAfter(_ensureDigest(id), (_) => true);
-        });
-      }),
-    );
+    var node = _assetGraph.get(id);
+    if (node is GeneratedAssetNode) {
+      // Short circut, we know this file exists because its readable and it
+      // was output.
+      return true;
+    }
+    _ensureDigest(id);
+    return _delegate.canRead(id);
   }
 
   @override

@@ -100,7 +100,7 @@ class BuildStepImpl implements BuildStep {
   Future<ReleasableResolver>? _resolver;
 
   @override
-  Future<bool> canRead(AssetId id) {
+  bool canRead(AssetId id) {
     if (_isComplete) throw BuildStepCompletedException();
     return _reader.canRead(id);
   }

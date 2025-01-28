@@ -88,11 +88,11 @@ final class BatchReader extends AssetReader
   }
 
   @override
-  Future<bool> canRead(AssetId id) async {
+  bool canRead(AssetId id) {
     if (_stateFor(id) case final state?) {
       return !state.isDeleted;
     } else {
-      return await _inner.canRead(id);
+      return _inner.canRead(id);
     }
   }
 

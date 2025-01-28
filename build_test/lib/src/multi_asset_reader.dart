@@ -20,9 +20,9 @@ class MultiAssetReader extends AssetReader implements MultiPackageAssetReader {
   MultiAssetReader(this._readers);
 
   @override
-  Future<bool> canRead(AssetId id) async {
+  bool canRead(AssetId id) {
     for (var reader in _readers) {
-      if (await reader.canRead(id)) {
+      if (reader.canRead(id)) {
         return true;
       }
     }

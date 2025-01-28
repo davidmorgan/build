@@ -157,7 +157,7 @@ class RecursiveScratchSpaceAssetReader implements AssetReader {
   RecursiveScratchSpaceAssetReader(this.scratchSpace);
 
   @override
-  Future<bool> canRead(_) async => true;
+  bool canRead(_) => true;
 
   @override
   Future<List<int>> readAsBytes(AssetId id) async {

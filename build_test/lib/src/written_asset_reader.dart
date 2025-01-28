@@ -22,13 +22,13 @@ class WrittenAssetReader extends MultiPackageAssetReader {
   WrittenAssetReader(this.source, [this.filterSpy]);
 
   @override
-  Future<bool> canRead(AssetId id) {
+  bool canRead(AssetId id) {
     var canRead = source.assets.containsKey(id);
     if (filterSpy != null) {
       canRead = canRead && filterSpy!.assetsWritten.contains(id);
     }
 
-    return Future.value(canRead);
+    return canRead;
   }
 
   @override

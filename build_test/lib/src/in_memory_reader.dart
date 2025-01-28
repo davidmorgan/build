@@ -50,7 +50,7 @@ class InMemoryAssetReader extends AssetReader
   }
 
   @override
-  Future<bool> canRead(AssetId id) async {
+  bool canRead(AssetId id) {
     assetsRead.add(id);
     return assets.containsKey(id);
   }

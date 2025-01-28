@@ -523,7 +523,7 @@ class _SingleBuild {
 
   /// Checks whether [node] can be read by this step - attempting to build the
   /// asset if necessary.
-  FutureOr<Readability> _isReadableNode(
+  Readability _isReadableNode(
     AssetNode node,
     int phaseNum,
     AssetWriterSpy? writtenAssets,
@@ -540,11 +540,8 @@ class _SingleBuild {
         return isInBuild ? Readability.ownOutput : Readability.notReadable;
       }
 
-      return doAfter(
-        // ignore: void_checks
-        _ensureAssetIsBuilt(node),
-        (_) => Readability.fromPreviousPhase(node.wasOutput && !node.isFailure),
-      );
+      _ensureAssetIsBuilt(node);
+      return Readability.fromPreviousPhase(node.wasOutput && !node.isFailure);
     }
     return Readability.fromPreviousPhase(node.isReadable && node.isValidInput);
   }
