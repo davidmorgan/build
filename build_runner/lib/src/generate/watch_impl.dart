@@ -376,9 +376,9 @@ class WatchImpl implements BuildState {
         'Waiting for all file watchers to be ready',
         () => graphWatcher.ready,
       );
-      if (await watcherEnvironment.reader.canRead(rootPackageConfigId)) {
+      if (watcherEnvironment.reader.canRead(rootPackageConfigId)) {
         originalRootPackageConfigDigest = md5.convert(
-          await watcherEnvironment.reader.readAsBytes(rootPackageConfigId),
+          watcherEnvironment.reader.readAsBytes(rootPackageConfigId),
         );
       } else {
         _logger.warning(

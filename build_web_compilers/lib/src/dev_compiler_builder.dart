@@ -247,7 +247,7 @@ Future<void> _createDevCompilerModule(
               }
               return Input()
                 ..path = file.path
-                ..digest = (await buildStep.digest(dep)).bytes;
+                ..digest = buildStep.digest(dep).bytes;
             }),
           ),
         );

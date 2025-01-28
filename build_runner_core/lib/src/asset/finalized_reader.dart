@@ -65,7 +65,7 @@ class FinalizedReader implements AssetReader {
   bool canRead(AssetId id) => unreadableReason(id) == null;
 
   @override
-  Future<Digest> digest(AssetId id) => _delegate.digest(id);
+  Digest digest(AssetId id) => _delegate.digest(id);
 
   @override
   List<int> readAsBytes(AssetId id) => _delegate.readAsBytes(id);

@@ -1008,7 +1008,7 @@ class _SingleBuild {
           combine(md5.convert(id.toString().codeUnits).bytes as Uint8List);
           return;
         } else {
-          node.lastKnownDigest ??= await reader.digest(id);
+          node.lastKnownDigest ??= reader.digest(id);
         }
         combine(node.lastKnownDigest!.bytes as Uint8List);
       }),
@@ -1050,7 +1050,7 @@ class _SingleBuild {
 
     for (var output in outputs) {
       var wasOutput = writer.assetsWritten.contains(output);
-      var digest = wasOutput ? await _reader.digest(output) : null;
+      var digest = wasOutput ? _reader.digest(output) : null;
       var node = _assetGraph.get(output) as GeneratedAssetNode;
 
       // **IMPORTANT**: All updates to `node` must be synchronous. With lazy

@@ -167,7 +167,7 @@ class AssetTracker {
       var node = assetGraph.get(id)!;
       var originalDigest = node.lastKnownDigest;
       if (originalDigest == null) return;
-      var currentDigest = await _reader.digest(id);
+      var currentDigest = _reader.digest(id);
       if (currentDigest != originalDigest) {
         updates[id] = ChangeType.MODIFY;
       }

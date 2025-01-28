@@ -40,10 +40,8 @@ class PostProcessBuildStep {
     this._deleteAsset,
   );
 
-  Future<Digest> digest(AssetId id) =>
-      inputId == id
-          ? _reader.digest(id)
-          : Future.error(InvalidInputException(id));
+  Digest digest(AssetId id) =>
+      inputId == id ? _reader.digest(id) : throw InvalidInputException(id);
 
   List<int> readInputAsBytes() => _reader.readAsBytes(inputId);
 

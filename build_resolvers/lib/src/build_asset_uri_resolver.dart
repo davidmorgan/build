@@ -110,7 +110,7 @@ class BuildAssetUriResolver extends UriResolver {
             ).whereType<_AssetState>().toList()
             : [
               for (final id in uncrawledIds)
-                (await _updateCachedAssetState(id, buildStep))!,
+                _updateCachedAssetState(id, buildStep)!,
             ];
     await withDriverResource((driver) async {
       for (final state in assetStates) {
@@ -133,11 +133,11 @@ class BuildAssetUriResolver extends UriResolver {
   ///
   /// If [id] can be read, then it will be added to [transitivelyResolved] (if
   /// non-null).
-  Future<_AssetState?> _updateCachedAssetState(
+  _AssetState? _updateCachedAssetState(
     AssetId id,
     BuildStep buildStep, {
     Set<AssetId>? transitivelyResolved,
-  }) async {
+  }) {
     late final path = assetPath(id);
     if (!buildStep.canRead(id)) {
       if (globallySeenAssets.contains(id)) {
@@ -156,7 +156,7 @@ class BuildAssetUriResolver extends UriResolver {
     }
     globallySeenAssets.add(id);
     transitivelyResolved?.add(id);
-    final digest = await buildStep.digest(id);
+    final digest = buildStep.digest(id);
 
     final cachedAsset = _cachedAssetDigests[id];
     if (cachedAsset == digest) {
@@ -281,11 +281,8 @@ Set<AssetId> _parseDependencies(String content, AssetId from) => HashSet.of(
 
 /// Read the (potentially) cached dependencies of [id] based on parsing the
 /// directives, and cache the results if they weren't already cached.
-Future<Iterable<AssetId>?> dependenciesOf(
-  AssetId id,
-  BuildStep buildStep,
-) async =>
-    (await BuildAssetUriResolver.sharedInstance._updateCachedAssetState(
+Iterable<AssetId>? dependenciesOf(AssetId id, BuildStep buildStep) =>
+    (BuildAssetUriResolver.sharedInstance._updateCachedAssetState(
       id,
       buildStep,
     ))?.dependencies;

@@ -105,7 +105,7 @@ class ScratchSpace {
 
     var futures =
         assetIds.map((id) async {
-          var digest = await reader.digest(id);
+          var digest = reader.digest(id);
           var existing = _digests[id];
           if (digest == existing) {
             await _pendingWrites[id];

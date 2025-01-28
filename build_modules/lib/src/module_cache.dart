@@ -71,7 +71,7 @@ class DecodingCache<T> {
       entry =
           _cached[id] = _Entry(
             Result.capture(Future.value(_fromBytes(reader.readAsBytes(id)))),
-            digest: Result.capture(reader.digest(id)),
+            digest: Result.capture(Future.value(reader.digest(id))),
           );
     } else {
       entry = _cached[id]!;
@@ -79,7 +79,7 @@ class DecodingCache<T> {
         await (entry.onGoingCheck ??= () async {
           var previousDigest =
               entry.digest == null ? null : await Result.release(entry.digest!);
-          entry.digest = Result.capture(reader.digest(id));
+          entry.digest = Result.capture(Future.value(reader.digest(id)));
           if (await Result.release(entry.digest!) != previousDigest) {
             entry.value = Result.capture(
               Future.value(_fromBytes(reader.readAsBytes(id))),

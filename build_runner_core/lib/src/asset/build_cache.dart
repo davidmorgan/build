@@ -34,7 +34,7 @@ class BuildCacheReader implements AssetReader {
       _delegate.canRead(_cacheLocation(id, _assetGraph, _rootPackage));
 
   @override
-  Future<Digest> digest(AssetId id) =>
+  Digest digest(AssetId id) =>
       _delegate.digest(_cacheLocation(id, _assetGraph, _rootPackage));
 
   @override

@@ -162,7 +162,7 @@ class BuildStepImpl implements BuildStep {
   }
 
   @override
-  Future<Digest> digest(AssetId id) {
+  Digest digest(AssetId id) {
     if (_isComplete) throw BuildStepCompletedException();
     return _reader.digest(id);
   }

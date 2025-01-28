@@ -167,7 +167,7 @@ https://github.com/dart-lang/build/blob/master/docs/faq.md#how-can-i-resolve-ski
     mergedMetadataContent.writeln(
       buildStep.readAsString(jsId.changeExtension('.js.metadata')),
     );
-    moduleDigests[_moduleDigestKey(jsId)] = '${await buildStep.digest(jsId)}';
+    moduleDigests[_moduleDigestKey(jsId)] = '${buildStep.digest(jsId)}';
   }
   await buildStep.writeAsString(appDigestsOutput, jsonEncode(moduleDigests));
   await buildStep.writeAsString(

@@ -47,10 +47,10 @@ abstract class AssetReader {
   ///
   /// Similar to [readAsBytes], `digest` throws an exception if the asset can't
   /// be found or if it's an invalid input.
-  Future<Digest> digest(AssetId id) async {
+  Digest digest(AssetId id) {
     var digestSink = AccumulatorSink<Digest>();
     md5.startChunkedConversion(digestSink)
-      ..add(await readAsBytes(id))
+      ..add(readAsBytes(id))
       ..add(id.toString().codeUnits)
       ..close();
     return digestSink.events.first;

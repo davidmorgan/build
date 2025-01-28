@@ -190,7 +190,7 @@ class AssetGraph {
   ) async {
     await Future.wait(
       nodes.map((node) async {
-        node.lastKnownDigest = await digestReader.digest(node.id);
+        node.lastKnownDigest = digestReader.digest(node.id);
       }),
     );
   }

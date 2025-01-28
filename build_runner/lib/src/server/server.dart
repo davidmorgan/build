@@ -202,7 +202,7 @@ class ServeHandler implements BuildState {
     for (final path in assertPathList) {
       try {
         var assetId = pathToAssetId(rootPackage, rootDir, p.url.split(path));
-        var digest = await reader.digest(assetId);
+        var digest = reader.digest(assetId);
         results[path] = digest.toString();
       } on AssetNotFoundException {
         results.remove(path);
@@ -258,7 +258,7 @@ class BuildUpdatesWebSocketHandler {
     final reader = await _state.reader;
     final digests = <AssetId, String>{};
     for (var assetId in buildResult.outputs) {
-      var digest = await reader.digest(assetId);
+      var digest = reader.digest(assetId);
       digests[assetId] = digest.toString();
     }
     for (var rootDir in connectionsByRootDir.keys) {
@@ -395,7 +395,7 @@ class AssetHandler {
         return shelf.Response.notFound('Not Found');
       }
 
-      var etag = base64.encode((await _reader.digest(assetId)).bytes);
+      var etag = base64.encode(_reader.digest(assetId).bytes);
       var contentType = _typeResolver.lookup(assetId.path);
       if (contentType == 'text/x-dart') {
         contentType = '$contentType; charset=utf-8';

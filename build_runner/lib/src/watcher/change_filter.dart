@@ -1,7 +1,6 @@
 // Copyright (c) 2019, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'dart:async';
 
 import 'package:build/build.dart';
 import 'package:build_runner_core/build_runner_core.dart';
@@ -14,7 +13,7 @@ import 'package:watcher/watcher.dart';
 import 'asset_change.dart';
 
 /// Returns if a given asset change should be considered for building.
-FutureOr<bool> shouldProcess(
+bool shouldProcess(
   AssetChange change,
   AssetGraph assetGraph,
   BuildOptions buildOptions,
@@ -29,9 +28,7 @@ FutureOr<bool> shouldProcess(
     if (_isAddOrEditOnGeneratedFile(node, change.type)) return false;
     if (change.type == ChangeType.MODIFY) {
       // Was it really modified or just touched?
-      return reader
-          .digest(change.id)
-          .then((newDigest) => node.lastKnownDigest != newDigest);
+      return node.lastKnownDigest != reader.digest(change.id);
     }
   } else {
     if (change.type != ChangeType.ADD) return false;

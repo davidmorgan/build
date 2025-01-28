@@ -94,7 +94,7 @@ class KernelBuilder implements Builder {
   @override
   Future build(BuildStep buildStep) async {
     var module = Module.fromJson(
-      json.decode(await buildStep.readAsString(buildStep.inputId))
+      json.decode(buildStep.readAsString(buildStep.inputId))
           as Map<String, dynamic>,
     );
     // Entrypoints always have a `.module` file for ease of looking them up,
@@ -371,7 +371,7 @@ Future<Set<AssetId>> _parentsOfMissingKernelFiles(
     for (final dep in module.directDependencies) {
       parents.putIfAbsent(dep, () => <AssetId>{}).add(module.primarySource);
     }
-    if (!await buildStep.canRead(
+    if (!buildStep.canRead(
       module.primarySource.changeExtension(outputExtension),
     )) {
       sourceOnly.add(module.primarySource);
@@ -421,7 +421,7 @@ Future<void> _addRequestArguments(
       }
       return Input()
         ..path = path
-        ..digest = (await reader.digest(id)).bytes;
+        ..digest = reader.digest(id).bytes;
     }),
   );
   request.arguments.addAll([

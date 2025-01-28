@@ -147,15 +147,11 @@ class SingleStepReader implements AssetReader {
   }
 
   @override
-  Future<Digest> digest(AssetId id) {
-    return toFuture(
-      doAfter(_isReadable(id), (bool isReadable) {
-        if (!isReadable) {
-          return Future.error(AssetNotFoundException(id));
-        }
-        return _ensureDigest(id);
-      }),
-    );
+  Digest digest(AssetId id) {
+    if (!_isReadable(id)) {
+      throw AssetNotFoundException(id);
+    }
+    return _ensureDigest(id);
   }
 
   @override
@@ -196,9 +192,9 @@ class SingleStepReader implements AssetReader {
   /// necessary.
   ///
   /// Note that [id] must exist in the asset graph.
-  FutureOr<Digest> _ensureDigest(AssetId id) {
+  Digest _ensureDigest(AssetId id) {
     var node = _assetGraph.get(id)!;
     if (node.lastKnownDigest != null) return node.lastKnownDigest!;
-    return _delegate.digest(id).then((digest) => node.lastKnownDigest = digest);
+    return node.lastKnownDigest = _delegate.digest(id);
   }
 }

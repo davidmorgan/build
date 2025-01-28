@@ -56,10 +56,10 @@ https://github.com/dart-lang/build/blob/master/docs/faq.md#unable-to-read-asset-
       }
 
       // Otherwise, add its digest and queue all its dependencies to crawl.
-      byteSink.add((await buildStep.digest(next)).bytes);
+      byteSink.add(buildStep.digest(next).bytes);
 
       // We know this isn't null since we already checked if we can read `next`.
-      final deps = (await dependenciesOf(next, buildStep))!;
+      final deps = dependenciesOf(next, buildStep)!;
 
       // Add all previously unseen deps to the queue.
       for (final dep in deps) {
