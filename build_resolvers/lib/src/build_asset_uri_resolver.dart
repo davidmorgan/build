@@ -41,6 +41,8 @@ class BuildAssetUriResolver extends UriResolver {
   /// updated in the analysis driver.
   final _needsChangeFile = HashSet<String>();
 
+  final _seenMissingFile = HashSet<AssetId>();
+
   final resourceProvider = MemoryResourceProvider(context: p.posix);
 
   /// The assets which are known to be readable at some point during the current
@@ -140,17 +142,19 @@ class BuildAssetUriResolver extends UriResolver {
   }) {
     late final path = assetPath(id);
     if (!buildStep.canRead(id)) {
-      if (globallySeenAssets.contains(id)) {
-        // ignore from this graph, some later build step may still be using it
-        // so it shouldn't be removed from [resourceProvider], but we also
-        // don't care about it's transitive imports.
-        return null;
-      }
-      _cachedAssetState.remove(id);
-      _cachedAssetDigests.remove(id);
-      if (resourceProvider.getFile(path).exists) {
-        resourceProvider.deleteFile(path);
-        _needsChangeFile.add(path);
+      if (_seenMissingFile.add(id)) {
+        if (globallySeenAssets.contains(id)) {
+          // ignore from this graph, some later build step may still be using it
+          // so it shouldn't be removed from [resourceProvider], but we also
+          // don't care about it's transitive imports.
+          return null;
+        }
+        _cachedAssetState.remove(id);
+        _cachedAssetDigests.remove(id);
+        if (resourceProvider.getFile(path).exists) {
+          resourceProvider.deleteFile(path);
+          _needsChangeFile.add(path);
+        }
       }
       return _AssetState(path, const {});
     }
@@ -227,6 +231,7 @@ class BuildAssetUriResolver extends UriResolver {
     );
     globallySeenAssets.clear();
     _needsChangeFile.clear();
+    _seenMissingFile.clear();
   }
 
   @override
