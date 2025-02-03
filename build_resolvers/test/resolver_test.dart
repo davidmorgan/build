@@ -36,8 +36,10 @@ void main() {
 
 void runTests(ResolversFactory resolversFactory) {
   final entryPoint = AssetId('a', 'web/main.dart');
-  Resolvers createResolvers({PackageConfig? packageConfig}) =>
-      resolversFactory.create(packageConfig: packageConfig);
+  Resolvers createResolvers(
+          {PackageConfig? packageConfig, bool sharedInstance = true}) =>
+      resolversFactory.create(
+          packageConfig: packageConfig, sharedInstance: sharedInstance);
 
   test('should handle initial files', () {
     return resolveSources({
@@ -90,6 +92,89 @@ void runTests(ResolversFactory resolversFactory) {
             .single;
       expect(libB.getClass('Foo'), isNull);
     }, resolvers: createResolvers());
+  });
+
+  test('informs buildStep that transitive imports were read', () {
+    return resolveSources({
+      'a|web/main.dart': '''
+              import 'a.dart';
+
+              main() {
+              } ''',
+      'a|web/a.dart': '''
+              library a;
+              import 'b.dart';
+              ''',
+      'a|web/b.dart': '''
+              library b;
+              ''',
+    }, (resolver) async {
+      await resolver.libraryFor(entryPoint);
+    }, assetReaderChecks: (reader) {
+      expect(reader.assetsRead, {
+        AssetId('a', 'web/main.dart'),
+        AssetId('a', 'web/main.dart.transitive_digest'),
+        AssetId('a', 'web/a.dart'),
+        AssetId('a', 'web/a.dart.transitive_digest'),
+        AssetId('a', 'web/b.dart'),
+        AssetId('a', 'web/b.dart.transitive_digest'),
+      });
+    }, resolvers: createResolvers());
+  });
+
+  test('transitive_digest file cuts off deps reported to buildStep', () async {
+    // BuildAssetUriResolver cuts off a buildStep's deps tree if it encounters
+    // a `.transitive_digest` file, because that file stands in for the
+    // transitive deps from that point.
+
+    // But, the _first_ time it is reading files it continues to read them,
+    // because the analyzer still needs all the files. So the first build
+    // action will see all the files as deps.
+    final resolvers = createResolvers(sharedInstance: false);
+    final sources = {
+      'a|web/main.dart': '''
+              import 'a.dart';
+
+              main() {
+              } ''',
+      'a|web/a.dart': '''
+              library a;
+              import 'b.dart';
+              ''',
+      'a|web/a.dart.transitive_digest': '''
+              library a;
+              import 'b.dart';
+              ''',
+      'a|web/b.dart': '''
+              library b;
+              ''',
+    };
+
+    // First action sees all the files as inputs.
+    await resolveSources(sources, (resolver) async {
+      await resolver.libraryFor(entryPoint);
+    }, assetReaderChecks: (reader) {
+      expect(reader.assetsRead, {
+        AssetId('a', 'web/main.dart'),
+        AssetId('a', 'web/main.dart.transitive_digest'),
+        AssetId('a', 'web/a.dart'),
+        AssetId('a', 'web/a.dart.transitive_digest'),
+        AssetId('a', 'web/b.dart'),
+        AssetId('a', 'web/b.dart.transitive_digest'),
+      });
+    }, resolvers: resolvers);
+
+    // Second action has inputs cut off at the `transitive_digest` file.
+    await resolveSources(sources, (resolver) async {
+      await resolver.libraryFor(entryPoint);
+    }, assetReaderChecks: (reader) {
+      expect(reader.assetsRead, {
+        AssetId('a', 'web/main.dart'),
+        AssetId('a', 'web/main.dart.transitive_digest'),
+        AssetId('a', 'web/a.dart'),
+        AssetId('a', 'web/a.dart.transitive_digest'),
+      });
+    }, resolvers: resolvers);
   });
 
   test('should still crawl transitively after a call to isLibrary', () {
@@ -317,6 +402,62 @@ void runTests(ResolversFactory resolversFactory) {
         expect(clazz, isNotNull);
         expect(clazz!.interfaces, hasLength(1));
         expect(clazz.interfaces.first.getDisplayString(), 'B');
+      }, resolvers: resolvers);
+    });
+
+    // TODO(davidmorgan): move to correct group.
+    test('updates following a change to source', () async {
+      var resolvers = createResolvers();
+      await resolveSources({
+        'a|web/main.dart': '''
+              class A {}
+              ''',
+      }, (resolver) async {
+        var lib = await resolver.libraryFor(entryPoint);
+        expect(lib.getClass('A'), isNotNull);
+        expect(lib.getClass('B'), isNull);
+      }, resolvers: resolvers);
+
+      await resolveSources({
+        'a|web/main.dart': '''
+              class B {}
+              ''',
+      }, (resolver) async {
+        var lib = await resolver.libraryFor(entryPoint);
+        expect(lib.getClass('A'), isNull);
+        expect(lib.getClass('B'), isNotNull);
+      }, resolvers: resolvers);
+    });
+
+    // TODO(davidmorgan): move to correct group.
+    test('updates following a change to import graph', () async {
+      var resolvers = createResolvers();
+      await resolveSources({
+        'a|web/main.dart': '''
+              part 'main.part1.dart';
+              ''',
+        'a|web/main.part1.dart': '''
+              part of 'main.dart';
+              class A {}
+              ''',
+      }, (resolver) async {
+        var lib = await resolver.libraryFor(entryPoint);
+        expect(lib.getClass('A'), isNotNull);
+        expect(lib.getClass('B'), isNull);
+      }, resolvers: resolvers);
+
+      await resolveSources({
+        'a|web/main.dart': '''
+              part 'main.part1.dart';
+              ''',
+        'a|web/main.part1.dart': '''
+              part of 'main.dart';
+              class B {}
+              ''',
+      }, (resolver) async {
+        var lib = await resolver.libraryFor(entryPoint);
+        expect(lib.getClass('A'), isNull);
+        expect(lib.getClass('B'), isNotNull);
       }, resolvers: resolvers);
     });
 
@@ -891,57 +1032,76 @@ int? get x => 1;
             unit.declarations.first,
             isA<FunctionDeclaration>()
                 .having((d) => d.name.lexeme, 'main', 'main'));
-      }, resolvers: createResolvers());
-    });
-  });
-
-  group('astNodeFor', () {
-    test('can return an unresolved ast', () {
-      return resolveSources({
-        'a|web/main.dart': ' main() {}',
-      }, (resolver) async {
-        var lib = await resolver.libraryFor(entryPoint);
-        var unit = await resolver.astNodeFor(lib.topLevelElements.first);
-        expect(unit, isA<FunctionDeclaration>());
-        expect(unit!.toSource(), 'main() {}');
-        expect((unit as FunctionDeclaration).declaredElement, isNull);
-      }, resolvers: createResolvers());
+      }, resolvers: AnalyzerResolvers());
     });
 
-    test('can return an resolved ast', () {
+    test('does not cause read of transitive imports', () {
       return resolveSources({
-        'a|web/main.dart': 'main() {}',
+        'a|web/main.dart': '''
+              import 'package:b/b.dart';
+
+              main() {
+              } ''',
+        'b|lib/b.dart': '''
+              <syntax error>
+              ''',
       }, (resolver) async {
-        var lib = await resolver.libraryFor(entryPoint);
-        var unit = await resolver.astNodeFor(lib.topLevelElements.first,
-            resolve: true);
-        expect(
-          unit,
-          isA<FunctionDeclaration>()
-              .having((fd) => fd.toSource(), 'toSource()', 'main() {}')
-              .having((fd) => fd.declaredElement, 'declaredElement', isNotNull),
-        );
-      }, resolvers: createResolvers());
+        await resolver.compilationUnitFor(entryPoint);
+      }, assetReaderChecks: (reader) {
+        expect(reader.assetsRead, {entryPoint});
+      });
     });
 
-    test('can return a resolved compilation unit', () {
-      return resolveSources({
-        'a|web/main.dart': 'main() {}',
-      }, (resolver) async {
-        var lib = await resolver.libraryFor(entryPoint);
-        var unit = await resolver.astNodeFor(lib.definingCompilationUnit,
-            resolve: true);
-        expect(
-          unit,
-          isA<CompilationUnit>().having(
-              (unit) => unit.declarations, 'declarations', hasLength(1)),
-        );
-        expect(
-          (unit as CompilationUnit).declarations.single,
-          isA<FunctionDeclaration>()
-              .having((fd) => fd.toSource(), 'toSource()', 'main() {}')
-              .having((fd) => fd.declaredElement, 'declaredElement', isNotNull),
-        );
+    group('astNodeFor', () {
+      test('can return an unresolved ast', () {
+        return resolveSources({
+          'a|web/main.dart': ' main() {}',
+        }, (resolver) async {
+          var lib = await resolver.libraryFor(entryPoint);
+          var unit = await resolver.astNodeFor(lib.topLevelElements.first);
+          expect(unit, isA<FunctionDeclaration>());
+          expect(unit!.toSource(), 'main() {}');
+          expect((unit as FunctionDeclaration).declaredElement, isNull);
+        }, resolvers: createResolvers());
+      });
+
+      test('can return an resolved ast', () {
+        return resolveSources({
+          'a|web/main.dart': 'main() {}',
+        }, (resolver) async {
+          var lib = await resolver.libraryFor(entryPoint);
+          var unit = await resolver.astNodeFor(lib.topLevelElements.first,
+              resolve: true);
+          expect(
+            unit,
+            isA<FunctionDeclaration>()
+                .having((fd) => fd.toSource(), 'toSource()', 'main() {}')
+                .having(
+                    (fd) => fd.declaredElement, 'declaredElement', isNotNull),
+          );
+        }, resolvers: createResolvers());
+      });
+
+      test('can return a resolved compilation unit', () {
+        return resolveSources({
+          'a|web/main.dart': 'main() {}',
+        }, (resolver) async {
+          var lib = await resolver.libraryFor(entryPoint);
+          var unit = await resolver.astNodeFor(lib.definingCompilationUnit,
+              resolve: true);
+          expect(
+            unit,
+            isA<CompilationUnit>().having(
+                (unit) => unit.declarations, 'declarations', hasLength(1)),
+          );
+          expect(
+            (unit as CompilationUnit).declarations.single,
+            isA<FunctionDeclaration>()
+                .having((fd) => fd.toSource(), 'toSource()', 'main() {}')
+                .having(
+                    (fd) => fd.declaredElement, 'declaredElement', isNotNull),
+          );
+        }, resolvers: createResolvers());
       });
     });
   });
@@ -953,25 +1113,33 @@ final _skipOnPreRelease =
         : null;
 
 abstract class ResolversFactory {
-  Resolvers create({PackageConfig? packageConfig});
+  Resolvers create({PackageConfig? packageConfig, bool sharedInstance = true});
 }
 
 class BuildAssetUriResolversFactory implements ResolversFactory {
   @override
-  Resolvers create({PackageConfig? packageConfig}) => AnalyzerResolvers.custom(
-      packageConfig: packageConfig,
-      analysisDriverModel: BuildAssetUriResolver.sharedInstance);
+  Resolvers create(
+          {PackageConfig? packageConfig, bool sharedInstance = true}) =>
+      AnalyzerResolvers.custom(
+          packageConfig: packageConfig,
+          analysisDriverModel: sharedInstance
+              ? BuildAssetUriResolver.sharedInstance
+              : BuildAssetUriResolver());
 
   @override
   String toString() => 'Resolver';
 }
 
 class AnalysisDriverModelFactory implements ResolversFactory {
+  // TODO(davidmorgan): should work with shared instance.
   final AnalysisDriverModel sharedInstance = AnalysisDriverModel();
 
   @override
-  Resolvers create({PackageConfig? packageConfig}) => AnalyzerResolvers.custom(
-      packageConfig: packageConfig, analysisDriverModel: sharedInstance);
+  Resolvers create(
+          {PackageConfig? packageConfig, bool sharedInstance = true}) =>
+      AnalyzerResolvers.custom(
+          packageConfig: packageConfig,
+          analysisDriverModel: AnalysisDriverModel());
 
   @override
   String toString() => 'New resolver';

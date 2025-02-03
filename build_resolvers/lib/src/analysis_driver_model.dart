@@ -34,16 +34,18 @@ class AnalysisDriverModel {
   final MemoryResourceProvider resourceProvider =
       MemoryResourceProvider(context: p.posix);
 
+  final _Graph _graph = _Graph();
+  final Set<AssetId> _readForAnalyzer = <AssetId>{};
+
   /// Notifies that [step] has completed.
   ///
   /// All build steps must complete before [reset] is called.
-  void notifyComplete(BuildStep step) {
-    // TODO(davidmorgan): add test coverage, fix implementation.
-  }
+  void notifyComplete(BuildStep step) {}
 
   /// Clear cached information specific to an individual build.
   void reset() {
-    // TODO(davidmorgan): add test coverage, fix implementation.
+    _graph.clear();
+    _readForAnalyzer.clear();
   }
 
   /// Attempts to parse [uri] into an [AssetId] and returns it if it is cached.
@@ -82,69 +84,104 @@ class AnalysisDriverModel {
               FutureOr<void> Function(AnalysisDriverForPackageBuild))
           withDriverResource,
       {required bool transitive}) async {
-    /// TODO(davidmorgan): add test coverage for whether transitive
-    /// sources are read when [transitive] is false, fix the implementation
-    /// here.
-    /// TODO(davidmorgan): add test coverage for whether
-    /// `.transitive_deps` files cut off the reporting of deps to the
-    /// [buildStep], fix the implementation here.
+    var analyzerIds = entryPoints;
+    Iterable<AssetId> inputIds = entryPoints;
 
-    // Find transitive deps, this also informs [buildStep] of all inputs).
-    final ids = await _expandToTransitive(buildStep, entryPoints);
+    // If requested, find transitive imports.
+    if (transitive) {
+      await _loadGraph(buildStep, entryPoints);
+      // TODO(davidmorgan): use just the set for the entrypoints.
+      analyzerIds = _graph.nodes.keys.toList();
+      inputIds = _graph.inputsFor(entryPoints);
+
+      // Check for missing inputs that were written during the build.
+      for (final id
+          in inputIds.where((id) => !id.path.endsWith('.transitive_digest'))) {
+        if (_graph.nodes[id]!.isMissing) {
+          if (await buildStep.canRead(id)) {
+            analyzerIds.add(id);
+            _readForAnalyzer.remove(id);
+          }
+        }
+      }
+    }
+
+    // Notify [buildStep] of its inputs.
+    for (final id in inputIds) {
+      await buildStep.canRead(id);
+    }
 
     // Apply changes to in-memory filesystem.
-    for (final id in ids) {
-      if (await buildStep.canRead(id)) {
-        final content = await buildStep.readAsString(id);
+    final changedIds = <AssetId>[];
+    for (final id in analyzerIds) {
+      if (!_readForAnalyzer.add(id)) continue;
 
-        /// TODO(davidmorgan): add test coverage for when a file is
-        /// modified rather than added, fix the implementation here.
-        resourceProvider.newFile(id.asPath, content);
-      } else {
-        if (resourceProvider.getFile(id.asPath).exists) {
+      final content =
+          await buildStep.canRead(id) ? await buildStep.readAsString(id) : null;
+      final inMemoryFile = resourceProvider.getFile(id.asPath);
+      final inMemoryContent =
+          inMemoryFile.exists ? inMemoryFile.readAsStringSync() : null;
+
+      if (content != inMemoryContent) {
+        if (content == null) {
+          // TODO(davidmorgan): per "globallySeenAssets" in
+          // BuildAssetUriResolver, deletes should only be applied at the end of
+          // the build, in case the file is actually there but not visible to
+          // the current reader.
           resourceProvider.deleteFile(id.asPath);
+          changedIds.add(id);
+        } else {
+          resourceProvider.newFile(id.asPath, content);
+          changedIds.add(id);
         }
       }
     }
 
     // Notify the analyzer of changes.
     await withDriverResource((driver) async {
-      for (final id in ids) {
-        // TODO(davidmorgan): add test coverage for over-notification of
-        // changes, fix the implementaion here.
+      for (final id in changedIds) {
         driver.changeFile(id.asPath);
       }
       await driver.applyPendingFileChanges();
     });
   }
 
-  /// Walks the import graph from [ids], returns full transitive deps.s
-  Future<Set<AssetId>> _expandToTransitive(
-      AssetReader reader, Iterable<AssetId> ids) async {
-    final result = <AssetId>{};
-    await __expandToTransitive(reader, ids, result);
-    return result;
-  }
+  /// Walks the import graph from [ids], reading into [_graph].
+  Future<void> _loadGraph(AssetReader reader, Iterable<AssetId> ids) async {
+    final completer = Completer<void>();
+    final previousFuture = _graph._doneLoading;
+    _graph._doneLoading = completer.future;
+    await previousFuture;
 
-  /// Walks the import graph from [ids], ignoring nodes already in [result].
-  ///
-  /// Call with [result] empty to add full transitive deps to [result].
-  Future<void> __expandToTransitive(
-      AssetReader reader, Iterable<AssetId> ids, Set<AssetId> result) async {
     final nextIds = Queue.of(ids);
     while (nextIds.isNotEmpty) {
       final nextId = nextIds.removeFirst();
 
       // Skip if already seen.
-      if (!result.add(nextId)) continue;
+      if (_graph.nodes.containsKey(nextId)) continue;
+
+      final hasTransitiveDigestAsset =
+          await reader.canRead(nextId.addExtension('.transitive_digest'));
 
       // Skip if not readable.
-      if (!await reader.canRead(nextId)) continue;
+      if (!await reader.canRead(nextId)) {
+        _graph.nodes[nextId] = _Node(
+            id: nextId,
+            deps: null,
+            hasTransitiveDigestAsset: hasTransitiveDigestAsset);
+        continue;
+      }
 
       final content = await reader.readAsString(nextId);
       final deps = _parseDependencies(content, nextId);
-      nextIds.addAll(deps.where((id) => !result.contains(id)));
+      _graph.nodes[nextId] = _Node(
+          id: nextId,
+          deps: deps,
+          hasTransitiveDigestAsset: hasTransitiveDigestAsset);
+      nextIds.addAll(deps.where((id) => !_graph.nodes.containsKey(id)));
     }
+
+    completer.complete();
   }
 }
 
@@ -169,4 +206,64 @@ List<AssetId> _parseDependencies(String content, AssetId from) =>
 extension _AssetIdExtensions on AssetId {
   /// Asset path for the in-memory filesystem.
   String get asPath => AnalysisDriverModelUriResolver.assetPath(this);
+}
+
+class _Graph {
+  final Map<AssetId, _Node> nodes = {};
+  Future<void> _doneLoading = Future.value(null);
+
+  void clear() {
+    nodes.clear();
+  }
+
+  Set<AssetId> inputsFor(Iterable<AssetId> entryPoints) {
+    final result = <AssetId>{};
+    _inputsFor(entryPoints, result);
+    return result;
+  }
+
+  void _inputsFor(Iterable<AssetId> entryPoints, Set<AssetId> result) {
+    final nextIds = Queue.of(entryPoints);
+
+    while (nextIds.isNotEmpty) {
+      final nextId = nextIds.removeFirst();
+
+      // Add to result, or skip if already seen.
+      if (!result.add(nextId)) continue;
+
+      final node = nodes[nextId]!;
+
+      // Add the transitive digest file as an input. If it exists, skip deps.
+      result.add(nextId.addExtension('.transitive_digest'));
+      if (node.hasTransitiveDigestAsset) {
+        continue;
+      }
+
+      // Skip if there are no deps because the file is missing.
+      if (node.deps == null) continue;
+
+      nextIds.addAll(node.deps!.where((id) => !result.contains(id)));
+    }
+  }
+
+  @override
+  String toString() => nodes.toString();
+}
+
+class _Node {
+  final AssetId id;
+  final List<AssetId>? deps;
+  final bool hasTransitiveDigestAsset;
+
+  _Node(
+      {required this.id,
+      required this.deps,
+      required this.hasTransitiveDigestAsset});
+
+  bool get isMissing => deps == null;
+
+  @override
+  String toString() => '$id:'
+      '${hasTransitiveDigestAsset ? 'digest:' : ''}'
+      '${deps?.toString() ?? 'missing'}';
 }
