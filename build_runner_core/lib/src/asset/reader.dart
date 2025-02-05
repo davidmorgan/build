@@ -8,8 +8,10 @@ import 'dart:convert';
 
 import 'package:async/async.dart';
 import 'package:build/build.dart';
+import 'package:build/src/asset/filesystem.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
+
 import '../asset_graph/graph.dart';
 import '../asset_graph/node.dart';
 import '../util/async.dart';
@@ -60,8 +62,9 @@ typedef CheckInvalidInput = void Function(AssetId id);
 ///
 /// Tracks the assets and globs read during this step for input dependency
 /// tracking.
-class SingleStepReader implements AssetReader {
+class SingleStepReader implements AssetReader, HasFilesystem {
   final AssetGraph _assetGraph;
+  final Filesystem _filesystem;
   final AssetReader _delegate;
   final int _phaseNumber;
   final String _primaryPackage;
@@ -76,7 +79,11 @@ class SingleStepReader implements AssetReader {
 
   SingleStepReader(this._delegate, this._assetGraph, this._phaseNumber,
       this._primaryPackage, this._isReadableNode, this._checkInvalidInput,
-      [this._getGlobNode, this._writtenAssets]);
+      [this._getGlobNode, this._writtenAssets])
+      : _filesystem = _delegate.filesystem;
+
+  @override
+  Filesystem get filesystem => _filesystem;
 
   /// Checks whether [id] can be read by this step - attempting to build the
   /// asset if necessary.

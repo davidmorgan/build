@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:build/build.dart';
+import 'package:build/src/asset/filesystem.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:path/path.dart' as path;
@@ -21,10 +22,17 @@ final _descriptorPool = Pool(32);
 /// Basic [AssetReader] which uses a [PackageGraph] to look up where to read
 /// files from disk.
 class FileBasedAssetReader extends AssetReader
-    implements RunnerAssetReader, PathProvidingAssetReader {
+    implements
+        RunnerAssetReader,
+        PathProvidingAssetReader,
+        Filesystem,
+        HasFilesystem {
   final PackageGraph packageGraph;
 
   FileBasedAssetReader(this.packageGraph);
+
+  @override
+  Filesystem get filesystem => this;
 
   @override
   Future<bool> canRead(AssetId id) =>
@@ -58,6 +66,15 @@ class FileBasedAssetReader extends AssetReader
 
   @override
   String pathTo(AssetId id) => _filePathFor(id, packageGraph);
+
+  // [Filesytem] methods.
+
+  @override
+  bool existsSync(AssetId id) => _fileFor(id, packageGraph).existsSync();
+
+  @override
+  String readAsStringSync(AssetId id) =>
+      _fileFor(id, packageGraph).readAsStringSync();
 }
 
 /// Creates an [AssetId] for [file], which is a part of [packageNode].

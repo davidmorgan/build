@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:build/build.dart';
+import 'package:build/src/asset/filesystem.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 
@@ -18,7 +19,7 @@ import 'reader.dart';
 /// Assets are cached until [invalidate] is invoked.
 ///
 /// Does not implement [findAssets].
-class CachingAssetReader implements AssetReader {
+class CachingAssetReader implements AssetReader, HasFilesystem {
   /// Cached results of [readAsBytes].
   final _bytesContentCache = LruCache<AssetId, List<int>>(
       1024 * 1024,
@@ -52,6 +53,9 @@ class CachingAssetReader implements AssetReader {
       delegate is PathProvidingAssetReader
           ? _PathProvidingCachingAssetReader._(delegate)
           : CachingAssetReader._(delegate);
+
+  @override
+  Filesystem get filesystem => _delegate.filesystem;
 
   @override
   Future<bool> canRead(AssetId id) =>
@@ -115,12 +119,15 @@ class CachingAssetReader implements AssetReader {
 /// A version of a [CachingAssetReader] that implements
 /// [PathProvidingAssetReader].
 class _PathProvidingCachingAssetReader extends CachingAssetReader
-    implements PathProvidingAssetReader {
+    implements PathProvidingAssetReader, HasFilesystem {
   @override
   PathProvidingAssetReader get _delegate =>
       super._delegate as PathProvidingAssetReader;
 
   _PathProvidingCachingAssetReader._(super.delegate) : super._();
+
+  @override
+  Filesystem get filesystem => _delegate.filesystem;
 
   @override
   String pathTo(AssetId id) => _delegate.pathTo(id);

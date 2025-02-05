@@ -10,6 +10,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/clients/build_resolvers/build_resolvers.dart';
 import 'package:build/build.dart';
+import 'package:build/src/asset/filesystem.dart';
 
 import 'analysis_driver_filesystem.dart';
 
@@ -109,7 +110,8 @@ class AnalysisDriverModel {
 
     // If requested, find transitive imports.
     if (transitive) {
-      final previouslyMissingFiles = await _graph.load(buildStep, entryPoints);
+      final previouslyMissingFiles =
+          _graph.load(buildStep.filesystem, entryPoints);
       _syncedOntoFilesystem.removeAll(previouslyMissingFiles);
       idsToSyncOntoFilesystem = _graph.nodes.keys.toList();
       inputIds = _graph.inputsFor(entryPoints);
@@ -123,8 +125,9 @@ class AnalysisDriverModel {
     // Sync changes onto the "URI resolver", the in-memory filesystem.
     for (final id in idsToSyncOntoFilesystem) {
       if (!_syncedOntoFilesystem.add(id)) continue;
-      final content =
-          await buildStep.canRead(id) ? await buildStep.readAsString(id) : null;
+      final content = buildStep.filesystem.existsSync(id)
+          ? buildStep.filesystem.readAsStringSync(id)
+          : null;
       if (content == null) {
         filesystem.deleteFile(id.asPath);
       } else {
@@ -179,7 +182,7 @@ class _Graph {
   ///
   /// Returns the set of files that were in the graph as missing and have now
   /// been loaded.
-  Future<Set<AssetId>> load(AssetReader reader, Iterable<AssetId> ids) async {
+  Set<AssetId> load(Filesystem filesystem, Iterable<AssetId> ids) {
     // TODO(davidmorgan): check if List is faster.
     final nextIds = Queue.of(ids);
     final processed = <AssetId>{};
@@ -192,15 +195,15 @@ class _Graph {
       // Read nodes not yet loaded or that were missing when loaded.
       var node = nodes[id];
       if (node == null || node.isMissing) {
-        if (await reader.canRead(id)) {
+        if (filesystem.existsSync(id)) {
           // If it was missing when loaded, record that.
           if (node != null && node.isMissing) {
             previouslyMissingFiles.add(id);
           }
           // Load the node.
-          final hasTransitiveDigestAsset =
-              await reader.canRead(id.addExtension(_transitiveDigestExtension));
-          final content = await reader.readAsString(id);
+          final hasTransitiveDigestAsset = filesystem
+              .existsSync(id.addExtension(_transitiveDigestExtension));
+          final content = filesystem.readAsStringSync(id);
           final deps = _parseDependencies(content, id);
           node = _Node(
               id: id,

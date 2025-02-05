@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:build/build.dart';
+import 'package:build/src/asset/filesystem.dart';
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
 
@@ -74,12 +75,15 @@ final class _PendingFileState {
 
 @internal
 final class BatchReader extends AssetReader
-    implements RunnerAssetReader, PathProvidingAssetReader {
+    implements RunnerAssetReader, PathProvidingAssetReader, HasFilesystem {
   final RunnerAssetReader _inner;
   final PathProvidingAssetReader _innerPathProviding;
   final _FileSystemWriteBatch _batch;
 
   BatchReader(this._inner, this._innerPathProviding, this._batch);
+
+  @override
+  Filesystem get filesystem => _inner.filesystem;
 
   _PendingFileState? _stateFor(AssetId id) {
     return _batch._pendingWrites[id];

@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:async/async.dart';
 import 'package:build/build.dart';
+import 'package:build/src/asset/filesystem.dart';
 import 'package:glob/glob.dart';
 
 /// A [MultiPackageAssetReader] that delegates to multiple other asset
@@ -14,10 +15,14 @@ import 'package:glob/glob.dart';
 /// [MultiAssetReader] attempts to check every provided
 /// [MultiPackageAssetReader] to see if they are capable of reading an
 /// [AssetId], otherwise checks the next reader.
-class MultiAssetReader extends AssetReader implements MultiPackageAssetReader {
+class MultiAssetReader extends AssetReader
+    implements MultiPackageAssetReader, HasFilesystem {
   final List<MultiPackageAssetReader> _readers;
 
   MultiAssetReader(this._readers);
+
+  @override
+  Filesystem get filesystem => _readers.first.filesystem;
 
   @override
   Future<bool> canRead(AssetId id) async {

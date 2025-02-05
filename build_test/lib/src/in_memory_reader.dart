@@ -4,6 +4,7 @@
 import 'dart:convert';
 
 import 'package:build/build.dart';
+import 'package:build/src/asset/filesystem.dart';
 import 'package:glob/glob.dart';
 
 /// An [AssetReader] that records which assets have been read to [assetsRead].
@@ -13,7 +14,11 @@ abstract class RecordingAssetReader implements AssetReader {
 
 /// An implementation of [AssetReader] with primed in-memory assets.
 class InMemoryAssetReader extends AssetReader
-    implements MultiPackageAssetReader, RecordingAssetReader {
+    implements
+        MultiPackageAssetReader,
+        RecordingAssetReader,
+        Filesystem,
+        HasFilesystem {
   final Map<AssetId, List<int>> assets;
   final String? rootPackage;
 
@@ -48,6 +53,9 @@ class InMemoryAssetReader extends AssetReader
     });
     return output;
   }
+
+  @override
+  Filesystem get filesystem => this;
 
   @override
   Future<bool> canRead(AssetId id) async {
@@ -89,4 +97,12 @@ class InMemoryAssetReader extends AssetReader
     encoding ??= utf8;
     assets[id] = encoding.encode(contents);
   }
+
+  // [Filesystem] methods.
+
+  @override
+  bool existsSync(AssetId id) => assets.containsKey(id);
+
+  @override
+  String readAsStringSync(AssetId id) => utf8.decode(assets[id]!);
 }

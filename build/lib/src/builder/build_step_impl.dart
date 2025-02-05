@@ -14,6 +14,7 @@ import 'package:package_config/package_config_types.dart';
 
 import '../analyzer/resolver.dart';
 import '../asset/exceptions.dart';
+import '../asset/filesystem.dart';
 import '../asset/id.dart';
 import '../asset/reader.dart';
 import '../asset/writer.dart';
@@ -25,7 +26,7 @@ import 'exceptions.dart';
 ///
 /// This represents a single input and its expected and real outputs. It also
 /// handles tracking of dependencies.
-class BuildStepImpl implements BuildStep {
+class BuildStepImpl implements BuildStep, HasFilesystem {
   final Resolvers? _resolvers;
   final StageTracker _stageTracker;
 
@@ -48,6 +49,9 @@ class BuildStepImpl implements BuildStep {
   final _writeResults = <Future<Result<void>>>[];
 
   final _writtenAssets = <AssetId>{};
+
+  /// The underlying filesystem.
+  final Filesystem _filesystem;
 
   /// Used internally for reading files.
   final AssetReader _reader;
@@ -75,8 +79,12 @@ class BuildStepImpl implements BuildStep {
       {StageTracker? stageTracker,
       void Function(Iterable<AssetId>)? reportUnusedAssets})
       : allowedOutputs = UnmodifiableSetView(expectedOutputs.toSet()),
+        _filesystem = _reader.filesystem,
         _stageTracker = stageTracker ?? NoOpStageTracker.instance,
         _reportUnusedAssets = reportUnusedAssets;
+
+  @override
+  Filesystem get filesystem => _filesystem;
 
   @override
   Future<PackageConfig> get packageConfig async {
