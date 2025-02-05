@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:collection';
 import 'dart:io';
 
 import 'id.dart';
@@ -22,6 +23,33 @@ abstract interface class HasFilesystem {
   Filesystem get filesystem;
 }
 
+class FakeFilesystem implements Filesystem {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
+}
+
+abstract interface class HasInputTracker {
+  InputTracker get inputTracker;
+}
+
+class InputTracker {
+  final Set<AssetId> _inputs = {};
+  late final Set<AssetId> inputs = UnmodifiableSetView(_inputs);
+
+  void add(AssetId id) {
+    _inputs.add(id);
+  }
+
+  void addAll(Set<AssetId> inputs) {
+    _inputs.addAll(inputs);
+  }
+
+  // TODO(davidmorgan): get rid of this method.
+  void clear() {
+    _inputs.clear();
+  }
+}
+
 extension AssetReaderExtension on AssetReader {
   Filesystem get filesystem {
     if (this is HasFilesystem) {
@@ -30,9 +58,12 @@ extension AssetReaderExtension on AssetReader {
     LOG('Does not implement HasFilesystem: $this');
     return FakeFilesystem();
   }
-}
 
-class FakeFilesystem implements Filesystem {
-  @override
-  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
+  InputTracker? get inputTracker {
+    if (this is HasInputTracker) {
+      return (this as HasInputTracker).inputTracker;
+    }
+    LOG('Does not implement HasInputTracker: $this');
+    return null;
+  }
 }

@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
 
 import 'package:async/async.dart';
@@ -62,7 +61,7 @@ typedef CheckInvalidInput = void Function(AssetId id);
 ///
 /// Tracks the assets and globs read during this step for input dependency
 /// tracking.
-class SingleStepReader implements AssetReader, HasFilesystem {
+class SingleStepReader implements AssetReader, HasFilesystem, HasInputTracker {
   final AssetGraph _assetGraph;
   final Filesystem _filesystem;
   final AssetReader _delegate;
@@ -73,9 +72,7 @@ class SingleStepReader implements AssetReader, HasFilesystem {
   final CheckInvalidInput _checkInvalidInput;
   final FutureOr<GlobAssetNode> Function(
       Glob glob, String package, int phaseNum)? _getGlobNode;
-
-  /// The assets read during this step.
-  final assetsRead = HashSet<AssetId>();
+  final InputTracker _inputTracker = InputTracker();
 
   SingleStepReader(this._delegate, this._assetGraph, this._phaseNumber,
       this._primaryPackage, this._isReadableNode, this._checkInvalidInput,
@@ -84,6 +81,9 @@ class SingleStepReader implements AssetReader, HasFilesystem {
 
   @override
   Filesystem get filesystem => _filesystem;
+
+  @override
+  InputTracker get inputTracker => _inputTracker;
 
   /// Checks whether [id] can be read by this step - attempting to build the
   /// asset if necessary.
@@ -104,7 +104,7 @@ class SingleStepReader implements AssetReader, HasFilesystem {
 
     final node = _assetGraph.get(id);
     if (node == null) {
-      assetsRead.add(id);
+      _inputTracker.add(id);
       _assetGraph.add(SyntheticSourceAssetNode(id));
       return false;
     }
@@ -112,7 +112,7 @@ class SingleStepReader implements AssetReader, HasFilesystem {
     return doAfter(_isReadableNode(node, _phaseNumber, _writtenAssets),
         (Readability readability) {
       if (!readability.inSamePhase) {
-        assetsRead.add(id);
+        inputTracker.add(id);
       }
 
       return readability.canRead;
@@ -182,7 +182,7 @@ class SingleStepReader implements AssetReader, HasFilesystem {
 
     doAfter(_getGlobNode(glob, _primaryPackage, _phaseNumber),
         (GlobAssetNode globNode) {
-      assetsRead.add(globNode.id);
+      inputTracker.add(globNode.id);
       streamCompleter.setSourceStream(Stream.fromIterable(globNode.results!));
     });
     return streamCompleter.stream;

@@ -512,7 +512,7 @@ class _SingleBuild {
 
         // We may have read some inputs in the call to `_buildShouldRun`, we
         // want to remove those.
-        wrappedReader.assetsRead.clear();
+        wrappedReader.inputTracker.clear();
 
         var actionDescription =
             _actionLoggerName(phase, input, _packageGraph.root.name);
@@ -617,7 +617,7 @@ class _SingleBuild {
     }
     // We may have read some inputs in the call to `_buildShouldRun`, we want
     // to remove those.
-    wrappedReader.assetsRead.clear();
+    wrappedReader.inputTracker.clear();
 
     // Clean out the impacts of the previous run
     await FailureReporter.clean(phaseNum, input);
@@ -859,9 +859,9 @@ class _SingleBuild {
       Iterable<ErrorReport> errors,
       {Set<AssetId>? unusedAssets}) async {
     if (outputs.isEmpty) return;
-    var usedInputs = unusedAssets != null
-        ? reader.assetsRead.difference(unusedAssets)
-        : reader.assetsRead;
+    final assetsRead = reader.inputTracker.inputs;
+    var usedInputs =
+        unusedAssets != null ? assetsRead.difference(unusedAssets) : assetsRead;
 
     final inputsDigest = await _computeCombinedDigest(
         usedInputs,
