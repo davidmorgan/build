@@ -714,7 +714,7 @@ class _SingleBuild {
     if (firstNode.previousInputsDigest == null) return true;
 
     var digest = await _computeCombinedDigest(
-        firstNode.inputs, firstNode.builderOptionsId, reader);
+        firstNode.inputs, {}, firstNode.builderOptionsId, reader);
     if (digest != firstNode.previousInputsDigest) {
       return true;
     } else {
@@ -730,7 +730,7 @@ class _SingleBuild {
   Future<bool> _postProcessBuildShouldRun(
       PostProcessAnchorNode anchorNode, AssetReader reader) async {
     var inputsDigest = await _computeCombinedDigest(
-        [anchorNode.primaryInput], anchorNode.builderOptionsId, reader);
+        [anchorNode.primaryInput], {}, anchorNode.builderOptionsId, reader);
 
     if (inputsDigest != anchorNode.previousInputsDigest) {
       anchorNode.previousInputsDigest = inputsDigest;
@@ -807,8 +807,13 @@ class _SingleBuild {
 
   /// Computes a single [Digest] based on the combined [Digest]s of [ids] and
   /// [builderOptionsId].
-  Future<Digest> _computeCombinedDigest(Iterable<AssetId> ids,
-      AssetId builderOptionsId, AssetReader reader) async {
+  Future<Digest> _computeCombinedDigest(
+      Iterable<AssetId> ids,
+      Iterable<List<AssetId>> components,
+      AssetId builderOptionsId,
+      AssetReader reader) async {
+    ids = ids.followedBy(components.expand((x) => x));
+
     var combinedBytes = Uint8List.fromList(List.filled(16, 0));
     void combine(Uint8List other) {
       assert(other.length == 16);
@@ -860,11 +865,13 @@ class _SingleBuild {
       {Set<AssetId>? unusedAssets}) async {
     if (outputs.isEmpty) return;
     final assetsRead = reader.inputTracker.inputs;
+    final usedComponents = reader.inputTracker.components;
     var usedInputs =
         unusedAssets != null ? assetsRead.difference(unusedAssets) : assetsRead;
 
     final inputsDigest = await _computeCombinedDigest(
         usedInputs,
+        usedComponents,
         (_assetGraph.get(outputs.first) as GeneratedAssetNode).builderOptionsId,
         reader);
 
@@ -879,7 +886,7 @@ class _SingleBuild {
       // builders we can run arbitrary code between updates otherwise, at which
       // time a node might not be in a valid state.
       _removeOldInputs(node, usedInputs);
-      _addNewInputs(node, usedInputs);
+      _addNewInputs(node, usedInputs, usedComponents);
       node
         ..state = NodeState.upToDate
         ..wasOutput = wasOutput
@@ -925,10 +932,12 @@ class _SingleBuild {
 
   /// Adds new inputs to [node] based on [updatedInputs], and adds the
   /// appropriate edges.
-  void _addNewInputs(GeneratedAssetNode node, Set<AssetId> updatedInputs) {
+  void _addNewInputs(GeneratedAssetNode node, Set<AssetId> updatedInputs,
+      Set<List<AssetId>> updatedComponents) {
     var newInputs = updatedInputs.difference(node.inputs);
     node.inputs.addAll(newInputs);
-    for (var input in newInputs) {
+    node.inputs.addAll(updatedComponents.expand((x) => x));
+    for (var input in [...newInputs, ...updatedComponents.expand((x) => x)]) {
       var inputNode = _assetGraph.get(input)!;
       inputNode.outputs.add(node.id);
     }

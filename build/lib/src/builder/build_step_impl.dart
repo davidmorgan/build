@@ -26,7 +26,7 @@ import 'exceptions.dart';
 ///
 /// This represents a single input and its expected and real outputs. It also
 /// handles tracking of dependencies.
-class BuildStepImpl implements BuildStep, HasFilesystem {
+class BuildStepImpl implements BuildStep, HasFilesystem, HasInputTracker {
   final Resolvers? _resolvers;
   final StageTracker _stageTracker;
 
@@ -85,6 +85,9 @@ class BuildStepImpl implements BuildStep, HasFilesystem {
 
   @override
   Filesystem get filesystem => _filesystem;
+
+  @override
+  InputTracker get inputTracker => _reader.inputTracker!;
 
   @override
   Future<PackageConfig> get packageConfig async {

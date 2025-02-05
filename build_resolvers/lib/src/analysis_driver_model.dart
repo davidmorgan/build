@@ -11,6 +11,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/src/clients/build_resolvers/build_resolvers.dart';
 import 'package:build/build.dart';
 import 'package:build/src/asset/filesystem.dart';
+import 'package:graphs/graphs.dart';
 
 import 'analysis_driver_filesystem.dart';
 
@@ -106,7 +107,6 @@ class AnalysisDriverModel {
           withDriverResource,
       {required bool transitive}) async {
     var idsToSyncOntoFilesystem = entryPoints;
-    Iterable<AssetId> inputIds = entryPoints;
 
     // If requested, find transitive imports.
     if (transitive) {
@@ -114,12 +114,13 @@ class AnalysisDriverModel {
           _graph.load(buildStep.filesystem, entryPoints);
       _syncedOntoFilesystem.removeAll(previouslyMissingFiles);
       idsToSyncOntoFilesystem = _graph.nodes.keys.toList();
-      inputIds = _graph.inputsFor(entryPoints);
-    }
-
-    // Notify [buildStep] of its inputs.
-    for (final id in inputIds) {
-      await buildStep.canRead(id);
+      final inputIds = _graph.inputsFor(entryPoints);
+      // print('Input IDs: $inputIds');
+      buildStep.inputTracker!.addAll(inputIds);
+    } else {
+      for (final id in entryPoints) {
+        buildStep.inputTracker!.add(id);
+      }
     }
 
     // Sync changes onto the "URI resolver", the in-memory filesystem.
@@ -175,6 +176,10 @@ extension _AssetIdExtensions on AssetId {
 class _Graph {
   final Map<AssetId, _Node> nodes = {};
 
+  final List<List<AssetId>> components = [];
+  final Map<AssetId, List<AssetId>> componentsById = {};
+  final Map<List<AssetId>, Set<List<AssetId>>> componentDeps = Map.identity();
+
   /// Walks the import graph from [ids] loading into [nodes].
   ///
   /// Checks files that are in the graph as missing to determine whether they
@@ -187,6 +192,7 @@ class _Graph {
     final nextIds = Queue.of(ids);
     final processed = <AssetId>{};
     final previouslyMissingFiles = <AssetId>{};
+    var anyChange = false;
     while (nextIds.isNotEmpty) {
       final id = nextIds.removeFirst();
 
@@ -209,7 +215,9 @@ class _Graph {
               id: id,
               deps: deps,
               hasTransitiveDigestAsset: hasTransitiveDigestAsset);
+          anyChange = true;
         } else {
+          if (node == null) anyChange = true;
           node ??= _Node.missing(id: id, hasTransitiveDigestAsset: false);
         }
         nodes[id] = node;
@@ -217,6 +225,33 @@ class _Graph {
 
       // Continue to deps even for already-loaded nodes, to check missing files.
       nextIds.addAll(node.deps.where((id) => !processed.contains(id)));
+    }
+
+    if (anyChange) {
+      components.clear();
+      componentsById.clear();
+      for (final component in stronglyConnectedComponents(
+        nodes.keys,
+        (key) => nodes[key]!.deps,
+      )) {
+        components.add(component);
+        for (final id in component) {
+          componentsById[id] = component;
+        }
+      }
+      for (final component in components) {
+        for (final id in component) {
+          componentDeps[component] ??= Set.identity();
+          for (final dep in nodes[id]!.deps) {
+            final depComponent = componentsById[dep]!;
+            if (depComponent != component) {
+              componentDeps[component]!.add(depComponent);
+            }
+          }
+        }
+      }
+
+      // print('Graph updated.\n$this');
     }
 
     return previouslyMissingFiles;
@@ -230,28 +265,28 @@ class _Graph {
   ///
   /// This is transitive deps, but cut off by the presence of any
   /// `.transitive_digest` file next to an asset.
-  Set<AssetId> inputsFor(Iterable<AssetId> entryPoints) {
-    final result = entryPoints.toSet();
-    final nextIds = Queue.of(entryPoints);
+  Set<List<AssetId>> inputsFor(Iterable<AssetId> entryPoints) {
+    final result = Set<List<AssetId>>.identity()
+      ..addAll(entryPoints.map((id) => componentsById[id]!));
+    final nextComponents = Queue.of(result);
 
-    while (nextIds.isNotEmpty) {
-      final nextId = nextIds.removeFirst();
-      final node = nodes[nextId]!;
+    while (nextComponents.isNotEmpty) {
+      final nextComponent = nextComponents.removeFirst();
 
       // Add the transitive digest file as an input. If it exists, skip deps.
-      result.add(nextId.addExtension(_transitiveDigestExtension));
+      /*result.add(nextId.addExtension(_transitiveDigestExtension));
       if (node.hasTransitiveDigestAsset) {
         continue;
-      }
+      }*/
 
       // Skip if there are no deps because the file is missing.
-      if (node.isMissing) continue;
+      // if (node.isMissing) continue;
 
       // For each dep, if it's not in `result` yet, it's newly-discovered:
       // add it to `nextIds`.
-      for (final dep in node.deps) {
+      for (final dep in componentDeps[nextComponent]!) {
         if (result.add(dep)) {
-          nextIds.add(dep);
+          nextComponents.add(dep);
         }
       }
     }
@@ -259,7 +294,18 @@ class _Graph {
   }
 
   @override
-  String toString() => nodes.toString();
+  String toString() {
+    return '''
+_Graph
+      ${nodes.entries.map((e) => '${e.key}:${e.value}').join('\n  ')};
+
+_Graph components by ID
+      ${componentsById.entries.map((e) => '${e.key}:${e.value}').join('\n  ')};
+
+_Graph components deps
+      ${componentDeps.entries.map((e) => '${e.key}:${e.value}').join('\n  ')};
+''';
+  }
 }
 
 /// A node in the directive graph.

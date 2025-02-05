@@ -36,17 +36,21 @@ class InputTracker {
   final Set<AssetId> _inputs = {};
   late final Set<AssetId> inputs = UnmodifiableSetView(_inputs);
 
+  final Set<List<AssetId>> _components = Set.identity();
+  late final Set<List<AssetId>> components = UnmodifiableSetView(_components);
+
   void add(AssetId id) {
     _inputs.add(id);
   }
 
-  void addAll(Set<AssetId> inputs) {
-    _inputs.addAll(inputs);
+  void addAll(Iterable<List<AssetId>> inputs) {
+    _components.addAll(inputs);
   }
 
   // TODO(davidmorgan): get rid of this method.
   void clear() {
     _inputs.clear();
+    _components.clear();
   }
 }
 
