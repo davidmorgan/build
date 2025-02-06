@@ -523,7 +523,7 @@ class _SingleBuild {
             .putIfAbsent(phaseNumber, () => <String>{})
             .add(actionDescription);
 
-        var unusedAssets = <AssetId>{};
+        var unusedAssets = AssetSetHolder();
         await tracker.trackStage(
             'Build',
             () => runBuilder(
@@ -555,7 +555,7 @@ class _SingleBuild {
                   wrappedWriter,
                   actionDescription,
                   logger.errorsSeen,
-                  unusedAssets: unusedAssets,
+                  unusedAssets: unusedAssets.assetSet,
                 ));
 
         return wrappedWriter.assetsWritten;
@@ -714,7 +714,7 @@ class _SingleBuild {
     if (firstNode.previousInputsDigest == null) return true;
 
     var digest = await _computeCombinedDigest(
-        firstNode.inputs, {}, firstNode.builderOptionsId, reader);
+        firstNode.inputs, firstNode.builderOptionsId, reader);
     if (digest != firstNode.previousInputsDigest) {
       return true;
     } else {
@@ -730,7 +730,7 @@ class _SingleBuild {
   Future<bool> _postProcessBuildShouldRun(
       PostProcessAnchorNode anchorNode, AssetReader reader) async {
     var inputsDigest = await _computeCombinedDigest(
-        [anchorNode.primaryInput], {}, anchorNode.builderOptionsId, reader);
+        [anchorNode.primaryInput], anchorNode.builderOptionsId, reader);
 
     if (inputsDigest != anchorNode.previousInputsDigest) {
       anchorNode.previousInputsDigest = inputsDigest;
@@ -807,12 +807,9 @@ class _SingleBuild {
 
   /// Computes a single [Digest] based on the combined [Digest]s of [ids] and
   /// [builderOptionsId].
-  Future<Digest> _computeCombinedDigest(
-      Iterable<AssetId> ids,
-      Iterable<List<AssetId>> components,
-      AssetId builderOptionsId,
-      AssetReader reader) async {
-    ids = ids.followedBy(components.expand((x) => x));
+  Future<Digest> _computeCombinedDigest(Iterable<AssetId> ids,
+      AssetId builderOptionsId, AssetReader reader) async {
+    print('Compute for: $ids');
 
     var combinedBytes = Uint8List.fromList(List.filled(16, 0));
     void combine(Uint8List other) {
@@ -862,16 +859,14 @@ class _SingleBuild {
       AssetWriterSpy writer,
       String actionDescription,
       Iterable<ErrorReport> errors,
-      {Set<AssetId>? unusedAssets}) async {
+      {AssetSet? unusedAssets}) async {
     if (outputs.isEmpty) return;
     final assetsRead = reader.inputTracker.inputs;
-    final usedComponents = reader.inputTracker.components;
-    var usedInputs =
+    final usedInputs =
         unusedAssets != null ? assetsRead.difference(unusedAssets) : assetsRead;
 
     final inputsDigest = await _computeCombinedDigest(
         usedInputs,
-        usedComponents,
         (_assetGraph.get(outputs.first) as GeneratedAssetNode).builderOptionsId,
         reader);
 
@@ -886,7 +881,7 @@ class _SingleBuild {
       // builders we can run arbitrary code between updates otherwise, at which
       // time a node might not be in a valid state.
       _removeOldInputs(node, usedInputs);
-      _addNewInputs(node, usedInputs, usedComponents);
+      _addNewInputs(node, usedInputs);
       node
         ..state = NodeState.upToDate
         ..wasOutput = wasOutput
@@ -921,8 +916,9 @@ class _SingleBuild {
 
   /// Removes old inputs from [node] based on [updatedInputs], and cleans up all
   /// the old edges.
-  void _removeOldInputs(GeneratedAssetNode node, Set<AssetId> updatedInputs) {
-    var removedInputs = node.inputs.difference(updatedInputs);
+  void _removeOldInputs(GeneratedAssetNode node, AssetSet updatedInputs) {
+    var removedInputs =
+        (node.inputs as AssetSetHolder).assetSet.difference(updatedInputs);
     node.inputs.removeAll(removedInputs);
     for (var input in removedInputs) {
       var inputNode = _assetGraph.get(input)!;
@@ -932,12 +928,11 @@ class _SingleBuild {
 
   /// Adds new inputs to [node] based on [updatedInputs], and adds the
   /// appropriate edges.
-  void _addNewInputs(GeneratedAssetNode node, Set<AssetId> updatedInputs,
-      Set<List<AssetId>> updatedComponents) {
-    var newInputs = updatedInputs.difference(node.inputs);
+  void _addNewInputs(GeneratedAssetNode node, AssetSet updatedInputs) {
+    var newInputs =
+        updatedInputs.difference((node.inputs as AssetSetHolder).assetSet);
     node.inputs.addAll(newInputs);
-    node.inputs.addAll(updatedComponents.expand((x) => x));
-    for (var input in [...newInputs, ...updatedComponents.expand((x) => x)]) {
+    for (var input in newInputs) {
       var inputNode = _assetGraph.get(input)!;
       inputNode.outputs.add(node.id);
     }

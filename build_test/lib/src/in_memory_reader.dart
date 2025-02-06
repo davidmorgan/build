@@ -25,7 +25,7 @@ class InMemoryAssetReader extends AssetReader
 
   final InputTracker _inputTracker = InputTracker();
   @override
-  Set<AssetId> get assetsRead => _inputTracker.inputs;
+  Iterable<AssetId> get assetsRead => _inputTracker.inputs;
 
   /// Create a new asset reader that contains [sourceAssets].
   ///

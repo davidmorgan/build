@@ -116,7 +116,7 @@ class AnalysisDriverModel {
       idsToSyncOntoFilesystem = _graph.nodes.keys.toList();
       final inputIds = _graph.inputsFor(entryPoints);
       // print('Input IDs: $inputIds');
-      buildStep.inputTracker!.addAll(inputIds);
+      buildStep.inputTracker!.addAssetSet(inputIds);
     } else {
       for (final id in entryPoints) {
         buildStep.inputTracker!.add(id);
@@ -176,9 +176,9 @@ extension _AssetIdExtensions on AssetId {
 class _Graph {
   final Map<AssetId, _Node> nodes = {};
 
-  final List<List<AssetId>> components = [];
-  final Map<AssetId, List<AssetId>> componentsById = {};
-  final Map<List<AssetId>, Set<List<AssetId>>> componentDeps = Map.identity();
+  final List<AssetSet> components = [];
+  final Map<AssetId, AssetSet> componentsById = {};
+  final Map<AssetSet, Set<AssetSet>> componentDeps = Map.identity();
 
   /// Walks the import graph from [ids] loading into [nodes].
   ///
@@ -233,7 +233,7 @@ class _Graph {
       for (final component in stronglyConnectedComponents(
         nodes.keys,
         (key) => nodes[key]!.deps,
-      )) {
+      ).map(AssetSet.of)) {
         components.add(component);
         for (final id in component) {
           componentsById[id] = component;
@@ -265,10 +265,16 @@ class _Graph {
   ///
   /// This is transitive deps, but cut off by the presence of any
   /// `.transitive_digest` file next to an asset.
-  Set<List<AssetId>> inputsFor(Iterable<AssetId> entryPoints) {
-    final result = Set<List<AssetId>>.identity()
-      ..addAll(entryPoints.map((id) => componentsById[id]!));
-    final nextComponents = Queue.of(result);
+  AssetSet inputsFor(Iterable<AssetId> entryPoints) {
+    var result = AssetSet();
+    final startingComponents = Set<AssetSet>.identity();
+    for (final id in entryPoints) {
+      startingComponents.add(componentsById[id]!);
+    }
+    for (final startingComponent in startingComponents) {
+      result = result.copyWithAssetSet(startingComponent);
+    }
+    final nextComponents = Queue.of(startingComponents);
 
     while (nextComponents.isNotEmpty) {
       final nextComponent = nextComponents.removeFirst();
@@ -285,7 +291,9 @@ class _Graph {
       // For each dep, if it's not in `result` yet, it's newly-discovered:
       // add it to `nextIds`.
       for (final dep in componentDeps[nextComponent]!) {
-        if (result.add(dep)) {
+        final oldResult = result;
+        result = result.copyWithAssetSet(dep);
+        if (result != oldResult) {
           nextComponents.add(dep);
         }
       }

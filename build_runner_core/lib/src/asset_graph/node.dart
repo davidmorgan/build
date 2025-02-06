@@ -21,7 +21,7 @@ abstract class AssetNode {
 
   /// The [AssetId]s of all generated assets which are output by a [Builder]
   /// which reads this asset.
-  final Set<AssetId> outputs = <AssetId>{};
+  final Set<AssetId> outputs = AssetSetHolder();
 
   /// The [AssetId]s of all [PostProcessAnchorNode] assets for which this node
   /// is the primary input.
@@ -142,7 +142,7 @@ class GeneratedAssetNode extends AssetNode implements NodeWithInputs {
   /// This needs to be an ordered set because we compute combined input digests
   /// using this later on.
   @override
-  HashSet<AssetId> inputs;
+  Set<AssetId> inputs;
 
   /// A digest combining all digests of all previous inputs.
   ///
@@ -172,7 +172,7 @@ class GeneratedAssetNode extends AssetNode implements NodeWithInputs {
     required this.isFailure,
     required this.primaryInput,
     required this.builderOptionsId,
-  }) : inputs = inputs != null ? HashSet.from(inputs) : HashSet();
+  }) : inputs = inputs != null ? AssetSetHolder.of(inputs) : AssetSetHolder();
 
   @override
   String toString() =>
@@ -260,7 +260,7 @@ class GlobAssetNode extends InternalAssetNode implements NodeWithInputs {
   /// have been readable but were not output are included here and not in
   /// [results].
   @override
-  HashSet<AssetId> inputs;
+  Set<AssetId> inputs;
 
   @override
   bool get isReadable => false;
@@ -276,7 +276,7 @@ class GlobAssetNode extends InternalAssetNode implements NodeWithInputs {
 
   GlobAssetNode(super.id, this.glob, this.phaseNumber, this.state,
       {HashSet<AssetId>? inputs, super.lastKnownDigest, this.results})
-      : inputs = inputs ?? HashSet();
+      : inputs = inputs == null ? AssetSetHolder() : AssetSetHolder.of(inputs);
 
   static AssetId createId(String package, Glob glob, int phaseNum) => AssetId(
       package, 'glob.$phaseNum.${base64.encode(utf8.encode(glob.pattern))}');
@@ -284,7 +284,7 @@ class GlobAssetNode extends InternalAssetNode implements NodeWithInputs {
 
 /// A node which has [inputs], a [NodeState], and a [phaseNumber].
 abstract class NodeWithInputs implements AssetNode {
-  HashSet<AssetId> get inputs;
+  Set<AssetId> get inputs;
 
   int get phaseNumber;
 

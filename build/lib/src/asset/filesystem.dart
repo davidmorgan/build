@@ -5,6 +5,7 @@
 import 'dart:collection';
 import 'dart:io';
 
+import '../collection/asset_set.dart';
 import 'id.dart';
 import 'reader.dart';
 
@@ -33,24 +34,23 @@ abstract interface class HasInputTracker {
 }
 
 class InputTracker {
-  final Set<AssetId> _inputs = {};
-  late final Set<AssetId> inputs = UnmodifiableSetView(_inputs);
-
-  final Set<List<AssetId>> _components = Set.identity();
-  late final Set<List<AssetId>> components = UnmodifiableSetView(_components);
+  AssetSet inputs = AssetSet();
 
   void add(AssetId id) {
-    _inputs.add(id);
+    inputs = inputs.copyWith(id);
   }
 
-  void addAll(Iterable<List<AssetId>> inputs) {
-    _components.addAll(inputs);
+  void addAll(Iterable<AssetId> ids) {
+    inputs = inputs.copyWithAll(ids);
+  }
+
+  void addAssetSet(AssetSet assetSet) {
+    inputs = inputs.copyWithAssetSet(assetSet);
   }
 
   // TODO(davidmorgan): get rid of this method.
   void clear() {
-    _inputs.clear();
-    _components.clear();
+    inputs = AssetSet();
   }
 }
 

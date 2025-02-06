@@ -16,6 +16,7 @@ export 'src/builder/multiplexing_builder.dart';
 export 'src/builder/post_process_build_step.dart' show PostProcessBuildStep;
 export 'src/builder/post_process_builder.dart'
     show PostProcessBuilder, PostProcessBuilderFactory;
+export 'src/collection/asset_set.dart';
 export 'src/generate/expected_outputs.dart';
 export 'src/generate/run_builder.dart';
 export 'src/generate/run_post_process_builder.dart' show runPostProcessBuilder;
