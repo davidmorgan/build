@@ -809,7 +809,55 @@ class _SingleBuild {
   /// [builderOptionsId].
   Future<Digest> _computeCombinedDigest(Iterable<AssetId> ids,
       AssetId builderOptionsId, AssetReader reader) async {
-    print('Compute for: $ids');
+    //print('Compute for: $ids');
+
+    Uint8List combinedBytes;
+    if (ids is AssetSet) {
+      combinedBytes = Uint8List.fromList(List.filled(16, 0));
+      void combine(Uint8List other) {
+        assert(other.length == 16);
+        for (var i = 0; i < 16; i++) {
+          combinedBytes[i] ^= other[i];
+        }
+      }
+
+      for (final leaf in ids.leaves) {
+        combine(await _computeCombinedDigestInternal(leaf, reader));
+      }
+    } else {
+      combinedBytes = await _computeCombinedDigestInternal(ids, reader);
+    }
+
+    void combine2(Uint8List other) {
+      assert(other.length == 16);
+      for (var i = 0; i < 16; i++) {
+        combinedBytes[i] ^= other[i];
+      }
+    }
+
+    var builderOptionsNode = _assetGraph.get(builderOptionsId)!;
+    combine2(builderOptionsNode.lastKnownDigest!.bytes as Uint8List);
+
+    return Digest(combinedBytes);
+  }
+
+  static final Expando<Future<Uint8List>> _cachedDigests =
+      Expando<Future<Uint8List>>();
+
+  Future<Uint8List> _computeCombinedDigestInternal(
+      Iterable<AssetId> ids, AssetReader reader) async {
+    Completer<Uint8List>? completer;
+    if (ids is AssetSetLeaf) {
+      final maybeResult = _cachedDigests[ids];
+      if (maybeResult != null) {
+        //print('Cache hit for $ids');
+        return await maybeResult;
+      } else {
+        //print('Cache miss for $ids');
+        completer = Completer<Uint8List>();
+        _cachedDigests[ids] = completer.future;
+      }
+    }
 
     var combinedBytes = Uint8List.fromList(List.filled(16, 0));
     void combine(Uint8List other) {
@@ -819,12 +867,7 @@ class _SingleBuild {
       }
     }
 
-    var builderOptionsNode = _assetGraph.get(builderOptionsId)!;
-    combine(builderOptionsNode.lastKnownDigest!.bytes as Uint8List);
-
-    // Limit the total number of digests we are computing at a time. Otherwise
-    // this can overload the event queue.
-    await Future.wait(ids.map((id) async {
+    for (final id in ids) {
       var node = _assetGraph.get(id)!;
       if (node is GlobAssetNode) {
         await _updateGlobNodeIfNecessary(node);
@@ -834,14 +877,14 @@ class _SingleBuild {
         //
         // This needs to be unique per input so we use the md5 hash of the id.
         combine(md5.convert(id.toString().codeUnits).bytes as Uint8List);
-        return;
       } else {
         node.lastKnownDigest ??= await reader.digest(id);
       }
-      combine(node.lastKnownDigest!.bytes as Uint8List);
-    }));
+    }
 
-    return Digest(combinedBytes);
+    completer?.complete(combinedBytes);
+
+    return combinedBytes;
   }
 
   /// Sets the state for all [outputs] of a build step, by:
@@ -917,6 +960,7 @@ class _SingleBuild {
   /// Removes old inputs from [node] based on [updatedInputs], and cleans up all
   /// the old edges.
   void _removeOldInputs(GeneratedAssetNode node, AssetSet updatedInputs) {
+    if (node.inputs.isEmpty) return;
     var removedInputs =
         (node.inputs as AssetSetHolder).assetSet.difference(updatedInputs);
     node.inputs.removeAll(removedInputs);
@@ -929,8 +973,9 @@ class _SingleBuild {
   /// Adds new inputs to [node] based on [updatedInputs], and adds the
   /// appropriate edges.
   void _addNewInputs(GeneratedAssetNode node, AssetSet updatedInputs) {
-    var newInputs =
-        updatedInputs.difference((node.inputs as AssetSetHolder).assetSet);
+    var newInputs = node.inputs.isEmpty
+        ? updatedInputs
+        : updatedInputs.difference((node.inputs as AssetSetHolder).assetSet);
     node.inputs.addAll(newInputs);
     for (var input in newInputs) {
       var inputNode = _assetGraph.get(input)!;

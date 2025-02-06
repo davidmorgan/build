@@ -115,7 +115,7 @@ class AnalysisDriverModel {
       _syncedOntoFilesystem.removeAll(previouslyMissingFiles);
       idsToSyncOntoFilesystem = _graph.nodes.keys.toList();
       final inputIds = _graph.inputsFor(entryPoints);
-      // print('Input IDs: $inputIds');
+      //print('Input IDs: $inputIds');
       buildStep.inputTracker!.addAssetSet(inputIds);
     } else {
       for (final id in entryPoints) {
@@ -234,6 +234,12 @@ class _Graph {
         nodes.keys,
         (key) => nodes[key]!.deps,
       ).map(AssetSet.of)) {
+        // TODO(davidmorgan): need to upgrade from set to tree to handle
+        // generated parts efficiently.
+        if (component.length == 1 &&
+            component.single.path.contains('.g.dart')) {
+          continue;
+        }
         components.add(component);
         for (final id in component) {
           componentsById[id] = component;
@@ -243,6 +249,9 @@ class _Graph {
         for (final id in component) {
           componentDeps[component] ??= Set.identity();
           for (final dep in nodes[id]!.deps) {
+            // TODO(davidmorgan): need to upgrade from set to tree to handle
+            // generated parts efficiently.
+            if (dep.path.contains('.g.dart')) continue;
             final depComponent = componentsById[dep]!;
             if (depComponent != component) {
               componentDeps[component]!.add(depComponent);
@@ -266,6 +275,9 @@ class _Graph {
   /// This is transitive deps, but cut off by the presence of any
   /// `.transitive_digest` file next to an asset.
   AssetSet inputsFor(Iterable<AssetId> entryPoints) {
+    // TODO(davidmorgan): missing inputs need to be represented specially / differently.
+    // Also maybe transitive digest files?
+
     var result = AssetSet();
     final startingComponents = Set<AssetSet>.identity();
     for (final id in entryPoints) {

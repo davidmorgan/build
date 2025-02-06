@@ -49,49 +49,116 @@ class AssetSetHolder extends SetBase<AssetId> implements Set<AssetId> {
 }
 
 class AssetSet extends IterableBase<AssetId> {
-  final HashSet<AssetId> _set;
-  final HashSet<AssetSet> _seen;
+  final Set<AssetSetLeaf> _leaves;
+  Set<AssetSetLeaf> get leaves => _leaves;
 
-  factory AssetSet() => AssetSet._(HashSet(), HashSet());
+  factory AssetSet() => AssetSet._({AssetSetLeaf()});
 
   factory AssetSet.of(Iterable<AssetId> ids) =>
-      AssetSet._(HashSet.of(ids), HashSet());
+      AssetSet._({AssetSetLeaf.of(ids)});
 
-  AssetSet._(HashSet<AssetId> set, HashSet<AssetSet> seen)
-      : _set = set,
-        _seen = seen;
+  AssetSet._(Set<AssetSetLeaf> leaves) : _leaves = leaves;
 
-  AssetSet _copy() => AssetSet._(HashSet.of(_set), HashSet.of(_seen));
+  AssetSet _copy() => AssetSet._(_leaves.toSet());
 
   AssetSet copyWith(AssetId id) {
-    final result = AssetSet.of(_set);
-    result._set.add(id);
+    if (contains(id)) return this;
+    final result = _copy();
+    final first = result._leaves.first;
+    result._leaves.remove(first);
+    final updatedFirst = first.copyWith(id);
+    result._leaves.add(updatedFirst);
     return result;
   }
 
   AssetSet copyWithout(AssetId id) {
+    if (!contains(id)) return this;
     final result = _copy();
-    result._set.remove(id);
+    for (final set in _leaves) {
+      if (set.contains(id)) {
+        result._leaves.remove(set);
+        result._leaves.add(set.copyWithout(id));
+        return result;
+      }
+    }
     return result;
   }
 
   AssetSet copyWithAll(Iterable<AssetId> other) {
     final result = _copy();
-    result._set.addAll(other);
+    final first = result._leaves.first;
+    result._leaves.remove(first);
+    final updatedFirst = first.copyWithAll(other);
+    result._leaves.add(updatedFirst);
     return result;
   }
 
   AssetSet copyWithAssetSet(AssetSet other) {
-    if (_seen.contains(other)) return this;
     final result = _copy();
-    result._set.addAll(other);
-    result._seen.add(other);
+    result._leaves.addAll(other._leaves);
     return result;
   }
 
   AssetSet difference(AssetSet other) {
-    final result = AssetSet.of(_set);
-    result._set.removeAll(other._set);
+    final result = _copy();
+    for (final set in _leaves) {
+      if (other.any(set.contains)) {
+        result._leaves.remove(set);
+        result._leaves.add(set.difference(other));
+        return result;
+      }
+    }
+    return result;
+  }
+
+  @override
+  bool contains(Object? element) {
+    return _leaves.any((leaf) => leaf.contains(element));
+  }
+
+  @override
+  Iterator<AssetId> get iterator => _leaves.expand((leaf) => leaf).iterator;
+
+  @override
+  int get length => _leaves.fold(0, (total, leaf) => total + leaf.length);
+
+  @override
+  String toString() => 'AssetSet($_leaves)';
+}
+
+class AssetSetLeaf extends IterableBase<AssetId> {
+  final HashSet<AssetId> _set;
+
+  factory AssetSetLeaf() => AssetSetLeaf._(HashSet());
+
+  factory AssetSetLeaf.of(Iterable<AssetId> ids) =>
+      AssetSetLeaf._(HashSet.of(ids));
+
+  AssetSetLeaf._(HashSet<AssetId> set) : _set = set;
+
+  AssetSetLeaf _copy() => AssetSetLeaf._(HashSet.of(_set));
+
+  AssetSetLeaf copyWith(AssetId id) {
+    final result = AssetSetLeaf.of(_set);
+    result._set.add(id);
+    return result;
+  }
+
+  AssetSetLeaf copyWithout(AssetId id) {
+    final result = _copy();
+    result._set.remove(id);
+    return result;
+  }
+
+  AssetSetLeaf copyWithAll(Iterable<AssetId> other) {
+    final result = _copy();
+    result._set.addAll(other);
+    return result;
+  }
+
+  AssetSetLeaf difference(Iterable<AssetId> other) {
+    final result = AssetSetLeaf.of(_set);
+    result._set.removeAll(other);
     return result;
   }
 
@@ -107,5 +174,5 @@ class AssetSet extends IterableBase<AssetId> {
   int get length => _set.length;
 
   @override
-  String toString() => 'AssetSet($_set, $_seen)';
+  String toString() => 'AssetSetLeaf($_set)';
 }
