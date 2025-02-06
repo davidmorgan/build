@@ -18,12 +18,14 @@ class InMemoryAssetReader extends AssetReader
         MultiPackageAssetReader,
         RecordingAssetReader,
         Filesystem,
-        HasFilesystem {
+        HasFilesystem,
+        HasInputTracker {
   final Map<AssetId, List<int>> assets;
   final String? rootPackage;
 
+  final InputTracker _inputTracker = InputTracker();
   @override
-  final Set<AssetId> assetsRead = <AssetId>{};
+  Set<AssetId> get assetsRead => _inputTracker.inputs;
 
   /// Create a new asset reader that contains [sourceAssets].
   ///
@@ -58,22 +60,25 @@ class InMemoryAssetReader extends AssetReader
   Filesystem get filesystem => this;
 
   @override
+  InputTracker get inputTracker => _inputTracker;
+
+  @override
   Future<bool> canRead(AssetId id) async {
-    assetsRead.add(id);
+    inputTracker.add(id);
     return assets.containsKey(id);
   }
 
   @override
   Future<List<int>> readAsBytes(AssetId id) async {
     if (!await canRead(id)) throw AssetNotFoundException(id);
-    assetsRead.add(id);
+    inputTracker.add(id);
     return assets[id]!;
   }
 
   @override
   Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) async {
     if (!await canRead(id)) throw AssetNotFoundException(id);
-    assetsRead.add(id);
+    inputTracker.add(id);
     return encoding.decode(assets[id]!);
   }
 
@@ -105,4 +110,6 @@ class InMemoryAssetReader extends AssetReader
 
   @override
   String readAsStringSync(AssetId id) => utf8.decode(assets[id]!);
+
+  // [InputTracker] methods.
 }

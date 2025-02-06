@@ -16,13 +16,16 @@ import 'package:glob/glob.dart';
 /// [MultiPackageAssetReader] to see if they are capable of reading an
 /// [AssetId], otherwise checks the next reader.
 class MultiAssetReader extends AssetReader
-    implements MultiPackageAssetReader, HasFilesystem {
+    implements MultiPackageAssetReader, HasFilesystem, HasInputTracker {
   final List<MultiPackageAssetReader> _readers;
 
   MultiAssetReader(this._readers);
 
   @override
   Filesystem get filesystem => _readers.first.filesystem;
+
+  @override
+  InputTracker get inputTracker => _readers.first.inputTracker!;
 
   @override
   Future<bool> canRead(AssetId id) async {
