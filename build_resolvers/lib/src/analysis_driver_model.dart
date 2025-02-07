@@ -278,13 +278,13 @@ class _Graph {
     // TODO(davidmorgan): missing inputs need to be represented specially / differently.
     // Also maybe transitive digest files?
 
-    var result = AssetSet();
+    var result = AssetSetBuilder();
     final startingComponents = Set<AssetSet>.identity();
     for (final id in entryPoints) {
       startingComponents.add(componentsById[id]!);
     }
     for (final startingComponent in startingComponents) {
-      result = result.copyWithAssetSet(startingComponent);
+      result.addAssetSet(startingComponent);
     }
     final nextComponents = Queue.of(startingComponents);
 
@@ -303,14 +303,12 @@ class _Graph {
       // For each dep, if it's not in `result` yet, it's newly-discovered:
       // add it to `nextIds`.
       for (final dep in componentDeps[nextComponent]!) {
-        final oldResult = result;
-        result = result.copyWithAssetSet(dep);
-        if (result != oldResult) {
+        if (result.addAssetSet(dep)) {
           nextComponents.add(dep);
         }
       }
     }
-    return result;
+    return result.build();
   }
 
   @override

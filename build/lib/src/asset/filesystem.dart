@@ -34,23 +34,23 @@ abstract interface class HasInputTracker {
 }
 
 class InputTracker {
-  AssetSet inputs = AssetSet();
+  AssetSetBuilder inputs = AssetSetBuilder();
 
   void add(AssetId id) {
-    inputs = inputs.copyWith(id);
+    inputs.add(id);
   }
 
   void addAll(Iterable<AssetId> ids) {
-    inputs = inputs.copyWithAll(ids);
+    inputs.addAll(ids);
   }
 
   void addAssetSet(AssetSet assetSet) {
-    inputs = inputs.copyWithAssetSet(assetSet);
+    inputs.addAssetSet(assetSet);
   }
 
   // TODO(davidmorgan): get rid of this method.
   void clear() {
-    inputs = AssetSet();
+    inputs.clear();
   }
 }
 

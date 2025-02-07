@@ -904,9 +904,10 @@ class _SingleBuild {
       Iterable<ErrorReport> errors,
       {AssetSet? unusedAssets}) async {
     if (outputs.isEmpty) return;
-    final assetsRead = reader.inputTracker.inputs;
-    final usedInputs =
-        unusedAssets != null ? assetsRead.difference(unusedAssets) : assetsRead;
+    final assetsRead = reader.inputTracker.inputs.build();
+    final usedInputs = unusedAssets != null
+        ? (assetsRead.toBuilder()..removeAll(unusedAssets)).build()
+        : assetsRead;
 
     final inputsDigest = await _computeCombinedDigest(
         usedInputs,
@@ -961,8 +962,9 @@ class _SingleBuild {
   /// the old edges.
   void _removeOldInputs(GeneratedAssetNode node, AssetSet updatedInputs) {
     if (node.inputs.isEmpty) return;
-    var removedInputs =
-        (node.inputs as AssetSetHolder).assetSet.difference(updatedInputs);
+    var removedInputs = ((node.inputs as AssetSetHolder).assetSet.toBuilder()
+          ..removeAll(updatedInputs))
+        .build();
     node.inputs.removeAll(removedInputs);
     for (var input in removedInputs) {
       var inputNode = _assetGraph.get(input)!;
@@ -975,7 +977,9 @@ class _SingleBuild {
   void _addNewInputs(GeneratedAssetNode node, AssetSet updatedInputs) {
     var newInputs = node.inputs.isEmpty
         ? updatedInputs
-        : updatedInputs.difference((node.inputs as AssetSetHolder).assetSet);
+        : (updatedInputs.toBuilder()
+              ..removeAll((node.inputs as AssetSetHolder).assetSet))
+            .build();
     node.inputs.addAll(newInputs);
     for (var input in newInputs) {
       var inputNode = _assetGraph.get(input)!;

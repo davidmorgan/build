@@ -22,13 +22,31 @@ void main() {
       final set = AssetSet();
       expect(set, <AssetId>{});
 
-      final set1 = set.copyWithAssetSet(subset);
+      final set1 = set.rebuild((b) => b..addAssetSet(subset));
       expect(set1, {id1, id2, id3});
 
-      final set2 = set1.copyWithAssetSet(subset);
+      final set2 = set1.rebuild((b) => b..addAssetSet(subset));
       expect(set2, {id1, id2, id3});
 
       expect(identical(set1, set2), isTrue);
+    });
+
+    test('remove', () {
+      final subset = AssetSet.of([id1, id2, id3]);
+      var set = AssetSet().rebuild((b) => b..addAssetSet(subset));
+      expect(set, {id1, id2, id3});
+
+      set = set.rebuild((b) => b..remove(id2));
+      expect(set, {id1, id3});
+    });
+
+    test('removeAll', () {
+      final subset = AssetSet.of([id1, id2, id3]);
+      var set = AssetSet().rebuild((b) => b..addAssetSet(subset));
+      expect(set, {id1, id2, id3});
+
+      set = set.rebuild((b) => b..removeAll({id1, id3}));
+      expect(set, {id2});
     });
   });
 }
