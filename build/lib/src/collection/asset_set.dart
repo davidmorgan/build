@@ -31,6 +31,11 @@ class AssetSetHolder extends SetBase<AssetId> implements Set<AssetId> {
     return result;
   }
 
+  void replace(AssetSet other) {
+    _set = other;
+    _builder = null;
+  }
+
   @override
   bool add(AssetId value) => _asBuilder().add(value);
 
@@ -54,154 +59,141 @@ class AssetSetHolder extends SetBase<AssetId> implements Set<AssetId> {
 }
 
 class AssetSet extends IterableBase<AssetId> {
-  final Set<AssetSetLeaf> _leaves;
-  Set<AssetSetLeaf> get leaves => _leaves;
+  final Set<AssetComponent> _components;
+  final Set<AssetId> _added;
+  Iterable<AssetComponent> get components => _components;
+  Iterable<AssetId> get otherIds => _added;
 
-  factory AssetSet() => AssetSet._({AssetSetLeaf()});
+  factory AssetSet() => AssetSet._({}, {});
 
-  factory AssetSet.of(Iterable<AssetId> ids) =>
-      AssetSet._({AssetSetLeaf.of(ids)});
+  factory AssetSet.of(Iterable<AssetId> ids) => AssetSet._({}, ids.toSet());
 
-  AssetSet._(Set<AssetSetLeaf> leaves) : _leaves = leaves;
+  AssetSet._(this._components, this._added);
 
-  AssetSetBuilder toBuilder() => AssetSetBuilder._(_leaves, this);
+  AssetSetBuilder toBuilder() => AssetSetBuilder._(_components, _added, this);
 
   AssetSet rebuild(void Function(AssetSetBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
+  AssetSet difference(AssetSet other) =>
+      (toBuilder()..removeAssetSet(other)).build();
+
   @override
   bool contains(Object? element) {
-    return _leaves.any((leaf) => leaf.contains(element));
+    return _added.contains(element) ||
+        _components.any((component) => component.contains(element));
   }
 
   @override
-  Iterator<AssetId> get iterator => _leaves.expand((leaf) => leaf).iterator;
+  Iterator<AssetId> get iterator =>
+      _added.followedBy(_components.expand((component) => component)).iterator;
 
   @override
-  int get length => _leaves.fold(0, (total, leaf) => total + leaf.length);
+  int get length =>
+      _added.length +
+      _components.fold(0, (total, component) => total + component.length);
 
   @override
-  String toString() => 'AssetSet($_leaves)';
+  String toString() => 'AssetSet($_components, $_added)';
 }
 
 class AssetSetBuilder {
-  Set<AssetSetLeaf> _leaves;
-  AssetSet? _leavesOwner;
+  Set<AssetComponent> _components;
+  Set<AssetId> _added;
+  AssetSet? _stateOwner;
 
-  factory AssetSetBuilder() => AssetSetBuilder._({AssetSetLeaf()}, null);
+  factory AssetSetBuilder() =>
+      AssetSetBuilder._(Set<AssetComponent>.identity(), {}, null);
 
-  AssetSetBuilder._(this._leaves, this._leavesOwner);
+  AssetSetBuilder._(this._components, this._added, this._stateOwner);
 
   AssetSet build() {
-    if (_leavesOwner != null) return _leavesOwner!;
-    return AssetSet._(_leaves);
+    if (_stateOwner != null) return _stateOwner!;
+    return AssetSet._(_components, _added);
   }
 
   void update(void Function(AssetSetBuilder) updates) {
     updates(this);
   }
 
-  Set<AssetSetLeaf> get _safeLeaves {
-    if (_leavesOwner != null) {
-      _leaves = _leaves.toSet();
-      _leavesOwner = null;
+  void _disownState() {
+    if (_stateOwner != null) {
+      _components = _components.toSet();
+      _added = _added.toSet();
+      _stateOwner = null;
     }
-    return _leaves;
   }
 
   bool add(AssetId id) {
     if (_contains(id)) return false;
-    final leaves = _safeLeaves;
-    final first = leaves.first;
-    _leaves.remove(first);
-    final updatedFirst = first.copyWith(id);
-    _leaves.add(updatedFirst);
+    _disownState();
+    _added.add(id);
     return true;
   }
 
-  bool addAll(Iterable<AssetId> ids) {
-    final leaves = _safeLeaves;
-    final first = leaves.first;
-    leaves.remove(first);
-    final updatedFirst = first.copyWithAll(ids);
-    leaves.add(updatedFirst);
-    return true;
+  void addAll(Iterable<AssetId> ids) {
+    for (final id in ids) {
+      add(id);
+    }
   }
 
   bool remove(AssetId id) {
     if (!_contains(id)) return false;
-    final leaves = _safeLeaves;
-    for (final leaf in leaves.toList()) {
-      if (leaf.contains(id)) {
-        leaves.remove(leaf);
-        leaves.add(leaf.copyWithout(id));
-      }
+    _disownState();
+    if (!_added.remove(id)) {
+      throw StateError(
+          '$id is in a component and cannot be removed individually');
     }
     return true;
   }
 
   void removeAll(Iterable<AssetId> ids) {
-    final leaves = _safeLeaves;
-    for (final set in leaves.toList()) {
-      if (ids.any(set.contains)) {
-        leaves.remove(set);
-        leaves.add(set.difference(ids));
-      }
+    _disownState();
+    for (final id in ids) {
+      remove(id);
     }
   }
 
   void clear() {
-    final leaves = _safeLeaves;
-    leaves.clear();
-    leaves.add(AssetSetLeaf());
+    _disownState();
+    _components.clear();
+    _added.clear();
   }
 
-  bool addAssetSet(AssetSet ids) {
-    if (!ids.leaves.any((leaf) => !_leaves.contains(leaf))) return false;
-    _safeLeaves.addAll(ids.leaves);
+  bool addComponent(AssetComponent component) {
+    if (_components.contains(component)) return false;
+    _disownState();
+    _components.add(component);
     return true;
   }
 
+  void addAssetSet(AssetSet assetSet) {
+    _disownState();
+    _components.addAll(assetSet.components);
+    addAll(assetSet.otherIds);
+  }
+
+  void removeAssetSet(AssetSet assetSet) {
+    _disownState();
+    _components.removeAll(assetSet.components);
+    removeAll(assetSet.otherIds);
+  }
+
   bool _contains(Object? element) {
-    return _leaves.any((leaf) => leaf.contains(element));
+    return _added.contains(element) ||
+        _components.any((component) => component.contains(element));
   }
 }
 
-class AssetSetLeaf extends IterableBase<AssetId> {
+class AssetComponent extends IterableBase<AssetId> {
   final HashSet<AssetId> _set;
 
-  factory AssetSetLeaf() => AssetSetLeaf._(HashSet());
+  factory AssetComponent() => AssetComponent._(HashSet());
 
-  factory AssetSetLeaf.of(Iterable<AssetId> ids) =>
-      AssetSetLeaf._(HashSet.of(ids));
+  factory AssetComponent.of(Iterable<AssetId> ids) =>
+      AssetComponent._(HashSet.of(ids));
 
-  AssetSetLeaf._(HashSet<AssetId> set) : _set = set;
-
-  AssetSetLeaf _copy() => AssetSetLeaf._(HashSet.of(_set));
-
-  AssetSetLeaf copyWith(AssetId id) {
-    final result = AssetSetLeaf.of(_set);
-    result._set.add(id);
-    return result;
-  }
-
-  AssetSetLeaf copyWithout(AssetId id) {
-    final result = _copy();
-    result._set.remove(id);
-    return result;
-  }
-
-  AssetSetLeaf copyWithAll(Iterable<AssetId> other) {
-    final result = _copy();
-    result._set.addAll(other);
-    return result;
-  }
-
-  AssetSetLeaf difference(Iterable<AssetId> other) {
-    final result = AssetSetLeaf.of(_set);
-    result._set.removeAll(other);
-    return result;
-  }
+  AssetComponent._(HashSet<AssetId> set) : _set = set;
 
   @override
   bool contains(Object? element) {
@@ -215,5 +207,5 @@ class AssetSetLeaf extends IterableBase<AssetId> {
   int get length => _set.length;
 
   @override
-  String toString() => 'AssetSetLeaf($_set)';
+  String toString() => 'AssetComponent($_set)';
 }

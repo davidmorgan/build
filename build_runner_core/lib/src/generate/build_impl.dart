@@ -821,9 +821,10 @@ class _SingleBuild {
         }
       }
 
-      for (final leaf in ids.leaves) {
-        combine(await _computeCombinedDigestInternal(leaf, reader));
+      for (final component in ids.components) {
+        combine(await _computeCombinedDigestInternal(component, reader));
       }
+      combine(await _computeCombinedDigestInternal(ids.otherIds, reader));
     } else {
       combinedBytes = await _computeCombinedDigestInternal(ids, reader);
     }
@@ -847,7 +848,7 @@ class _SingleBuild {
   Future<Uint8List> _computeCombinedDigestInternal(
       Iterable<AssetId> ids, AssetReader reader) async {
     Completer<Uint8List>? completer;
-    if (ids is AssetSetLeaf) {
+    if (ids is AssetComponent) {
       final maybeResult = _cachedDigests[ids];
       if (maybeResult != null) {
         return await maybeResult;
@@ -866,7 +867,14 @@ class _SingleBuild {
     }
 
     for (final id in ids) {
-      var node = _assetGraph.get(id)!;
+      var node = _assetGraph.get(id);
+      if (node == null) {
+        // TODO(davidmorgan): this was happening in SingleStepReader
+        // `_isReadable`, now `AnalysisDriverModel` is not calling that for
+        // missing files; fix.
+        node = SyntheticSourceAssetNode(id);
+        _assetGraph.add(node);
+      }
       if (node is GlobAssetNode) {
         await _updateGlobNodeIfNecessary(node);
         combine(node.lastKnownDigest!.bytes as Uint8List);
@@ -924,8 +932,7 @@ class _SingleBuild {
       // **IMPORTANT**: All updates to `node` must be synchronous. With lazy
       // builders we can run arbitrary code between updates otherwise, at which
       // time a node might not be in a valid state.
-      _removeOldInputs(node, usedInputs);
-      _addNewInputs(node, usedInputs);
+      _updateInputs(node, usedInputs);
       node
         ..state = NodeState.upToDate
         ..wasOutput = wasOutput
@@ -958,30 +965,21 @@ class _SingleBuild {
     }
   }
 
-  /// Removes old inputs from [node] based on [updatedInputs], and cleans up all
-  /// the old edges.
-  void _removeOldInputs(GeneratedAssetNode node, AssetSet updatedInputs) {
-    if (node.inputs.isEmpty) return;
-    var removedInputs = ((node.inputs as AssetSetHolder).assetSet.toBuilder()
-          ..removeAll(updatedInputs))
-        .build();
-    node.inputs.removeAll(removedInputs);
-    for (var input in removedInputs) {
+  /// Updates [node] inputs to [updatedInputs].
+  ///
+  /// Adds new edges, removes old ones.
+  void _updateInputs(GeneratedAssetNode node, AssetSet updatedInputs) {
+    final nodeInputs = node.inputs as AssetSetHolder;
+    final oldInputs = nodeInputs.assetSet;
+    nodeInputs.replace(updatedInputs);
+
+    // Remove edges for removed inputs.
+    for (var input in oldInputs.difference(updatedInputs)) {
       var inputNode = _assetGraph.get(input)!;
       inputNode.outputs.remove(node.id);
     }
-  }
-
-  /// Adds new inputs to [node] based on [updatedInputs], and adds the
-  /// appropriate edges.
-  void _addNewInputs(GeneratedAssetNode node, AssetSet updatedInputs) {
-    var newInputs = node.inputs.isEmpty
-        ? updatedInputs
-        : (updatedInputs.toBuilder()
-              ..removeAll((node.inputs as AssetSetHolder).assetSet))
-            .build();
-    node.inputs.addAll(newInputs);
-    for (var input in newInputs) {
+    // Add edges for added inputs.
+    for (var input in updatedInputs.difference(oldInputs)) {
       var inputNode = _assetGraph.get(input)!;
       inputNode.outputs.add(node.id);
     }

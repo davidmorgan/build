@@ -176,9 +176,9 @@ extension _AssetIdExtensions on AssetId {
 class _Graph {
   final Map<AssetId, _Node> nodes = {};
 
-  final List<AssetSet> components = [];
-  final Map<AssetId, AssetSet> componentsById = {};
-  final Map<AssetSet, Set<AssetSet>> componentDeps = Map.identity();
+  final List<AssetComponent> components = [];
+  final Map<AssetId, AssetComponent> componentsById = {};
+  final Map<AssetComponent, Set<AssetComponent>> componentDeps = Map.identity();
 
   /// Walks the import graph from [ids] loading into [nodes].
   ///
@@ -233,7 +233,7 @@ class _Graph {
       for (final component in stronglyConnectedComponents(
         nodes.keys,
         (key) => nodes[key]!.deps,
-      ).map(AssetSet.of)) {
+      ).map(AssetComponent.of)) {
         // TODO(davidmorgan): need to upgrade from set to tree to handle
         // generated parts efficiently.
         if (component.length == 1 &&
@@ -279,12 +279,12 @@ class _Graph {
     // Also maybe transitive digest files?
 
     var result = AssetSetBuilder();
-    final startingComponents = Set<AssetSet>.identity();
+    final startingComponents = Set<AssetComponent>.identity();
     for (final id in entryPoints) {
       startingComponents.add(componentsById[id]!);
     }
     for (final startingComponent in startingComponents) {
-      result.addAssetSet(startingComponent);
+      result.addComponent(startingComponent);
     }
     final nextComponents = Queue.of(startingComponents);
 
@@ -303,7 +303,7 @@ class _Graph {
       // For each dep, if it's not in `result` yet, it's newly-discovered:
       // add it to `nextIds`.
       for (final dep in componentDeps[nextComponent]!) {
-        if (result.addAssetSet(dep)) {
+        if (result.addComponent(dep)) {
           nextComponents.add(dep);
         }
       }

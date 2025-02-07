@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:collection';
 import 'dart:io';
 
 import '../collection/asset_set.dart';
@@ -40,8 +39,8 @@ class InputTracker {
     inputs.add(id);
   }
 
-  void addAll(Iterable<AssetId> ids) {
-    inputs.addAll(ids);
+  void addAssetComponent(AssetComponent component) {
+    inputs.addComponent(component);
   }
 
   void addAssetSet(AssetSet assetSet) {

@@ -80,7 +80,8 @@ class _AssetGraphDeserializer {
               'https://github.com/dart-lang/build/issues/1804.');
           throw AssetGraphCorruptedException();
         }
-        inputsNode.inputs.add(node.id);
+        // TODO(davidmorgan): serialize with components and restore.
+        // inputsNode.inputs.add(node.id);
       }
 
       if (node is PostProcessAnchorNode) {
