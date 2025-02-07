@@ -850,10 +850,8 @@ class _SingleBuild {
     if (ids is AssetSetLeaf) {
       final maybeResult = _cachedDigests[ids];
       if (maybeResult != null) {
-        //print('Cache hit for $ids');
         return await maybeResult;
       } else {
-        //print('Cache miss for $ids');
         completer = Completer<Uint8List>();
         _cachedDigests[ids] = completer.future;
       }
@@ -871,6 +869,7 @@ class _SingleBuild {
       var node = _assetGraph.get(id)!;
       if (node is GlobAssetNode) {
         await _updateGlobNodeIfNecessary(node);
+        combine(node.lastKnownDigest!.bytes as Uint8List);
       } else if (!await reader.canRead(id)) {
         // We want to add something here, a missing/unreadable input should be
         // different from no input at all.
@@ -879,6 +878,7 @@ class _SingleBuild {
         combine(md5.convert(id.toString().codeUnits).bytes as Uint8List);
       } else {
         node.lastKnownDigest ??= await reader.digest(id);
+        combine(node.lastKnownDigest!.bytes as Uint8List);
       }
     }
 
