@@ -177,7 +177,7 @@ class _Graph {
   final Map<AssetId, _Node> nodes = {};
 
   final List<AssetComponent> components = [];
-  final Map<AssetId, AssetComponent> componentsById = {};
+  Map<AssetId, AssetComponent> componentsById = {};
   final Map<AssetComponent, Set<AssetComponent>> componentDeps = Map.identity();
 
   /// Walks the import graph from [ids] loading into [nodes].
@@ -229,8 +229,10 @@ class _Graph {
 
     if (anyChange) {
       components.clear();
-      componentsById.clear();
-      for (final component in stronglyConnectedComponents(
+      final oldComponentsById = componentsById;
+      componentsById = {};
+
+      for (var component in stronglyConnectedComponents(
         nodes.keys,
         (key) => nodes[key]!.deps,
       ).map(AssetComponent.of)) {
@@ -240,6 +242,14 @@ class _Graph {
             component.single.path.contains('.g.dart')) {
           continue;
         }
+
+        final maybeComponent = oldComponentsById[component.first];
+        if (maybeComponent != null &&
+            maybeComponent.length == component.length) {
+          // TODO(davidmorgan): check for equality!
+          component = maybeComponent;
+        }
+
         components.add(component);
         for (final id in component) {
           componentsById[id] = component;
