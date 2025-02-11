@@ -4,6 +4,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:build/build.dart';
 import 'package:build/src/asset/filesystem.dart';
@@ -75,6 +76,10 @@ class FileBasedAssetReader extends AssetReader
   @override
   String readAsStringSync(AssetId id) =>
       _fileFor(id, packageGraph).readAsStringSync();
+
+  @override
+  Uint8List readAsBytesSync(AssetId id) =>
+      _fileFor(id, packageGraph).readAsBytesSync();
 }
 
 /// Creates an [AssetId] for [file], which is a part of [packageNode].

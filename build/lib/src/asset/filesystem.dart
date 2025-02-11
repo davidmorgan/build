@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
+import 'dart:typed_data';
 
 import '../collection/asset_set.dart';
 import 'id.dart';
@@ -17,6 +18,7 @@ void LOG(String message) {
 abstract interface class Filesystem {
   bool existsSync(AssetId id);
   String readAsStringSync(AssetId id);
+  Uint8List readAsBytesSync(AssetId id);
 }
 
 abstract interface class HasFilesystem {

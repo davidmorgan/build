@@ -8,6 +8,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:build/build.dart';
+// ignore: implementation_imports
+import 'package:build/src/asset/filesystem.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 import 'package:logging/logging.dart';
@@ -502,8 +504,8 @@ class _SingleBuild {
             _getUpdatedGlobNode,
             wrappedWriter);
 
-        if (!await tracker.trackStage(
-            'Setup', () => _buildShouldRun(builderOutputs, wrappedReader))) {
+        if (!await tracker.trackStage('Setup',
+            () => _buildShouldRun(builderOutputs, _reader.filesystem))) {
           return <AssetId>[];
         }
 
@@ -551,7 +553,8 @@ class _SingleBuild {
             'Finalize',
             () => _setOutputsState(
                   builderOutputs,
-                  wrappedReader,
+                  _reader.filesystem,
+                  wrappedReader.inputTracker,
                   wrappedWriter,
                   actionDescription,
                   logger.errorsSeen,
@@ -602,6 +605,7 @@ class _SingleBuild {
     var input = anchorNode.primaryInput;
     var inputNode = _assetGraph.get(input)!;
     var wrappedWriter = AssetWriterSpy(_writer);
+    var filesystem = _reader.filesystem;
     var wrappedReader = SingleStepReader(
         _reader,
         _assetGraph,
@@ -612,7 +616,7 @@ class _SingleBuild {
         null,
         wrappedWriter);
 
-    if (!await _postProcessBuildShouldRun(anchorNode, wrappedReader)) {
+    if (!await _postProcessBuildShouldRun(anchorNode, _reader.filesystem)) {
       return <AssetId>[];
     }
     // We may have read some inputs in the call to `_buildShouldRun`, we want
@@ -671,15 +675,20 @@ class _SingleBuild {
     // Reset the state for all the output nodes based on what was read and
     // written.
     inputNode.primaryOutputs.addAll(assetsWritten);
-    await _setOutputsState(assetsWritten, wrappedReader, wrappedWriter,
-        actionDescription, logger.errorsSeen);
+    await _setOutputsState(
+        assetsWritten,
+        filesystem,
+        wrappedReader.inputTracker,
+        wrappedWriter,
+        actionDescription,
+        logger.errorsSeen);
 
     return assetsWritten;
   }
 
   /// Checks and returns whether any [outputs] need to be updated.
   Future<bool> _buildShouldRun(
-      Iterable<AssetId> outputs, AssetReader reader) async {
+      Iterable<AssetId> outputs, Filesystem filesystem) async {
     assert(
         outputs.every(_assetGraph.contains),
         'Outputs should be known statically. Missing '
@@ -714,7 +723,7 @@ class _SingleBuild {
     if (firstNode.previousInputsDigest == null) return true;
 
     var digest = await _computeCombinedDigest(
-        firstNode.inputs, firstNode.builderOptionsId, reader);
+        firstNode.inputs, firstNode.builderOptionsId, filesystem);
     if (digest != firstNode.previousInputsDigest) {
       return true;
     } else {
@@ -728,9 +737,9 @@ class _SingleBuild {
 
   /// Checks if a post process build should run based on [anchorNode].
   Future<bool> _postProcessBuildShouldRun(
-      PostProcessAnchorNode anchorNode, AssetReader reader) async {
+      PostProcessAnchorNode anchorNode, Filesystem filesystem) async {
     var inputsDigest = await _computeCombinedDigest(
-        [anchorNode.primaryInput], anchorNode.builderOptionsId, reader);
+        [anchorNode.primaryInput], anchorNode.builderOptionsId, filesystem);
 
     if (inputsDigest != anchorNode.previousInputsDigest) {
       anchorNode.previousInputsDigest = inputsDigest;
@@ -808,7 +817,7 @@ class _SingleBuild {
   /// Computes a single [Digest] based on the combined [Digest]s of [ids] and
   /// [builderOptionsId].
   Future<Digest> _computeCombinedDigest(Iterable<AssetId> ids,
-      AssetId builderOptionsId, AssetReader reader) async {
+      AssetId builderOptionsId, Filesystem filesystem) async {
     //print('Compute for: $ids');
 
     Uint8List combinedBytes;
@@ -822,11 +831,11 @@ class _SingleBuild {
       }
 
       for (final component in ids.components) {
-        combine(await _computeCombinedDigestInternal(component, reader));
+        combine(await _computeCombinedDigestInternal(component, filesystem));
       }
-      combine(await _computeCombinedDigestInternal(ids.otherIds, reader));
+      combine(await _computeCombinedDigestInternal(ids.otherIds, filesystem));
     } else {
-      combinedBytes = await _computeCombinedDigestInternal(ids, reader);
+      combinedBytes = await _computeCombinedDigestInternal(ids, filesystem);
     }
 
     void combine2(Uint8List other) {
@@ -846,7 +855,7 @@ class _SingleBuild {
       Expando<Future<Uint8List>>();
 
   Future<Uint8List> _computeCombinedDigestInternal(
-      Iterable<AssetId> ids, AssetReader reader) async {
+      Iterable<AssetId> ids, Filesystem filesystem) async {
     Completer<Uint8List>? completer;
     if (ids is AssetComponent) {
       final maybeResult = _cachedDigests[ids];
@@ -878,14 +887,14 @@ class _SingleBuild {
       if (node is GlobAssetNode) {
         await _updateGlobNodeIfNecessary(node);
         combine(node.lastKnownDigest!.bytes as Uint8List);
-      } else if (!await reader.canRead(id)) {
+      } else if (!filesystem.existsSync(id)) {
         // We want to add something here, a missing/unreadable input should be
         // different from no input at all.
         //
         // This needs to be unique per input so we use the md5 hash of the id.
         combine(md5.convert(id.toString().codeUnits).bytes as Uint8List);
       } else {
-        node.lastKnownDigest ??= await reader.digest(id);
+        node.lastKnownDigest ??= md5.convert(filesystem.readAsBytesSync(id));
         combine(node.lastKnownDigest!.bytes as Uint8List);
       }
     }
@@ -906,13 +915,14 @@ class _SingleBuild {
   /// - Storing the error message with the [_failureReporter].
   Future<void> _setOutputsState(
       Iterable<AssetId> outputs,
-      SingleStepReader reader,
+      Filesystem filesystem,
+      InputTracker inputTracker,
       AssetWriterSpy writer,
       String actionDescription,
       Iterable<ErrorReport> errors,
       {AssetSet? unusedAssets}) async {
     if (outputs.isEmpty) return;
-    final assetsRead = reader.inputTracker.inputs.build();
+    final assetsRead = inputTracker.inputs.build();
     final usedInputs = unusedAssets != null
         ? (assetsRead.toBuilder()..removeAll(unusedAssets)).build()
         : assetsRead;
@@ -920,7 +930,7 @@ class _SingleBuild {
     final inputsDigest = await _computeCombinedDigest(
         usedInputs,
         (_assetGraph.get(outputs.first) as GeneratedAssetNode).builderOptionsId,
-        reader);
+        filesystem);
 
     final isFailure = errors.isNotEmpty;
 
