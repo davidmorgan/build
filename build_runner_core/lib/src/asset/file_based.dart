@@ -70,16 +70,38 @@ class FileBasedAssetReader extends AssetReader
 
   // [Filesytem] methods.
 
-  @override
-  bool existsSync(AssetId id) => _fileFor(id, packageGraph).existsSync();
+  final Map<AssetId, bool> _exists = {};
+  Map<AssetId, String> _strings = {};
+  Map<AssetId, String> _oldStrings = {};
+  final Map<AssetId, Uint8List> _bytes = {};
 
   @override
-  String readAsStringSync(AssetId id) =>
-      _fileFor(id, packageGraph).readAsStringSync();
+  void clearCaches() {
+    _exists.clear();
+    _oldStrings = _strings;
+    _strings = {};
+    _bytes.clear();
+  }
+
+  @override
+  bool existsSync(AssetId id) =>
+      _exists[id] ??= _fileFor(id, packageGraph).existsSync();
+
+  @override
+  String readAsStringSync(AssetId id) {
+    final maybeResult = _strings[id];
+    if (maybeResult != null) return maybeResult;
+
+    var result = _fileFor(id, packageGraph).readAsStringSync();
+    final oldResult = _oldStrings[id];
+    if (result == oldResult) result = oldResult!;
+    _strings[id] = result;
+    return result;
+  }
 
   @override
   Uint8List readAsBytesSync(AssetId id) =>
-      _fileFor(id, packageGraph).readAsBytesSync();
+      _bytes[id] ??= _fileFor(id, packageGraph).readAsBytesSync();
 }
 
 /// Creates an [AssetId] for [file], which is a part of [packageNode].

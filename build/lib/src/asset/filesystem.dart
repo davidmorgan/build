@@ -19,6 +19,7 @@ abstract interface class Filesystem {
   bool existsSync(AssetId id);
   String readAsStringSync(AssetId id);
   Uint8List readAsBytesSync(AssetId id);
+  void clearCaches();
 }
 
 abstract interface class HasFilesystem {

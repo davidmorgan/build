@@ -339,6 +339,7 @@ class _SingleBuild {
   Future<BuildResult> _runPhases() {
     return _performanceTracker.track(() async {
       final outputs = <AssetId>[];
+      _reader.filesystem.clearCaches();
       for (var phaseNum = 0; phaseNum < _buildPhases.length; phaseNum++) {
         var phase = _buildPhases[phaseNum];
         if (phase.isOptional) continue;

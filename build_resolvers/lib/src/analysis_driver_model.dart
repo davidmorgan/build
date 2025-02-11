@@ -180,6 +180,9 @@ class _Graph {
   Map<AssetId, AssetComponent> componentsById = {};
   final Map<AssetComponent, Set<AssetComponent>> componentDeps = Map.identity();
 
+  // TODO(davidmorgan): do this by asking the filesystem if it changed.
+  final Map<String, List<AssetId>> _deps = Map.identity();
+
   /// Walks the import graph from [ids] loading into [nodes].
   ///
   /// Checks files that are in the graph as missing to determine whether they
@@ -210,7 +213,7 @@ class _Graph {
           final hasTransitiveDigestAsset = filesystem
               .existsSync(id.addExtension(_transitiveDigestExtension));
           final content = filesystem.readAsStringSync(id);
-          final deps = _parseDependencies(content, id);
+          final deps = _deps[content] ??= _parseDependencies(content, id);
           node = _Node(
               id: id,
               deps: deps,
