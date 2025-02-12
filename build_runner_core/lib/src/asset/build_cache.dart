@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:build/build.dart';
+// ignore: implementation_imports
+import 'package:build/src/internal.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 
@@ -13,7 +15,7 @@ import 'writer.dart';
 
 /// Wraps an [AssetReader] and translates reads for generated files into reads
 /// from the build cache directory
-class BuildCacheReader implements AssetReader {
+class BuildCacheReader implements AssetReader, AssetReaderState {
   final AssetGraph _assetGraph;
   final AssetReader _delegate;
   final String _rootPackage;
@@ -25,6 +27,12 @@ class BuildCacheReader implements AssetReader {
       delegate is PathProvidingAssetReader
           ? _PathProvidingBuildCacheReader._(delegate, assetGraph, rootPackage)
           : BuildCacheReader._(delegate, assetGraph, rootPackage);
+
+  @override
+  Filesystem get filesystem => _delegate.filesystem;
+
+  @override
+  InputTracker? get inputTracker => _delegate.inputTracker;
 
   @override
   Future<bool> canRead(AssetId id) =>

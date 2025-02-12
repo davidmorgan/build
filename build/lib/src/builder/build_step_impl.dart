@@ -18,6 +18,7 @@ import '../asset/id.dart';
 import '../asset/reader.dart';
 import '../asset/writer.dart';
 import '../resource/resource.dart';
+import '../state/filesystem.dart';
 import '../state/input_tracker.dart';
 import '../state/reader_state.dart';
 import 'build_step.dart';
@@ -51,6 +52,10 @@ class BuildStepImpl implements BuildStep, AssetReaderState {
 
   final _writtenAssets = <AssetId>{};
 
+  /// The filesystem the build is running on.
+  @override
+  final Filesystem filesystem;
+
   /// Used internally for reading files.
   final AssetReader _reader;
 
@@ -77,6 +82,7 @@ class BuildStepImpl implements BuildStep, AssetReaderState {
       {StageTracker? stageTracker,
       void Function(Iterable<AssetId>)? reportUnusedAssets})
       : allowedOutputs = UnmodifiableSetView(expectedOutputs.toSet()),
+        filesystem = _reader.filesystem,
         _stageTracker = stageTracker ?? NoOpStageTracker.instance,
         _reportUnusedAssets = reportUnusedAssets;
 

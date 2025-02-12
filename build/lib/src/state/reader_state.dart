@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../asset/reader.dart';
+import 'filesystem.dart';
 import 'input_tracker.dart';
 
 /// Provides access to the state backing an [AssetReader].
@@ -21,6 +22,11 @@ extension AssetReaderStateExtension on AssetReader {
     return result;
   }
 
+  Filesystem get filesystem {
+    _requireIsAssetReaderState();
+    return (this as AssetReaderState).filesystem;
+  }
+
   /// Throws if `this` is not an [AssetReaderState].
   void _requireIsAssetReaderState() {
     if (this is! AssetReaderState) {
@@ -35,4 +41,10 @@ abstract interface class AssetReaderState {
   /// The [InputTracker] that this reader records reads to; or `null` if it does
   /// not have one.
   InputTracker? get inputTracker;
+
+  /// The [Filesystem] that this reader reads from.
+  ///
+  /// Warning: this access to the filesystem bypasses reader functionality such
+  /// as read tracking, caching and per-generator visibility restrictions.
+  Filesystem get filesystem;
 }

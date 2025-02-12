@@ -80,6 +80,9 @@ class SingleStepReader implements AssetReader, AssetReaderState {
       this._primaryPackage, this._isReadableNode, this._checkInvalidInput,
       [this._getGlobNode, this._writtenAssets]);
 
+  @override
+  Filesystem get filesystem => _delegate.filesystem;
+
   /// Checks whether [id] can be read by this step - attempting to build the
   /// asset if necessary.
   ///

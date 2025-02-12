@@ -6,6 +6,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:build/build.dart';
+// ignore: implementation_imports
+import 'package:build/src/internal.dart';
+import 'package:build/src/state/filesystem.dart';
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
 
@@ -74,7 +77,7 @@ final class _PendingFileState {
 
 @internal
 final class BatchReader extends AssetReader
-    implements RunnerAssetReader, PathProvidingAssetReader {
+    implements RunnerAssetReader, PathProvidingAssetReader, AssetReaderState {
   final RunnerAssetReader _inner;
   final PathProvidingAssetReader _innerPathProviding;
   final _FileSystemWriteBatch _batch;
@@ -84,6 +87,12 @@ final class BatchReader extends AssetReader
   _PendingFileState? _stateFor(AssetId id) {
     return _batch._pendingWrites[id];
   }
+
+  @override
+  Filesystem get filesystem => _inner.filesystem;
+
+  @override
+  InputTracker? get inputTracker => _inner.inputTracker;
 
   @override
   Future<bool> canRead(AssetId id) async {

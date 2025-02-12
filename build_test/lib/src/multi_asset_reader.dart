@@ -35,6 +35,16 @@ class MultiAssetReader extends AssetReader
   }
 
   @override
+  Filesystem get filesystem {
+    // There should be exactly one filesystem between the readers.
+    final results = Set<Filesystem>.identity()
+      ..addAll(_readers.map((r) => r.filesystem).nonNulls);
+    if (results.length == 1) return results.single;
+    throw StateError('MultiAssetReader readers have more than one Filesystem: '
+        '$_readers -> $results');
+  }
+
+  @override
   Future<bool> canRead(AssetId id) async {
     for (var reader in _readers) {
       if (await reader.canRead(id)) {

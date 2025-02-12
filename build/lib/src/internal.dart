@@ -6,5 +6,6 @@
 /// `build_test` only.
 library;
 
+export 'state/filesystem.dart';
 export 'state/input_tracker.dart';
 export 'state/reader_state.dart';

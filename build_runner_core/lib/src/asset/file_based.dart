@@ -4,8 +4,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:build/build.dart';
+// ignore: implementation_imports
+import 'package:build/src/internal.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:path/path.dart' as path;
@@ -21,10 +24,17 @@ final _descriptorPool = Pool(32);
 /// Basic [AssetReader] which uses a [PackageGraph] to look up where to read
 /// files from disk.
 class FileBasedAssetReader extends AssetReader
-    implements RunnerAssetReader, PathProvidingAssetReader {
+    implements RunnerAssetReader, PathProvidingAssetReader, AssetReaderState {
   final PackageGraph packageGraph;
 
-  FileBasedAssetReader(this.packageGraph);
+  @override
+  final Filesystem filesystem;
+
+  FileBasedAssetReader(this.packageGraph)
+      : filesystem = _Filesystem(packageGraph);
+
+  @override
+  InputTracker? get inputTracker => null;
 
   @override
   Future<bool> canRead(AssetId id) =>
@@ -138,4 +148,22 @@ Future<File> _fileForOrThrow(AssetId id, PackageGraph packageGraph) {
     if (!exists) throw AssetNotFoundException(id);
     return file;
   });
+}
+
+/// A filesystem using [packageGraph] to map to the `dart:io` filesystem.
+class _Filesystem implements Filesystem {
+  final PackageGraph packageGraph;
+
+  _Filesystem(this.packageGraph);
+
+  @override
+  bool existsSync(AssetId id) => _fileFor(id, packageGraph).existsSync();
+
+  @override
+  Uint8List readAsBytesSync(AssetId id) =>
+      _fileFor(id, packageGraph).readAsBytesSync();
+
+  @override
+  String readAsStringSync(AssetId id) =>
+      _fileFor(id, packageGraph).readAsStringSync();
 }
