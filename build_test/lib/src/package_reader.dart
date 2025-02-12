@@ -5,8 +5,11 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:build/build.dart';
+// ignore: implementation_imports
+import 'package:build/src/internal.dart';
 import 'package:glob/glob.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
@@ -21,11 +24,8 @@ import 'package:stream_transform/stream_transform.dart';
 /// var assetReader = await PackageAssetReader.currentIsolate();
 /// ```
 class PackageAssetReader extends AssetReader
-    implements MultiPackageAssetReader {
-  final PackageConfig _packageConfig;
-
-  /// What package is the originating build occurring in.
-  final String? _rootPackage;
+    implements MultiPackageAssetReader, AssetReaderState {
+  final _Filesystem _filesystem;
 
   /// Wrap a [PackageConfig] to identify where files are located.
   ///
@@ -36,7 +36,14 @@ class PackageAssetReader extends AssetReader
   /// new PackageAssetReader(
   ///   await loadPackageConfigUri(await Isolate.packageConfig));
   /// ```
-  PackageAssetReader(this._packageConfig, [this._rootPackage]);
+  PackageAssetReader(PackageConfig packageConfig, [String? rootPackage])
+      : _filesystem = _Filesystem(packageConfig, rootPackage);
+
+  @override
+  InputTracker? get inputTracker => null;
+
+  @override
+  Filesystem get filesystem => _filesystem;
 
   /// A [PackageAssetReader] with a single [packageRoot] configured.
   ///
@@ -81,42 +88,15 @@ class PackageAssetReader extends AssetReader
     return PackageAssetReader(packageConfig, rootPackage);
   }
 
-  File? _resolve(AssetId id) {
-    final uri = id.uri;
-    if (uri.isScheme('package')) {
-      final uri = _packageConfig.resolve(id.uri);
-      if (uri != null) {
-        return File.fromUri(uri);
-      }
-    }
-    if (id.package == _rootPackage) {
-      return File(p.canonicalize(p.join(_rootPackagePath, id.path)));
-    }
-    return null;
-  }
-
-  String get _rootPackagePath {
-    // If the root package has a pub layout, use `packagePath`.
-    final rootPackage = _rootPackage;
-    final root = rootPackage != null
-        ? _packageConfig[rootPackage]?.root.toFilePath()
-        : null;
-    if (root != null && Directory(p.join(root, 'lib')).existsSync()) {
-      return root;
-    }
-    // Assume the cwd is the package root.
-    return p.current;
-  }
-
   @override
   Stream<AssetId> findAssets(Glob glob, {String? package}) {
-    package ??= _rootPackage;
+    package ??= _filesystem.rootPackage;
     if (package == null) {
       throw UnsupportedError(
           'Root package must be provided to use `findAssets` without an '
           'explicit `package`.');
     }
-    var packageLibDir = _packageConfig[package]?.packageUriRoot;
+    var packageLibDir = _filesystem.packageConfig[package]?.packageUriRoot;
     if (packageLibDir == null) return const Stream.empty();
 
     var packageFiles = Directory.fromUri(packageLibDir)
@@ -124,11 +104,11 @@ class PackageAssetReader extends AssetReader
         .whereType<File>()
         .map((f) =>
             p.join('lib', p.relative(f.path, from: p.fromUri(packageLibDir))));
-    if (package == _rootPackage) {
-      packageFiles = packageFiles.merge(Directory(_rootPackagePath)
+    if (package == _filesystem.rootPackage) {
+      packageFiles = packageFiles.merge(Directory(_filesystem.rootPackagePath)
           .list(recursive: true)
           .whereType<File>()
-          .map((f) => p.relative(f.path, from: _rootPackagePath))
+          .map((f) => p.relative(f.path, from: _filesystem.rootPackagePath))
           .where((p) => !(p.startsWith('packages/') || p.startsWith('lib/'))));
     }
     return packageFiles.where(glob.matches).map((p) => AssetId(package!, p));
@@ -136,14 +116,61 @@ class PackageAssetReader extends AssetReader
 
   @override
   Future<bool> canRead(AssetId id) =>
-      _resolve(id)?.exists() ?? Future.value(false);
+      _filesystem.resolve(id)?.exists() ?? Future.value(false);
 
   @override
   Future<List<int>> readAsBytes(AssetId id) =>
-      _resolve(id)?.readAsBytes() ?? (throw AssetNotFoundException(id));
+      _filesystem.resolve(id)?.readAsBytes() ??
+      (throw AssetNotFoundException(id));
 
   @override
   Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) =>
-      _resolve(id)?.readAsString(encoding: encoding) ??
+      _filesystem.resolve(id)?.readAsString(encoding: encoding) ??
       (throw AssetNotFoundException(id));
+}
+
+/// A filesystem using [packageConfig] to map to the `dart:io` filesystem.
+class _Filesystem implements Filesystem {
+  final PackageConfig packageConfig;
+
+  /// What package is the originating build occurring in.
+  final String? rootPackage;
+
+  _Filesystem(this.packageConfig, this.rootPackage);
+
+  @override
+  bool existsSync(AssetId id) => resolve(id)!.existsSync();
+
+  @override
+  Uint8List readAsBytesSync(AssetId id) => resolve(id)!.readAsBytesSync();
+
+  @override
+  String readAsStringSync(AssetId id) => resolve(id)!.readAsStringSync();
+
+  File? resolve(AssetId id) {
+    final uri = id.uri;
+    if (uri.isScheme('package')) {
+      final uri = packageConfig.resolve(id.uri);
+      if (uri != null) {
+        return File.fromUri(uri);
+      }
+    }
+    if (id.package == rootPackage) {
+      return File(p.canonicalize(p.join(rootPackagePath, id.path)));
+    }
+    return null;
+  }
+
+  String get rootPackagePath {
+    // If the root package has a pub layout, use `packagePath`.
+    final rootPackage = this.rootPackage;
+    final root = rootPackage != null
+        ? packageConfig[rootPackage]?.root.toFilePath()
+        : null;
+    if (root != null && Directory(p.join(root, 'lib')).existsSync()) {
+      return root;
+    }
+    // Assume the cwd is the package root.
+    return p.current;
+  }
 }

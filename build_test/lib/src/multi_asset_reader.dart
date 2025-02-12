@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:async/async.dart';
 import 'package:build/build.dart';
@@ -20,7 +21,11 @@ class MultiAssetReader extends AssetReader
     implements MultiPackageAssetReader, AssetReaderState {
   final List<MultiPackageAssetReader> _readers;
 
-  MultiAssetReader(this._readers);
+  @override
+  final Filesystem filesystem;
+
+  MultiAssetReader(this._readers)
+      : filesystem = _Filesystem(_readers.map((r) => r.filesystem).toList());
 
   @override
   InputTracker? get inputTracker {
@@ -31,16 +36,6 @@ class MultiAssetReader extends AssetReader
     if (results.length == 1) return results.single;
     throw StateError(
         'MultiAssetReader readers have more than one InputTracker: '
-        '$_readers -> $results');
-  }
-
-  @override
-  Filesystem get filesystem {
-    // There should be exactly one filesystem between the readers.
-    final results = Set<Filesystem>.identity()
-      ..addAll(_readers.map((r) => r.filesystem).nonNulls);
-    if (results.length == 1) return results.single;
-    throw StateError('MultiAssetReader readers have more than one Filesystem: '
         '$_readers -> $results');
   }
 
@@ -82,4 +77,21 @@ class MultiAssetReader extends AssetReader
     }
     throw AssetNotFoundException(id);
   }
+}
+
+class _Filesystem implements Filesystem {
+  final List<Filesystem> _filesystems;
+
+  _Filesystem(this._filesystems);
+
+  @override
+  bool existsSync(AssetId id) => _filesystems.any((f) => f.existsSync(id));
+
+  @override
+  Uint8List readAsBytesSync(AssetId id) =>
+      _filesystems.firstWhere((f) => f.existsSync(id)).readAsBytesSync(id);
+
+  @override
+  String readAsStringSync(AssetId id) =>
+      _filesystems.firstWhere((f) => f.existsSync(id)).readAsStringSync(id);
 }

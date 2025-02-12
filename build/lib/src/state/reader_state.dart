@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import '../asset/reader.dart';
 import 'filesystem.dart';
 import 'input_tracker.dart';
@@ -24,12 +26,17 @@ extension AssetReaderStateExtension on AssetReader {
 
   Filesystem get filesystem {
     _requireIsAssetReaderState();
+    File('/tmp/whoops.txt')
+        .writeAsStringSync('hmm: $this\n', mode: FileMode.append);
     return (this as AssetReaderState).filesystem;
   }
 
   /// Throws if `this` is not an [AssetReaderState].
   void _requireIsAssetReaderState() {
     if (this is! AssetReaderState) {
+      File('/tmp/whoops.txt')
+          .writeAsStringSync('whoops: $this\n', mode: FileMode.append);
+
       throw StateError(
           '`AssetReader` must implement `AssetReaderState`: $this');
     }
