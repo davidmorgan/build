@@ -16,6 +16,7 @@ import 'package:build_runner_core/src/asset_graph/graph.dart';
 import 'package:build_runner_core/src/asset_graph/node.dart';
 import 'package:build_runner_core/src/generate/options.dart'
     show defaultNonRootVisibleAssets;
+import 'package:build_runner_core/src/package_graph/build_phases.dart';
 import 'package:glob/glob.dart';
 import 'package:test/test.dart';
 
@@ -1248,7 +1249,7 @@ void main() {
     );
 
     var expectedGraph = await AssetGraph.build(
-      [],
+      BuildPhases([]),
       <AssetId>{},
       {makeAssetId('a|.dart_tool/package_config.json')},
       buildPackageGraph({rootPackage('a'): []}),

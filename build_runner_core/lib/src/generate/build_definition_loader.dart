@@ -24,6 +24,7 @@ import '../changes/build_script_updates.dart';
 import '../environment/build_environment.dart';
 import '../logging/failure_reporter.dart';
 import '../logging/logging.dart';
+import '../package_graph/build_phases.dart';
 import '../package_graph/package_graph.dart';
 import '../util/constants.dart';
 import '../util/sdk_version_match.dart';
@@ -36,14 +37,14 @@ import 'phase.dart';
 final _logger = Logger('BuildDefinition');
 
 class BuildDefinitionLoader {
-  final List<BuildPhase> _buildPhases;
+  final BuildPhases _buildPhases;
   final BuildOptions _options;
   final BuildEnvironment _environment;
 
   BuildDefinitionLoader(this._environment, this._options, this._buildPhases);
 
   Future<BuildDefinition> prepareWorkspace() async {
-    _checkBuildPhases();
+    _buildPhases.checkBuildPhases(_options.packageGraph.root.name, _logger);
 
     _logger.info('Initializing inputs');
 
@@ -170,35 +171,6 @@ class BuildDefinitionLoader {
     );
   }
 
-  /// Checks that the [_buildPhases] are valid based on whether they are
-  /// written to the build cache.
-  void _checkBuildPhases() {
-    final root = _options.packageGraph.root.name;
-    for (final action in _buildPhases) {
-      if (!action.hideOutput) {
-        // Only `InBuildPhase`s can be not hidden.
-        if (action is InBuildPhase && action.package != root) {
-          // This should happen only with a manual build script since the build
-          // script generation filters these out.
-          _logger.severe(
-            'A build phase (${action.builderLabel}) is attempting '
-            'to operate on package "${action.package}", but the build script '
-            'is located in package "$root". It\'s not valid to attempt to '
-            'generate files for another package unless the BuilderApplication'
-            'specified "hideOutput".'
-            '\n\n'
-            'Did you mean to write:\n'
-            '  new BuilderApplication(..., toRoot())\n'
-            'or\n'
-            '  new BuilderApplication(..., hideOutput: true)\n'
-            '... instead?',
-          );
-          throw const CannotBuildException();
-        }
-      }
-    }
-  }
-
   /// Deletes the generated output directory.
   ///
   /// Typically this should be done whenever an asset graph is thrown away.
@@ -226,8 +198,7 @@ class BuildDefinitionLoader {
           await _environment.reader.readAsBytes(assetGraphId),
         );
         var buildPhasesChanged =
-            computeBuildPhasesDigest(_buildPhases) !=
-            cachedGraph.buildPhasesDigest;
+            _buildPhases.computeDigest() != cachedGraph.buildPhasesDigest;
         var pkgVersionsChanged =
             !const DeepCollectionEquality()
                 .equals(cachedGraph.packageLanguageVersions, {
@@ -351,7 +322,7 @@ class BuildDefinitionLoader {
   Future<Map<AssetId, ChangeType>> _updateAssetGraph(
     AssetGraph assetGraph,
     AssetTracker assetTracker,
-    List<BuildPhase> buildPhases,
+    BuildPhases buildPhases,
     Set<AssetId> inputSources,
     Set<AssetId> cacheDirSources,
     Set<AssetId> internalSources,
@@ -405,7 +376,7 @@ class BuildDefinitionLoader {
   /// [buildPhases] compared to the last known state.
   Map<AssetId, ChangeType> _computeBuilderOptionsUpdates(
     AssetGraph assetGraph,
-    List<BuildPhase> buildPhases,
+    BuildPhases buildPhases,
   ) {
     var result = <AssetId, ChangeType>{};
 

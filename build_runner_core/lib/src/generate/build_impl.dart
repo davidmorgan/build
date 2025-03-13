@@ -28,6 +28,7 @@ import '../logging/failure_reporter.dart';
 import '../logging/human_readable_duration.dart';
 import '../logging/logging.dart';
 import '../package_graph/apply_builders.dart';
+import '../package_graph/build_phases.dart';
 import '../package_graph/package_graph.dart';
 import '../package_graph/target_graph.dart';
 import '../performance_tracking/performance_tracking_resolvers.dart';
@@ -59,7 +60,7 @@ class BuildImpl {
 
   final BuildScriptUpdates? buildScriptUpdates;
 
-  final List<BuildPhase> _buildPhases;
+  final BuildPhases _buildPhases;
   final PackageGraph _packageGraph;
   final TargetGraph _targetGraph;
   final AssetReaderWriter _reader;
@@ -123,7 +124,7 @@ class BuildImpl {
       builderConfigOverrides,
       isReleaseBuild,
     );
-    if (buildPhases.isEmpty) {
+    if (buildPhases.buildPhases.isEmpty) {
       _logger.severe('Nothing can be built, yet a build was requested.');
     }
     var buildDefinition = await BuildDefinition.prepareWorkspace(
@@ -153,7 +154,7 @@ class BuildImpl {
 class _SingleBuild {
   final AssetGraph _assetGraph;
   final Set<BuildFilter> _buildFilters;
-  final List<BuildPhase> _buildPhases;
+  final BuildPhases _buildPhases;
   final BuildEnvironment _environment;
   final _lazyPhases = <String, Future<Iterable<AssetId>>>{};
   final _lazyGlobs = <AssetId, Future<void>>{};

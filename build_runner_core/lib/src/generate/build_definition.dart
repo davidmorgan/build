@@ -10,11 +10,11 @@ import '../asset/writer.dart';
 import '../asset_graph/graph.dart';
 import '../changes/build_script_updates.dart';
 import '../environment/build_environment.dart';
+import '../package_graph/build_phases.dart';
 import '../package_graph/package_graph.dart';
 import '../package_graph/target_graph.dart';
 import 'build_definition_loader.dart';
 import 'options.dart';
-import 'phase.dart';
 
 class BuildDefinition {
   final AssetGraph assetGraph;
@@ -51,7 +51,7 @@ class BuildDefinition {
   static Future<BuildDefinition> prepareWorkspace(
     BuildEnvironment environment,
     BuildOptions options,
-    List<BuildPhase> buildPhases,
+    BuildPhases buildPhases,
   ) =>
       BuildDefinitionLoader(
         environment,

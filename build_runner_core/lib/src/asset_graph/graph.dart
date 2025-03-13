@@ -11,13 +11,13 @@ import 'package:build/build.dart';
 import 'package:build/experiments.dart' as experiments_zone;
 // ignore: implementation_imports
 import 'package:build/src/internal.dart';
-import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 import 'package:package_config/package_config.dart';
 import 'package:watcher/watcher.dart';
 
 import '../generate/phase.dart';
+import '../package_graph/build_phases.dart';
 import '../package_graph/package_graph.dart';
 import 'exceptions.dart';
 import 'node.dart';
@@ -56,7 +56,7 @@ class AssetGraph {
       _AssetGraphDeserializer(serializedGraph).deserialize();
 
   static Future<AssetGraph> build(
-    List<BuildPhase> buildPhases,
+    BuildPhases buildPhases,
     Set<AssetId> sources,
     Set<AssetId> internalSources,
     PackageGraph packageGraph,
@@ -67,7 +67,7 @@ class AssetGraph {
         pkg.name: pkg.languageVersion,
     };
     var graph = AssetGraph._(
-      computeBuildPhasesDigest(buildPhases),
+      buildPhases.computeDigest(),
       Platform.version,
       packageLanguageVersions,
       experiments_zone.enabledExperiments,
@@ -190,7 +190,7 @@ class AssetGraph {
   }
 
   /// Adds [AssetNode.builderOptions] for all [buildPhases] to this graph.
-  void _addBuilderOptionsNodes(List<BuildPhase> buildPhases) {
+  void _addBuilderOptionsNodes(BuildPhases buildPhases) {
     for (var phaseNum = 0; phaseNum < buildPhases.length; phaseNum++) {
       var phase = buildPhases[phaseNum];
       if (phase is InBuildPhase) {
@@ -334,7 +334,7 @@ class AssetGraph {
   ///
   /// Returns the list of [AssetId]s that were invalidated.
   Future<Set<AssetId>> updateAndInvalidate(
-    List<BuildPhase> buildPhases,
+    BuildPhases buildPhases,
     Map<AssetId, ChangeType> updates,
     String rootPackage,
     Future Function(AssetId id) delete,
@@ -530,7 +530,7 @@ class AssetGraph {
   /// If [placeholders] is supplied they will be added to [newSources] to create
   /// the full input set.
   Set<AssetId> _addOutputsForSources(
-    List<BuildPhase> buildPhases,
+    BuildPhases buildPhases,
     Set<AssetId> newSources,
     String rootPackage, {
     Set<AssetId>? placeholders,
@@ -569,7 +569,7 @@ class AssetGraph {
     InBuildPhase phase,
     int phaseNum,
     Set<AssetId> allInputs,
-    List<BuildPhase> buildPhases,
+    BuildPhases buildPhases,
     String rootPackage,
   ) {
     var phaseOutputs = <AssetId>{};
@@ -639,7 +639,7 @@ class AssetGraph {
     Iterable<AssetId> outputs,
     int phaseNumber,
     AssetNode builderOptionsNode,
-    List<BuildPhase> buildPhases,
+    BuildPhases buildPhases,
     String rootPackage, {
     required AssetId primaryInput,
     required bool isHidden,
@@ -712,17 +712,6 @@ class AssetGraph {
       });
     }
   }
-}
-
-/// Computes a [Digest] for [buildPhases] which can be used to compare one set
-/// of [BuildPhase]s against another.
-Digest computeBuildPhasesDigest(Iterable<BuildPhase> buildPhases) {
-  var digestSink = AccumulatorSink<Digest>();
-  md5.startChunkedConversion(digestSink)
-    ..add(buildPhases.map((phase) => phase.identity).toList())
-    ..close();
-  assert(digestSink.events.length == 1);
-  return digestSink.events.first;
 }
 
 Digest computeBuilderOptionsDigest(BuilderOptions options) =>

@@ -15,6 +15,7 @@ import 'package:build_runner_core/src/asset_graph/optional_output_tracker.dart';
 import 'package:build_runner_core/src/environment/create_merged_dir.dart';
 import 'package:build_runner_core/src/generate/options.dart';
 import 'package:build_runner_core/src/generate/phase.dart';
+import 'package:build_runner_core/src/package_graph/build_phases.dart';
 import 'package:build_runner_core/src/package_graph/target_graph.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -22,7 +23,7 @@ import 'package:test/test.dart';
 void main() {
   group('createMergedDir', () {
     late AssetGraph graph;
-    final phases = [
+    final phases = BuildPhases([
       InBuildPhase(
         TestBuilder(buildExtensions: appendExtension('.copy', from: '.txt')),
         'a',
@@ -31,7 +32,7 @@ void main() {
         TestBuilder(buildExtensions: appendExtension('.copy', from: '.txt')),
         'b',
       ),
-    ];
+    ]);
     final sources = {
       makeAssetId('a|lib/a.txt'): 'a',
       makeAssetId('a|web/b.txt'): 'b',

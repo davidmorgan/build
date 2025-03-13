@@ -5,7 +5,7 @@
 import 'package:build/build.dart';
 
 import '../../build_runner_core.dart';
-import '../generate/phase.dart';
+import '../package_graph/build_phases.dart';
 import '../package_graph/target_graph.dart';
 import '../util/build_dirs.dart';
 import 'graph.dart';
@@ -35,7 +35,7 @@ class OptionalOutputTracker {
   final TargetGraph _targetGraph;
   final Set<String> _buildDirs;
   final Set<BuildFilter> _buildFilters;
-  final List<BuildPhase> _buildPhases;
+  final BuildPhases _buildPhases;
 
   OptionalOutputTracker(
     this._assetGraph,
@@ -59,7 +59,7 @@ class OptionalOutputTracker {
     final node = _assetGraph.get(output)!;
     if (node.type != NodeType.generated) return true;
     final nodeConfiguration = node.generatedNodeConfiguration!;
-    final phase = _buildPhases[nodeConfiguration.phaseNumber];
+    final phase = _buildPhases.buildPhases[nodeConfiguration.phaseNumber];
     if (!phase.isOptional &&
         shouldBuildForDirs(
           output,
