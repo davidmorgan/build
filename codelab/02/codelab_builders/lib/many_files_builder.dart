@@ -7,7 +7,7 @@ import 'package:build/build.dart';
 class ManyFilesBuilder implements Builder {
   @override
   Map<String, List<String>> get buildExtensions => {
-    '.dart': ['.count.dart'],
+    '.dart': ['.count'],
   };
 
   @override

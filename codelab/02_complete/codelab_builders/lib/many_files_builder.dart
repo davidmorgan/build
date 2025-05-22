@@ -7,9 +7,19 @@ import 'package:build/build.dart';
 class ManyFilesBuilder implements Builder {
   @override
   Map<String, List<String>> get buildExtensions => {
-    '.dart': ['.count.dart'],
+    '.dart': ['.count'],
   };
 
   @override
-  Future<void> build(BuildStep buildStep) => throw UnimplementedError();
+  Future<void> build(BuildStep buildStep) async {
+    final content = await buildStep.readAsString(buildStep.inputId);
+
+    if (!content.contains('@count')) return;
+
+    final count = content.length;
+    await buildStep.writeAsString(
+      buildStep.inputId.changeExtension('.count'),
+      '$count\n',
+    );
+  }
 }

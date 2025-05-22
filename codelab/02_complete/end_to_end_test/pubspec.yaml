@@ -5,7 +5,8 @@ environment:
   sdk: ^3.8.0
 
 dependencies:
-  build: ^2.4.2
+  codelab_annotations:
+    path: ../codelab_annotations
 
 dev_dependencies:
   build_runner: ^2.4.15

@@ -3,3 +3,4 @@ builders:
     import: "package:codelab_builders/builders.dart"
     builder_factories: ["manyFilesBuilder"]
     build_extensions: {".dart": [".count"]}
+    build_to: source
