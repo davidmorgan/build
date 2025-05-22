@@ -1,0 +1,52 @@
+# Builder Codelab
+
+Welcome to the `build_runner` codelab for builder authors!
+
+It'll take you through writing a series of builders to show the various things `build_runner` can do.
+
+TODO(davidmorgan): the instructions are currently for Linux. Make Windows-compatible!
+
+## Setup
+
+Start by cloning the `build` repo.
+
+```bash
+mkdir -p ~/git/build
+cd ~/git/build
+git clone https://github.com/dart-lang/build.git
+```
+
+The codelab isn't merged yet, so pull the branch:
+
+```bash
+git remote add dm https://github.com/davidmorgan/build.git
+git fetch dm codelab
+git checkout codelab
+```
+
+And change to the codelab subdirectory:
+
+```bash
+cd codelab
+```
+
+## Package Layout
+
+Running a builder with `build_runner` usually involves either two or three packages.
+
+ - The builder code. In this codelab, the builders are always in `package:codelab_builders`.
+ - The package that applies the builders. Applying your own builders is an important way to test them, so in this codelab the package that applies the builders is called `package:end_to_end_test`. It is exactly a normal user of `package:codelab_builders`.
+ - Optionally, a package used to _configure and trigger the builders_. Usually, this means it has annotations. In this codelab when there is such a package it's `package:codelab_annotations`.
+
+## Codelab Layout
+
+Each part of the codelab is under a numbered subdirectory, for example `01`.
+
+The instructions are a `README.md` file in that subdirectory.
+
+Next to it is another subdirectory with the final state of the code after following all the instructions, for example `01_complete`.
+
+## Parts
+
+[01 First Builder](01/README.md) in which you learn how to run builds and create a builder that reads one file and writes one file.
+

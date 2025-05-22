@@ -1,0 +1,5 @@
+builders:
+  many_files_builder:
+    import: "package:codelab_builders/builders.dart"
+    builder_factories: ["manyFilesBuilder"]
+    build_extensions: {".dart": [".count"]}
