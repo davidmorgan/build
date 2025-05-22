@@ -5,6 +5,7 @@ Welcome to the `build_runner` codelab for builder authors!
 It'll take you through writing a series of builders to show the various things `build_runner` can do.
 
 TODO(davidmorgan): the instructions are currently for Linux. Make Windows-compatible!
+TODO(davidmorgan): code currently uses the analyzer element1 API; release a `build_runner` for the element2 API and update the codelab.
 
 ## Setup
 
@@ -54,4 +55,16 @@ Next to it is another subdirectory with the final state of the code after follow
 
 [03 Resolving Builder](03/README.md) in which you learn how to write a builder that parses or resolves Dart source code with the Dart Analyzer.
 
-[04 Equality Part Builder](03/README.md)
+[04 Equality Part Builder](04/README.md) in which you write a builder that implements `operator==`.
+
+## Addendum: Part vs Library Builders
+
+Skip this if you like.
+
+Builders that output part files have the advantage of being able to add to the checked-in library: they can access private members, and provide private declarations. But they have the _disadvantage_ that they can't generate imports. If a builder that outputs parts wants to use types from other libraries, it has to ask the user to add the imports to the checked-in file.
+
+Builders that output library files face the reversed situation: they can add imports, but they can't access or provide private declarations.
+
+Both are used in practice, depending on which best fits the use case of each particular generator.
+
+The [enhanced parts](https://github.com/dart-lang/language/issues/4155) language feature will allow imports in parts; after that all generators can be (enhanced) part generators.
