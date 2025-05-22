@@ -52,4 +52,6 @@ Next to it is another subdirectory with the final state of the code after follow
 
 [02 Many Files Builder](02/README.md) in which you learn how to write a builder that writes an output for every file in the package; then to make it triggered automatically and only for the files where it's requested.
 
-[03 Resolving Builder](03/README.md)
+[03 Resolving Builder](03/README.md) in which you learn how to write a builder that parses or resolves Dart source code with the Dart Analyzer.
+
+[04 Equality Part Builder](03/README.md)
