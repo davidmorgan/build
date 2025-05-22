@@ -50,3 +50,5 @@ Next to it is another subdirectory with the final state of the code after follow
 
 [01 First Builder](01/README.md) in which you learn how to run builds and create a builder that reads one file and writes one file.
 
+[02 Many Files Builder](02/README.md) in which you learn how to write a builder that writes an output for every file in the package; then to make it triggered automatically and only for the files where it's requested.
+

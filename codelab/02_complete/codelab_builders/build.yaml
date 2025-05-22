@@ -4,3 +4,4 @@ builders:
     builder_factories: ["manyFilesBuilder"]
     build_extensions: {".dart": [".count"]}
     build_to: source
+    auto_apply: dependents
