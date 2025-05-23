@@ -15,12 +15,8 @@ class CombineBuilder implements Builder {
   Future<void> build(BuildStep buildStep) async {
     final output = StringBuffer();
 
-    await for (final dartAsset in buildStep.findAssets(Glob('**.dart'))) {
-      final actionsAsset = dartAsset.changeExtension('.actions');
-
-      if (await buildStep.canRead(actionsAsset)) {
-        output.write(await buildStep.readAsString(actionsAsset));
-      }
+    await for (final actionsAsset in buildStep.findAssets(Glob('**.actions'))) {
+      output.write(await buildStep.readAsString(actionsAsset));
     }
 
     await buildStep.writeAsString(
