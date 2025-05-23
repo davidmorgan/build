@@ -1,6 +1,6 @@
 # Builder Codelab
 
-[Go back to the main page](../README.md).
+If you haven't already, follow "Setup" on [the main page](../README.md).
 
 ## 01 First Builder
 
