@@ -41,7 +41,7 @@ cd 05/end_to_end_test
 dart run build_runner watch -d
 ```
 
-Then check `lib/my_source.dart` and notice that `lib/my_source.formatted` has appeared next to it. As you edit `lib/my_source.dart`, the `.formatted` file will appear or disappear depending on whether formatting is needed.
+Then check `end_to_end_test/lib/my_source.dart` and notice that `my_source.formatted` has appeared next to it. As you edit `lib/my_source.dart`, the `.formatted` file will appear or disappear depending on whether formatting is needed.
 
 The reason you can see the output is that it's output "to source", rather than hidden; and the reason it's written at all is that the builder is currently _not_ marked optional. Fix both those by updating the `format_builder` part of `codelab_builders/build.yaml`:
 
@@ -57,7 +57,7 @@ The reason you can see the output is that it's output "to source", rather than h
 
 Now, it does nothing, because no other builder currently reads the `.formatted` files.
 
-The second builder, `actions_builder`, will look for outputs corresponding to fixes to `.dart` files. When it finds them, it will output commands you can run to apply them to a  `.actions` file.
+The second builder, `actions_builder`, will look for outputs corresponding to fixes to `.dart` files. When it finds them, it will output the commands you should run to a  `.actions` file.
 
 This has already been written for you in `codelab_builders/lib/actions_builder.dart`. To make the code a bit more interesting it uses code from codelab part 04 to check for the `@format` annotation, then with the new code
 
@@ -131,7 +131,7 @@ This tells `build_runner` that `actions_builder` wants to read `.formatted` file
 
 The final builder will read all `.actions` files and combine them into a single script you can run to apply all the actions.
 
-It does this by using a glob to find all `.dart` files, then checking for each for the existence of an adjacent `.actions` file. It has already been written for you in `codelab_builders/lib/combine_builder.dart`:
+It has already been written for you in `codelab_builders/lib/combine_builder.dart`:
 
 ```dart
   @override
@@ -183,3 +183,5 @@ declaring that they are opting in.
 ### More Fixes
 
 Can you extend this to add more automated fixes?
+
+The final state of this part is available in the `05_complete` directory next to `05`. This was the last part! Return to [the main page](../README.md) to see a list of possible future parts and to give feedback.

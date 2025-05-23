@@ -23,7 +23,8 @@ As in the previous part, the build initially fails because it's not implemented:
 [SEVERE] codelab_builders:many_files_builder on lib/some_file.dart (cached)
 
 UnimplementedError
-#0      ManyFilesBuilder.build (package:codelab_builders/many_files_builder.dart:14:46)```
+#0      ManyFilesBuilder.build (package:codelab_builders/many_files_builder.dart:14:46
+```
 
 So, implement it, in `codelab_builders/lib/many_files_builder.dart`:
 
@@ -42,6 +43,7 @@ So, implement it, in `codelab_builders/lib/many_files_builder.dart`:
 Unlike the builder in the previous part, this builder does not have to check whether the input file exists. Instead, each build step runs _because_ one file exists. In fact, it runs for every `.dart` file, as declared in its `buildExtensions`:
 
 ```dart
+  @override
   Map<String, List<String>> get buildExtensions => {
     '.dart': ['.count'],
   };
@@ -54,16 +56,16 @@ Experiment with adding, changing and removing files. Make sure "watch" is runnin
 ```bash
 touch lib/in.dart lib/in2.dart; sleep 2
 cat lib/in.count lib/in2.count
-0
-0
+# 0
+# 0
 echo 'hi' >> lib/in.dart; echo 'hello' >> lib/in2.dart; sleep 2
 cat lib/in.count lib/in2.count
-3
-6
+# 3
+# 6
 rm lib/in.dart; sleep 2
 cat lib/in.count lib/in2.count
-cat: lib/in.count: No such file or directory
-6
+# cat: lib/in.count: No such file or directory
+# 6
 ```
 
 Notice that `.count` files are automatically added, updated and even deleted to reflect the current state of all the `.dart` files.
@@ -72,13 +74,15 @@ Notice that `.count` files are automatically added, updated and even deleted to 
 
 Most builders don't run on every file in the package. Instead, generation is triggered via something in the source, such as an annotation.
 
-Add a dependency from `end_to_end_test` onto `package:codelab_builders` by updating `end_to_end_test/pubspec.yaml`:
+Add a dependency from `end_to_end_test` onto `package:codelab_builders` by updating `end_to_end_test/pubspec.yaml`
 
 ```yaml
 dependencies:
   codelab_annotations:
     path: ../codelab_annotations
 ```
+
+then running `dart pub get`.
 
 Notice that while `codelab_builders` is a `dev_dependency`, `codelab_annotations` is a normal dependency. That's because use code never references the builder directly, but it _will_ use the annotation.
 
@@ -99,7 +103,7 @@ library;
 import 'package:codelab_annotations/codelab_annotations.dart';
 ```
 
-and `end_to_end_test/lib/do_no_count_me.dart`
+and `end_to_end_test/lib/do_not_count_me.dart`
 
 ```dart
 import 'package:codelab_annotations/codelab_annotations.dart';
@@ -107,7 +111,7 @@ import 'package:codelab_annotations/codelab_annotations.dart';
 
 and notice that `.count` files are generated for both, because you haven't added a check for the annotation yet.
 
-Do so:
+Do so, in `codelab_builders/lib/many_files_builder.dart`:
 
 ```dart
   @override
@@ -124,7 +128,7 @@ Do so:
   }
 ```
 
-Now only `count_me.count` should exist: `do_not_count_me.dart` generates nothing, so `do_not_count_me.count` is deleted.
+Now only `count_me.count` should exist: no output is generated for `do_not_count_me.dart`, so `do_not_count_me.count` is deleted.
 
 Edit the files and notice that adding or removing the `@count` annotation now triggers generation or deletion of the corresponding `.count` file.
 
@@ -134,7 +138,7 @@ Instead, this codelab part will complete the "triggered generation" feature.
 
 You probably don't want every user of your generator to have to create a `build.yaml` file.
 
-So, delete `end_to_end_test/build.yaml`. You will find `build_runner` no longer builds anything for the package.
+So, delete `end_to_end_test/build.yaml`. You will find `build_runner` no longer builds anything for the package; in fact, `count_me.count` is no longer generated and so `build_runner` deletes it.
 
 To make things work again, update `codelab_builders/build.yaml` to add `auto_apply`:
 
@@ -148,9 +152,11 @@ builders:
     auto_apply: dependents
 ```
 
-Now users can activate the builder simply by adding a `dev_dependencies` entry pointing to `codegen_builders`, then adding the `@count` annotation.
+Again `build_runner` watch mode picks up the change automatically, recreating `count_me.count`.
 
-This is the most popular way to trigger builders.
+Now users can activate the builder simply by adding a `dev_dependencies` entry pointing to `codegen_builders`, then adding the `@count` annotation. This is the most popular way to trigger builders.
+
+The final state of this part is available in the `02_complete` directory next to `02`. Return to [the main page](../README.md) for part 03.
 
 ## Addendum: Primary Inputs
 

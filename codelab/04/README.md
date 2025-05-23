@@ -50,7 +50,7 @@ dart test
     Actual: Value:<Value(1, 2)>
 ```
 
-To fix it, you'll need to update this part of `codelab_builders/lib/resolving_builder.dart`:
+To fix it, you'll need to update this part of `codelab_builders/lib/equality_builder.dart`:
 
 ```dart
     for (final classElement in classElements) {
@@ -66,7 +66,6 @@ Until the augmentation language feature arrives, there are a few answers but all
 class Value with _$Value {
 ```
 
-and change the TODO generation in `` into a mixin:
 and change the TODO generation in `codelab_builders/lib/equality_builder.dart` into a mixin:
 
 ```dart
@@ -94,6 +93,9 @@ This implementation is sufficient to make that one test case pass, but it makes 
 
 ```dart
     for (final classElement in classElements) {
+      final fields = classElement.fields.where((f) => !f.isStatic).toList();
+
+      buffer.writeln('mixin _\$${classElement.displayName} {');
       for (final field in fields) {
         buffer.writeln('get ${field.name};');
       }
@@ -118,7 +120,7 @@ This implementation is sufficient to make that one test case pass, but it makes 
     }
 ```
 
-That works! At least, it's enough to pass the test:
+That works! At least, it's enough that both test cases pass:
 
 ```
 dart test
@@ -136,6 +138,8 @@ The `freezed` generator creates a mixin that also declares the fields for you. T
 Or, you could use the approach taken by the `built_value` generator: write `Value` as an abstract class with getters instead of fields. Then `_$Value extends Value`, with a concrete constructor. Finally, `Value` gains a factory constructor that returns the generated class.
 
 Can you implement one of these, so that the checked-in code looks good and the test passes?
+
+The final state of this part is available in the `04_complete` directory next to `04`. Return to [the main page](../README.md) for part 05.
 
 ## Addendum: Part vs Library Builders
 

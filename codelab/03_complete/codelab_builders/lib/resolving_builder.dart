@@ -12,6 +12,7 @@ class ResolvingBuilder implements Builder {
 
   @override
   Future<void> build(BuildStep buildStep) async {
+    final content = await buildStep.readAsString(buildStep.inputId);
     final resolvedContent = await buildStep.resolver.libraryFor(
       buildStep.inputId,
     );
@@ -27,7 +28,6 @@ class ResolvingBuilder implements Builder {
     }
     if (!found) return;
 
-    final content = await buildStep.readAsString(buildStep.inputId);
     final count = content.length;
     await buildStep.writeAsString(
       buildStep.inputId.changeExtension('.count'),

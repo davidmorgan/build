@@ -33,18 +33,22 @@ Open `codelab/01/codelab_builders/first_builder.dart` in your IDE of choice and 
 
 which is the most important builder method.
 
-The `BuildStep` passed in is the main way to interact with the build system: use it to read files, write files, and resolve Dart code. For now, just make it do nothing, then build again:
+The `BuildStep` passed in is the main way to interact with the build system: use it to read files, write files, and resolve Dart code.
+
+For now, just make it do nothing, then build again:
 
 ```dart
   @override
-  Future<void> build(BuildStep buildStep) async {};
+  Future<void> build(BuildStep buildStep) async {}
 ```
 
 ```bash
 dart run build_runner build -d
 ```
 
-Notice that builders are not required to write any outputs: the build now succesfully does nothing! Make it write something:
+Notice that builders are not required to write any outputs: the build now succesfully does nothing!
+
+Make it write something:
 
 ```dart
   @override
@@ -70,9 +74,11 @@ UnexpectedOutputException: end_to_end_test|output.txt
 Expected only: {end_to_end_test|lib/first_builder_output.txt}
 ```
 
-because while builders are not _required_ to write any output, they must _declare_ all possible output. The `buildExtensions` method, also in `first_builder.dart`, does so:
+because while builders are not _required_ to write any output, they must _declare_ all possible output.
 
-```
+The `buildExtensions` method, also in `first_builder.dart`, does so:
+
+```dart
   @override
   Map<String, List<String>> get buildExtensions => {
     r'$lib$': ['first_builder_output.txt'],
@@ -81,11 +87,11 @@ because while builders are not _required_ to write any output, they must _declar
 
 So, change the builder to output what it's allowed to output:
 
-```
+```dart
   @override
   Future<void> build(BuildStep buildStep) async {
     await buildStep.writeAsString(
-      AssetId(buildStep.inputId.package, 'first_builder_output.txt'),
+      AssetId(buildStep.inputId.package, 'lib/first_builder_output.txt'),
       'hello world',
     );
   }
@@ -128,7 +134,9 @@ If you run the build again you'll find the file is _not_ rebuilt. It will only b
 
 ### Builder Inputs
 
-Currently, the builder doesn't read anything: it has no file inputs. Add one:
+Currently, the builder doesn't read anything: it has no file inputs.
+
+Add one by updating `codelab_builders/first_builder.dart`:
 
 ```dart
   @override
@@ -155,29 +163,29 @@ Now the builder has an input, `lib/input.dart`, although it's not required to be
 ```bash
 dart run build_runner build -d
 cat lib/first_builder_output.txt
-missing
+# missing
 ```
 
 ```bash
 echo 'hi' > lib/input.dart
 dart run build_runner build -d
 cat lib/first_builder_output.txt
-read with length 3
+# read with length 3
 echo 'hi again' >> lib/input.dart
 dart run build_runner build -d
 cat lib/first_builder_output.txt
-read with length 12
+# read with length 12
 rm lib/input.dart
 dart run build_runner build -d
 cat lib/first_builder_output.txt
-missing
+# missing
 ```
 
 `build_runner` keeps track of everything that a builder reads, then checks those files for changes when it does an incremental build. So, now, the builder runs whenever `input.dart` appears, disappears or changes.
 
 ### The Watch Command
 
-The `watch` command is an alternative to repeatedly running `dart run build_runner build`.
+The `watch` command is an alternative to repeatedly running `dart run build_runner build`. Try it now:
 
 ```bash
 dart run build_runner watch -d
@@ -185,26 +193,25 @@ dart run build_runner watch -d
 
 While this is running you can forget about the terminal window, and just make edits in your IDE. The outputs will update when needed.
 
-If you want to make edits using the command line, you'll need a second terminal window. You'll find the same edits as before work automatically while "watch" is running:
+If you want to make edits using the command line, you'll need a second terminal window.
+
+You'll find the same edits as before work automatically while "watch" is running:
 
 ```
 echo 'hi' > lib/input.dart; sleep 2
 cat lib/first_builder_output.txt
-read with length 3
+# read with length 3
 echo 'hi again' >> lib/input.dart; sleep 2
 cat lib/first_builder_output.txt
-read with length 12
+# read with length 12
 rm lib/input.dart; sleep 2
 cat lib/first_builder_output.txt
-missing
+# missing
 ```
 
-That's it for `first_builder`. To recap, you:
+That's it for `first_builder`.
 
-  - Learned to run builds with `dart run build_runner build -d` and `dart run build_runner watch -d`.
-  - Created a builder that reads one specific file in the package and produces one output based on it.
-
-The final state of this step is available in the `01_complete` directory next to `01`.
+The final state of this part is available in the `01_complete` directory next to `01`. Return to [the main page](../README.md) for part 02.
 
 ### Addendum: The Wiring
 

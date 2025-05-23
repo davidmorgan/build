@@ -15,7 +15,7 @@ cd 03/end_to_end_test
 dart run build_runner watch -d
 ```
 
-and observe that two `.count` files are created. First, correctly, for `count_me.dart` which uses the annotation; then, incorrectly for `do_not_count_me.dart` which has the annotation commented out:
+and observe that two `.count` files are created under `end_to_end_test/lib`. First, correctly, for `count_me.dart` which uses the annotation; then, incorrectly for `do_not_count_me.dart` which has the annotation commented out:
 
 ```dart
 // @count
@@ -23,11 +23,12 @@ and observe that two `.count` files are created. First, correctly, for `count_me
 
 To correctly distinguish whether `@count` is commented out, you'll first _parse_ the source.
 
-Update `lib/src/resolving_builder.dart`
+Update the start of the `build` method in `codelab_builders/lib/resolving_builder.dart`
 
-```
+```dart
   @override
   Future<void> build(BuildStep buildStep) async {
+    final content = await buildStep.readAsString(buildStep.inputId);
     final parsedContent = await buildStep.resolver.compilationUnitFor(
       buildStep.inputId,
     );
@@ -51,7 +52,7 @@ Here's one way to check for the annotation:
     if (!found) return;
 ```
 
-Update the source to this, and you'll find `do_not_count_me.count` disappears, because the `@const` in the comment no longer triggers generation.
+Update the source to this, and you'll find `end_to_end_test/lib/do_not_count_me.count` disappears, because the `@const` in the comment no longer triggers generation.
 
 This is now a _syntax level_ check: the file is parsed, so `@count` must really be an annotation and not a comment or a string. But, it's still just a string match on the annotation name. Checking whether the annotation corresponds to the exact one declared in `package:codelab_annotations` requires that the source be fully _resolved_.
 
@@ -66,11 +67,12 @@ const String count = 'count';
 
 and notice that `do_not_count_me.count` reappears: the source now _is_ using an annotation named `count`, it's just the _wrong one_.
 
-To do resolution instead of parsing, update the builder
+To do resolution instead of parsing, update the start of the `build` method again
 
 ```dart
   @override
   Future<void> build(BuildStep buildStep) async {
+    final content = await buildStep.readAsString(buildStep.inputId);    
     final resolvedContent = await buildStep.resolver.libraryFor(
       buildStep.inputId,
     );
@@ -93,4 +95,6 @@ Here's one way to check the annotation now:
     if (!found) return;
 ```
 
-And, this is finally correct: `do_not_count_me.count` disappears, because the annotation is not the one from `package:codelab_annotations`.
+Make this change, and it is finally correct: `do_not_count_me.count` disappears, because although the annotation is called `count`, it is not the one from `package:codelab_annotations`.
+
+The final state of this part is available in the `03_complete` directory next to `03`. Return to [the main page](../README.md) for part 04.

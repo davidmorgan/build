@@ -25,7 +25,13 @@ git fetch dm codelab
 git checkout codelab
 ```
 
-And change to the codelab subdirectory:
+Run `dart pub get` so the workspace is ready to go:
+
+```bash
+dart pub get
+```
+
+Then change to the codelab subdirectory:
 
 ```bash
 cd codelab
