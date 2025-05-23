@@ -7,4 +7,7 @@ library;
 
 import 'package:codelab_annotations/codelab_annotations.dart';
 
-// this is some source?
+// Not formatted correctly!
+void doSomething() {
+  
+}

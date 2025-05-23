@@ -19,10 +19,7 @@ class FormatBuilder implements Builder {
       languageVersion: DartFormatter.latestLanguageVersion,
     ).format(content);
 
-    if (content == formattedContent) {
-      log.warning('no change ${buildStep.inputId}');
-    } else {
-      log.warning('change ${buildStep.inputId}');
+    if (content != formattedContent) {
       await buildStep.writeAsString(
         buildStep.inputId.changeExtension('.formatted'),
         formattedContent,

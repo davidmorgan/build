@@ -2,149 +2,55 @@
 
 [Go back to the main page](../README.md).
 
-## 04 Equality Part Builder
+## 05 Many Builders
 
-Now it's time for a builder that does something useful.
+In this codelab part you'll use more than one builder in combination, to learn how they interact.
+
+### Optional Builders
+
+An optional builder is a builder that offers to produce output, but does not actually run unless a non-optional builder reads it.
+
+So, an optional builder is appropriate for doing work "behind the scenes" that the user does not directly care about. The work only gets done if something the user _does_ care about depends on it.
+
+The first builder in this codelab is `format_builder`, which will be an optional builder that consumes `.dart` files and outputs `.formatted` files.
+
+The code to run `dart_style` in a builder is already written for you in `codelab_builders/lib/format_builder.dart`:
+
+```dart
+  @override
+  Future<void> build(BuildStep buildStep) async {
+    final content = await buildStep.readAsString(buildStep.inputId);
+
+    final formattedContent = DartFormatter(
+      languageVersion: DartFormatter.latestLanguageVersion,
+    ).format(content);
+
+    if (content != formattedContent) {
+      await buildStep.writeAsString(
+        buildStep.inputId.changeExtension('.formatted'),
+        formattedContent,
+      );
+    }
+  }
+```
 
 Launch "watch" mode:
 
 ```bash
-cd 04/end_to_end_test
+cd 05/end_to_end_test
 dart run build_runner watch -d
 ```
 
-The builder is already wired up to look for the classes with the `@equality` annotation and output a part file with the suffix `.equality.dart`. So, the file `end_to_end_test/lib/value.dart`
+Then check `lib/my_source.dart` and notice that `lib/my_source.formatted` has appeared next to it. As you edit `lib/my_source.dart`, the `.formatted` file will appear or disappear depending on whether formatting is needed.
 
-```dart
-import 'package:codelab_annotations/codelab_annotations.dart';
-
-part 'value.equality.dart';
-
-@equality
-class Value {
-  int x;
-  int y;
-
-  Value(this.x, this.y);
-
-  @override
-  String toString() => 'Value($x, $y)';
-}
-```
-
-gets its part file generated
+The reason you can see the output is that it's output "to source", rather than hidden; and the reason it's written at all is that the builder is currently _not_ marked optional. Fix both those by updating the `format_builder` part of `codelab_builders/build.yaml`:
 
 ```
-part of 'value.dart';
-// TODO: generate for Value
+  format_builder:
+    import: "package:codelab_builders/builders.dart"
+    builder_factories: ["formatBuilder"]
+    build_extensions: {".dart": [".formatted"]}
+    build_to: cache
+    is_optional: true
+    auto_apply: dependents
 ```
-
-which, as you can see, does nothing.
-
-There is a test that checks whether `Value` has value equality; currently it doesn't, so the test fails:
-
-```
-dart test
-00:00 +0 -1: test/value_test.dart: Value has value equality [E] 
-  Expected: Value:<Value(1, 2)>
-    Actual: Value:<Value(1, 2)>
-```
-
-To fix it, you'll need to update this part of `codelab_builders/lib/resolving_builder.dart`:
-
-```dart
-    for (final classElement in classElements) {
-      buffer.writeln('// TODO: generate for ${classElement.displayName}');
-    }
-```
-
-But—update it to what? How can a part file supply the `==` implementation?
-
-Until the augmentation language feature arrives, there are a few answers but all are more work than you want. For this codelab, you'll use a mixin. Update `end_to_end_test/lib/value.dart` to reference the mixin you're going to generate:
-
-```dart
-class Value with _$Value {
-```
-
-and change the TODO generation in `` into a mixin:
-and change the TODO generation in `codelab_builders/lib/equality_builder.dart` into a mixin:
-
-```dart
-    for (final classElement in classElements) {
-      buffer.writeln('mixin _\$${classElement.displayName} {');
-      buffer.writeln('}');
-    }
-```
-
-The `_` in the mixin name `_$Value` makes the declaration private; the `$` has no special effect, it is a convention commonly used for generated symbols to distinguish them from hand-written code.
-
-Now, the builder can start adding implementation to `Value`. It can add `operator==`:
-
-```dart
-    for (final classElement in classElements) {
-      buffer.writeln('mixin _\$${classElement.displayName} {');
-      buffer.writeln('bool operator== (other) {');
-      buffer.writeln('  return true;');
-      buffer.writeln('}');
-      buffer.writeln('}');
-    }
-```
-
-This implementation is sufficient to make that one test case pass, but it makes the other test case fail! You'll need something that actually checks the fields. The mixin will have to declare getters for the fields so it can access them:
-
-```dart
-    for (final classElement in classElements) {
-      for (final field in fields) {
-        buffer.writeln('get ${field.name};');
-      }
-
-      buffer.writeln('bool operator== (other) {');
-      buffer.writeln(
-        'if (other is! ${classElement.displayName}) return false;',
-      );
-
-      if (fields.isEmpty) {
-        buffer.writeln('return true;');
-      } else {
-        buffer.write('return');
-        buffer.write(
-          fields.map((f) => '(other.${f.name} == ${f.name})').join(' && '),
-        );
-        buffer.writeln(';');
-      }
-
-      buffer.writeln('}');
-      buffer.writeln('}');
-    }
-```
-
-That works! At least, it's enough to pass the test:
-
-```
-dart test
-00:00 +1: All tests passed!
-```
-
-But, it's unlikely to be satisfactory. The fields in `Value` count as overrides of the getters in the mixin, which means that a lint fires: they should be marked with `@override`, which seems a surprising thing to ask your users to do.
-
-How could this be fixed?
-
-Here are two different approaches actually used today.
-
-The `freezed` generator creates a mixin that also declares the fields for you. The list of fields, rather than being something you write, is inferred from your constructor parameters.
-
-Or, you could use the approach taken by the `built_value` generator: write `Value` as an abstract class with getters instead of fields. Then `_$Value extends Value`, with a concrete constructor. Finally, `Value` gains a factory constructor that returns the generated class.
-
-Can you implement one of these, so that the checked-in code looks good and the test passes?
-
-## Addendum: Part vs Library Builders
-
-Skip this if you like.
-
-Builders that output part files have the advantage of being able to add to the checked-in library: they can access private members, and provide private declarations. But they have the _disadvantage_ that they can't generate imports. If a builder that outputs parts wants to use types from other libraries, it has to ask the user to add the imports to the checked-in file.
-
-Builders that output library files face the reversed situation: they can add imports, but they can't access or provide private declarations.
-
-Both are used in practice, depending on which best fits the use case of each particular generator.
-
-The [enhanced parts](https://github.com/dart-lang/language/issues/4155) language feature will allow imports in parts; after that all generators can be (enhanced) part generators.
