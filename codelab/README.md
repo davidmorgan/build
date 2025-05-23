@@ -57,14 +57,12 @@ Next to it is another subdirectory with the final state of the code after follow
 
 [04 Equality Part Builder](04/README.md) in which you write a builder that implements `operator==`.
 
-## Addendum: Part vs Library Builders
+[05 Many Builders][05/README.md] in which you learn how builders work together.
 
-Skip this if you like.
+## Future Topics
 
-Builders that output part files have the advantage of being able to add to the checked-in library: they can access private members, and provide private declarations. But they have the _disadvantage_ that they can't generate imports. If a builder that outputs parts wants to use types from other libraries, it has to ask the user to add the imports to the checked-in file.
+Possible future topics.
 
-Builders that output library files face the reversed situation: they can add imports, but they can't access or provide private declarations.
-
-Both are used in practice, depending on which best fits the use case of each particular generator.
-
-The [enhanced parts](https://github.com/dart-lang/language/issues/4155) language feature will allow imports in parts; after that all generators can be (enhanced) part generators.
+ - Custom builder configuration via `build.yaml`.
+ - `source_gen` is a package that makes it easier to write builders that generate Dart code based on Dart code, like `equality_builder` in part 04 above.
+ - Small tests for builders with `package:build_test`.

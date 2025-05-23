@@ -1,0 +1,23 @@
+builders:
+  format_builder:
+    import: "package:codelab_builders/builders.dart"
+    builder_factories: ["formatBuilder"]
+    build_extensions: {".dart": [".formatted"]}
+    build_to: cache
+    is_optional: true
+    auto_apply: all_packages
+  actions_builder:
+    import: "package:codelab_builders/builders.dart"
+    builder_factories: ["actionsBuilder"]
+    build_extensions: {".dart": [".actions"]}
+    build_to: cache
+    is_optional: true
+    auto_apply: all_packages
+    required_inputs: [".formatted"]
+  combine_builder:
+    import: "package:codelab_builders/builders.dart"
+    builder_factories: ["combineBuilder"]
+    build_extensions: {"$lib$": ["../tool/actions.sh"]}
+    build_to: source
+    auto_apply: dependents
+    required_inputs: [".actions"]
