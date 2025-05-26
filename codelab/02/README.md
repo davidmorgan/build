@@ -84,7 +84,7 @@ dependencies:
 
 then running `dart pub get`.
 
-Notice that while `codelab_builders` is a `dev_dependency`, `codelab_annotations` is a normal dependency. That's because use code never references the builder directly, but it _will_ use the annotation.
+Notice that while `codelab_builders` is a `dev_dependency`, `codelab_annotations` is a normal dependency. That's because user code never references the builder directly, but it _will_ use the annotation.
 
 Adding the dependency will cause "watch" mode to exit
 
