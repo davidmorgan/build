@@ -576,7 +576,7 @@ void _warnOnLanguageVersionMismatch() async {
             as YamlMap)['version'];
 
     if (latestAnalyzer == currentAnalyzer) {
-      log.warning('''
+      buildLog.warning('''
 The latest `analyzer` version may not fully support your current SDK version.
 
 Analyzer language version: ${ExperimentStatus.currentVersion}
@@ -591,7 +591,7 @@ https://github.com/dart-lang/sdk/issues/new with the title
     } else {
       var upgradeCommand =
           isFlutter ? 'flutter packages upgrade' : 'dart pub upgrade';
-      log.warning('''
+      buildLog.warning('''
 Your current `analyzer` version may not fully support your current SDK version.
 
 Analyzer language version: ${ExperimentStatus.currentVersion}
@@ -611,7 +611,7 @@ dev_dependencies:
   } catch (_) {
     // Fall back on a basic message if we fail to detect the latest version for
     // any reason.
-    log.warning('''
+    buildLog.warning('''
 Your current `analyzer` version may not fully support your current SDK version.
 
 Analyzer language version: ${ExperimentStatus.currentVersion}
@@ -630,7 +630,7 @@ https://pub.dev/packages/analyzer.
 FeatureSet _featureSet({List<String> enableExperiments = const []}) {
   if (enableExperiments.isNotEmpty &&
       sdkLanguageVersion > ExperimentStatus.currentVersion) {
-    log.warning('''
+    buildLog.warning('''
 Attempting to enable experiments `$enableExperiments`, but the current SDK
 language version does not match your `analyzer` package language version:
 
