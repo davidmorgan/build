@@ -1,0 +1,21 @@
+name: build_analyzer_plugin
+version: 0.0.1-wip
+description: Analyzer plugin for build_runner.
+repository: https://github.com/dart-lang/build/tree/master/build_analyzer_plugin
+resolution: workspace
+
+environment:
+  sdk: ^3.10.0
+
+platforms:
+  linux:
+  windows:
+  macos:
+
+dependencies:
+  analysis_server_plugin: ^0.3.8
+  analyzer: ^10.0.0
+  analyzer_plugin: ^0.14.0
+
+topics:
+ - build-runner

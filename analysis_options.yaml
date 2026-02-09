@@ -15,3 +15,7 @@ linter:
   rules:
     - prefer_final_in_for_each
     - prefer_final_locals
+
+plugins:
+  build_analyzer_plugin:
+    path: build_analyzer_plugin

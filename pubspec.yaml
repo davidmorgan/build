@@ -8,6 +8,7 @@ dev_dependencies:
 workspace:
 - _benchmark
 - build
+- build_analyzer_plugin
 - build_config
 - build_daemon
 - build_runner

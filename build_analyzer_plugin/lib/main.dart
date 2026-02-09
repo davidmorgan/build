@@ -1,0 +1,63 @@
+import 'dart:io';
+
+import 'package:analysis_server_plugin/plugin.dart';
+import 'package:analysis_server_plugin/registry.dart';
+import 'package:analyzer/analysis_rule/analysis_rule.dart';
+import 'package:analyzer/analysis_rule/pubspec.dart';
+import 'package:analyzer/analysis_rule/rule_context.dart';
+import 'package:analyzer/analysis_rule/rule_state.dart';
+import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
+import 'package:analyzer/error/error.dart';
+import 'package:analyzer/error/listener.dart';
+
+final plugin = SimplePlugin();
+
+class SimplePlugin extends Plugin {
+  @override
+  String get name => 'build_analyzer_plugin';
+
+  @override
+  void register(PluginRegistry registry) {
+    // Register diagnostics, quick fixes, and assists.
+
+    registry.registerWarningRule(Rule());
+  }
+}
+
+void _log(String message) {
+  File(
+    '/tmp/build_analyzer_plugin_log.txt',
+  ).writeAsStringSync('$message\n', mode: FileMode.append);
+}
+
+class Rule extends MultiAnalysisRule {
+  Rule() : super(name: 'rule', description: 'neato rule');
+
+  @override
+  bool get canUseParsedResult => true;
+
+  @override
+  List<DiagnosticCode> get diagnosticCodes => const [];
+
+  @override
+  List<String> get incompatibleRules => const [];
+
+  @override
+  PubspecVisitor<dynamic>? get pubspecVisitor => null;
+
+  @override
+  void registerNodeProcessors(
+    RuleVisitorRegistry registry,
+    RuleContext context,
+  ) {
+    // _log('registerNodeProcessors $registry $context');
+  }
+
+  @override
+  set reporter(DiagnosticReporter value) {
+    // _log('set reporter: $value');
+  }
+
+  @override
+  RuleState get state => const RuleState.experimental();
+}
