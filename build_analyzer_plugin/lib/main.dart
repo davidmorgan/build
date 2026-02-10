@@ -31,7 +31,12 @@ void _log(String message) {
 }
 
 class Rule extends MultiAnalysisRule {
-  Rule() : super(name: 'rule', description: 'neato rule');
+  @override
+  late final BuildRunnerPubspecVisitor _pubspecVisitor;
+
+  Rule() : super(name: 'rule', description: 'neato rule') {
+    _pubspecVisitor = BuildRunnerPubspecVisitor(this);
+  }
 
   @override
   bool get canUseParsedResult => true;
@@ -39,18 +44,17 @@ class Rule extends MultiAnalysisRule {
   @override
   List<DiagnosticCode> get diagnosticCodes => const [];
 
-  @override
-  List<String> get incompatibleRules => const [];
+  var count = 0;
 
   @override
-  PubspecVisitor<dynamic>? get pubspecVisitor => null;
+  List<String> get incompatibleRules => const [];
 
   @override
   void registerNodeProcessors(
     RuleVisitorRegistry registry,
     RuleContext context,
   ) {
-    // _log('registerNodeProcessors $registry $context');
+    _log('registerNodeProcessors');
   }
 
   @override
@@ -60,4 +64,91 @@ class Rule extends MultiAnalysisRule {
 
   @override
   RuleState get state => const RuleState.experimental();
+}
+
+class BuildRunnerPubspecVisitor implements PubspecVisitor<Object> {
+  final Rule rule;
+
+  BuildRunnerPubspecVisitor(this.rule);
+
+  @override
+  Object? visitPackageAuthor(PubspecEntry author) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageAuthors(PubspecNodeList authors) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageDependencies(PubspecDependencyList dependencies) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageDependency(PubspecDependency dependency) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageDependencyOverride(PubspecDependency dependency) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageDependencyOverrides(PubspecDependencyList dependencies) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageDescription(PubspecEntry description) {
+    _log('package description: $description');
+    return null;
+  }
+
+  @override
+  Object? visitPackageDevDependencies(PubspecDependencyList dependencies) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageDevDependency(PubspecDependency dependency) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageDocumentation(PubspecEntry documentation) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageEnvironment(PubspecEnvironment environment) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageHomepage(PubspecEntry homepage) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageIssueTracker(PubspecEntry issueTracker) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageName(PubspecEntry name) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageRepository(PubspecEntry repository) {
+    return null;
+  }
+
+  @override
+  Object? visitPackageVersion(PubspecEntry version) {
+    return null;
+  }
 }
