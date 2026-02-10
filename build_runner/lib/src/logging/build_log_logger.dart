@@ -34,6 +34,8 @@ class BuildLogLogger implements Logger {
 
   BuildLogLogger({this.phaseName, this.context});
 
+  // this is me typing sltuff! ehhhm ehhhhhhm hmm
+
   /// Runs [fn] in an error handling [Zone].
   ///
   /// Any calls to [print] will be logged with `log.warning`, and any errors
@@ -60,6 +62,7 @@ class BuildLogLogger implements Logger {
       done.complete(result);
     });
     return done.future;
+    ///////////////////////////////////////////n
   }
 
   /// Runs [fn] in an error handling [Zone].
@@ -173,4 +176,24 @@ class BuildLogLogger implements Logger {
   @override
   void shout(Object? message, [Object? error, StackTrace? stackTrace]) =>
       log(Level.SHOUT, message, error, stackTrace);
+}
+
+void _foo() async {
+  await null;
+}
+
+void _foo() async {
+  await null;
+}
+
+void _foo() async {
+  await null;
+}
+
+void _foo() async {
+  await null;
+}
+
+void _foo() async {
+  await null;
 }
