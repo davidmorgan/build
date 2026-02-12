@@ -11,6 +11,10 @@ import 'package:logging/logging.dart';
 import 'build_log.dart';
 import 'build_log_messages.dart';
 
+// this is me typing stuff
+// this is me typing stuff
+// this is me typing stuff
+// this is me typing stuff
 /// [Logger] that forwards messages to [BuildLog] and records errors.
 ///
 /// Use `buildLog.loggerForPhase` or `buildLog.loggerForOther` to create an
@@ -62,7 +66,7 @@ class BuildLogLogger implements Logger {
       done.complete(result);
     });
     return done.future;
-    ///////////////////////////////////////////n
+    ///////////////////////////////////////////
   }
 
   /// Runs [fn] in an error handling [Zone].
@@ -178,22 +182,38 @@ class BuildLogLogger implements Logger {
       log(Level.SHOUT, message, error, stackTrace);
 }
 
-void _foo() async {
-  await null;
+//////////////////////////////////////////////////////////////////////
+////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///
+/////////////////////////////////////////////////////////////////////////////
+///// this is me typing stuff again oh yes it is
+///
+///
+void doSomething() async {
+  await 0;
+
+  await 7;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  await 0;
+  // this is me typing stuff in the thing ... ehm ... yes in the thing oh right ... ......
+  // this is me typing in a method ody
+  //
 }
 
-void _foo() async {
-  await null;
-}
-
-void _foo() async {
-  await null;
-}
-
-void _foo() async {
-  await null;
-}
-
-void _foo() async {
-  await null;
-}
+//   // ////////

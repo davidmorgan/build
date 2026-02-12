@@ -9,7 +9,6 @@ import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/error/error.dart';
-import 'package:analyzer/error/listener.dart';
 
 final plugin = SimplePlugin();
 
@@ -25,7 +24,7 @@ class SimplePlugin extends Plugin {
   }
 }
 
-const _diagnosticCode = LintCode('test_code', 'this is a test');
+const _diagnosticCode = LintCode('test_code', 'do not await String');
 
 void _log(String message) {
   File(
@@ -41,8 +40,6 @@ class Rule extends MultiAnalysisRule {
 
   @override
   List<DiagnosticCode> get diagnosticCodes => const [_diagnosticCode];
-
-  var count = 0;
 
   @override
   List<String> get incompatibleRules => const [];
@@ -68,6 +65,8 @@ class _Visitor extends SimpleAstVisitor<void> {
 
   @override
   void visitAwaitExpression(AwaitExpression node) {
-    rule.reportAtToken(node.awaitKeyword, diagnosticCode: _diagnosticCode);
+    if (node.expression.staticType?.isDartCoreString == true) {
+      rule.reportAtToken(node.awaitKeyword, diagnosticCode: _diagnosticCode);
+    }
   }
 }
