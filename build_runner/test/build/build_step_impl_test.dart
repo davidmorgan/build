@@ -134,11 +134,17 @@ void main() {
         addAssets(inputs, readerWriter);
 
         final primary = makeAssetId('a|web/a.dart');
+        final resolvers = ResolversImpl.custom();
+        await resolvers.takeLockAndStartBuild(null);
+        for (final id in inputs.keys) {
+          resolvers.pushContent(id, inputs[id]!);
+        }
+
         final buildStep = BuildStepImpl(
           primary,
           [],
           SingleStepReaderWriter.fakeFor(readerWriter),
-          ResolversImpl.custom(),
+          resolvers,
           resourceManager,
           _unsupported,
         );

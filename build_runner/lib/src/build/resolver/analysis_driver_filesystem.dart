@@ -33,8 +33,8 @@ class AnalysisDriverFilesystem
 
   // Path and phase information derived from the `Iterable<AssetNode>` for fast
   // lookup.
-  Map<String, int> _phaseByPath = {};
-  Map<int, List<String>> _pathByPhase = {};
+  final Map<String, int> _phaseByPath = {};
+  final Map<int, List<String>> _pathByPhase = {};
 
   int _phase = 0;
 
@@ -63,58 +63,33 @@ class AnalysisDriverFilesystem
     }
   }
 
-  /// Initializes a new filesystem that will have files added due to the
-  /// build described by [generatedPhases].
+  /// Starts a new build, invalidating cached files.
   ///
-  /// If [invalidatedSources] is `null`, this is an initial build and all
-  /// cached contents are cleared. Otherwise, only source files matching
-  /// [invalidatedSources] are removed.
-  void startBuild(
-    Map<AssetId, int> generatedPhases, {
-    required Iterable<AssetId>? invalidatedSources,
-  }) {
-    final previousPhaseByPath = _phaseByPath;
-    _phaseByPath = <String, int>{};
-    _pathByPhase = <int, List<String>>{};
-    for (final entry in generatedPhases.entries) {
-      final phase = entry.value;
-      final idAsPath = entry.key.asPath;
-      _phaseByPath[idAsPath] = phase;
-      _pathByPhase.putIfAbsent(phase, () => []).add(idAsPath);
-    }
-
+  /// If [invalidatedIds] is `null`, this is an initial build and all
+  /// cached contents are cleared.
+  ///
+  /// Otherwise, files matching [invalidatedIds] are removed from cache.
+  /// This should include changed sources, removed sources, and "disappeared"
+  /// outputs that will not be generated because their primary input is gone.
+  void startBuild(Iterable<AssetId>? invalidatedIds) {
     _changedPathsThisBuild.clear();
 
-    if (invalidatedSources == null) {
+    if (invalidatedIds == null) {
       _changedPaths.addAll(_data.keys);
       _data.clear();
+      _phaseByPath.clear();
+      _pathByPhase.clear();
       return;
     }
 
-    for (final id in invalidatedSources) {
+    for (final id in invalidatedIds) {
       final path = id.asPath;
       if (_data.remove(path) != null) {
         _changedPaths.add(path);
       }
-    }
-
-    for (final entry in previousPhaseByPath.entries) {
-      final path = entry.key;
-      final previousPhase = entry.value;
-      final nextPhase = _phaseByPath[path];
-      if (nextPhase == null) {
-        if (_data.remove(path) != null && _phase > previousPhase) {
-          _changedPaths.add(path);
-        }
-        continue;
-      }
-      if (nextPhase == previousPhase || !_data.containsKey(path)) {
-        continue;
-      }
-      final previouslyWasVisible = _phase > previousPhase;
-      final isVisible = _phase > nextPhase;
-      if (previouslyWasVisible != isVisible) {
-        _changedPaths.add(path);
+      final phase = _phaseByPath.remove(path);
+      if (phase != null) {
+        _pathByPhase[phase]?.remove(path);
       }
     }
   }
@@ -136,13 +111,27 @@ class AnalysisDriverFilesystem
   }
 
   /// Writes [content].
-  void writeContent(BuildRunnerFileContent content) {
+  void writeContent(BuildRunnerFileContent content, {int phase = -1}) {
     if (!content.exists) throw ArgumentError('content must exist');
     final path = content.path;
     final previousContent = _data[path];
-    final isVisible = _phase > _phaseOf(path);
+    final previousPhase = _phaseByPath[path];
+
+    if (previousPhase != null && previousPhase != phase) {
+      _pathByPhase[previousPhase]?.remove(path);
+    }
+    if (previousPhase != phase) {
+      _phaseByPath[path] = phase;
+      _pathByPhase.putIfAbsent(phase, () => []).add(path);
+    }
+
+    final previouslyWasVisible =
+        previousContent != null && _phase > (previousPhase ?? -1);
+    final isVisible = _phase > phase;
+
     if (previousContent != null &&
-        content.contentHash == previousContent.contentHash) {
+        content.contentHash == previousContent.contentHash &&
+        previouslyWasVisible == isVisible) {
       return;
     }
 

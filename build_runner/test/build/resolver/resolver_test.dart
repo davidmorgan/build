@@ -1356,10 +1356,15 @@ Future<void> _runBuilder(
     final ResolversImpl r => r,
     _ => null,
   };
-  await resolversImpl?.takeLockAndStartBuild(
-    const {},
-    invalidatedSources: null,
-  );
+  await resolversImpl?.takeLockAndStartBuild(null);
+  if (resolversImpl != null) {
+    for (final id in list) {
+      if (await singleStepReaderWriter.canRead(id)) {
+        final content = await singleStepReaderWriter.readAsString(id);
+        resolversImpl.pushContent(id, content);
+      }
+    }
+  }
   await runBuilder(builder, list, singleStepReaderWriter, resolvers);
   resolversImpl?.reset();
 }

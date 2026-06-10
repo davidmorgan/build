@@ -24,7 +24,7 @@ void main() {
       model.filesystem.write('/a/lib/b.dart', 'class B {}');
       model.filesystem.clearChangedPaths();
 
-      await model.takeLockAndStartBuild(const {}, invalidatedSources: null);
+      await model.takeLockAndStartBuild(null);
 
       expect(model.filesystem.exists('/a/lib/a.dart'), isFalse);
       expect(model.filesystem.exists('/a/lib/b.dart'), isFalse);
@@ -35,7 +35,7 @@ void main() {
       model.filesystem.write('/a/lib/a.dart', 'class A {}');
       model.filesystem.clearChangedPaths();
 
-      await model.takeLockAndStartBuild(const {}, invalidatedSources: const {});
+      await model.takeLockAndStartBuild(const {});
 
       expect(model.filesystem.exists('/a/lib/a.dart'), isTrue);
       expect(model.filesystem.read('/a/lib/a.dart'), 'class A {}');
@@ -48,13 +48,10 @@ void main() {
       model.filesystem.write('/a/lib/unchanged.dart', 'class Unchanged {}');
       model.filesystem.clearChangedPaths();
 
-      await model.takeLockAndStartBuild(
-        const {},
-        invalidatedSources: {
-          AssetId.parse('a|lib/changed.dart'),
-          AssetId.parse('a|lib/deleted.dart'),
-        },
-      );
+      await model.takeLockAndStartBuild({
+        AssetId.parse('a|lib/changed.dart'),
+        AssetId.parse('a|lib/deleted.dart'),
+      });
 
       expect(model.filesystem.exists('/a/lib/changed.dart'), isFalse);
       expect(model.filesystem.exists('/a/lib/deleted.dart'), isFalse);
