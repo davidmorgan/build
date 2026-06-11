@@ -71,7 +71,7 @@ abstract class BuildSpec implements Built<BuildSpec, BuildSpecBuilder> {
         await BuildPackages.forPaths(buildOptions.buildPaths);
     final readerWriter =
         (testingOverrides.readerWriter ?? ReaderWriter(buildPackages)).copyWith(
-          cache: InMemoryFilesystemCache(),
+          cache: const PassthroughFilesystemCache(),
         );
     final buildConfigs = await BuildConfigs.load(
       readerWriter: readerWriter,
