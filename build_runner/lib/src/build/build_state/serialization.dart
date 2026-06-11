@@ -21,13 +21,13 @@ BuildState? deserializeBuildState(Map serializedBuildState) {
             serializedBuildState['sourceDigests'],
             specifiedType: const FullType(BuiltMap, [
               FullType(AssetId),
-              FullType(Digest),
+              FullType(DigestedFile),
             ]),
           )
-          as BuiltMap<AssetId, Digest>;
+          as BuiltMap<AssetId, DigestedFile>;
 
   for (final id in sourceIds) {
-    buildState._sources.add(id, digest: sourceDigests[id]);
+    buildState._sources.add(id, digest: sourceDigests[id]?.digest);
   }
 
   final postProcessResults =
@@ -92,13 +92,13 @@ Map<String, Object?> serializeBuildState(BuildState buildState) {
       specifiedType: const FullType(BuiltSet, [FullType(AssetId)]),
     ),
     'sourceDigests': serializers.serialize(
-      BuiltMap<AssetId, Digest>.of({
+      BuiltMap<AssetId, DigestedFile>.of({
         for (final entry in buildState._sources.sources.entries)
           if (entry.value != null) entry.key: entry.value!,
       }),
       specifiedType: const FullType(BuiltMap, [
         FullType(AssetId),
-        FullType(Digest),
+        FullType(DigestedFile),
       ]),
     ),
     'postProcessResults': serializers.serialize(

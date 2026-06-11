@@ -33,7 +33,7 @@ class _$BuildStepResultSerializer
         object.outputs,
         specifiedType: const FullType(BuiltMap, const [
           const FullType(AssetId),
-          const FullType(Digest),
+          const FullType(DigestedFile),
         ]),
       ),
       'inputs',
@@ -111,7 +111,7 @@ class _$BuildStepResultSerializer
               value,
               specifiedType: const FullType(BuiltMap, const [
                 const FullType(AssetId),
-                const FullType(Digest),
+                const FullType(DigestedFile),
               ]),
             )!,
           );
@@ -173,7 +173,7 @@ class _$BuildStepResult extends BuildStepResult {
   @override
   final bool isHidden;
   @override
-  final BuiltMap<AssetId, Digest> outputs;
+  final BuiltMap<AssetId, DigestedFile> outputs;
   @override
   final BuiltSet<AssetId> inputs;
   @override
@@ -255,10 +255,10 @@ class BuildStepResultBuilder
   bool? get isHidden => _$this._isHidden;
   set isHidden(bool? isHidden) => _$this._isHidden = isHidden;
 
-  MapBuilder<AssetId, Digest>? _outputs;
-  MapBuilder<AssetId, Digest> get outputs =>
-      _$this._outputs ??= MapBuilder<AssetId, Digest>();
-  set outputs(MapBuilder<AssetId, Digest>? outputs) =>
+  MapBuilder<AssetId, DigestedFile>? _outputs;
+  MapBuilder<AssetId, DigestedFile> get outputs =>
+      _$this._outputs ??= MapBuilder<AssetId, DigestedFile>();
+  set outputs(MapBuilder<AssetId, DigestedFile>? outputs) =>
       _$this._outputs = outputs;
 
   SetBuilder<AssetId>? _inputs;

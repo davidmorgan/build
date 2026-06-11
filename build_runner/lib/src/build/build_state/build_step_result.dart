@@ -9,6 +9,7 @@ import 'package:built_value/serializer.dart';
 import 'package:crypto/crypto.dart';
 
 import 'glob_id.dart';
+import 'digested_file.dart';
 
 part 'build_step_result.g.dart';
 
@@ -26,7 +27,7 @@ abstract class BuildStepResult
   bool get isHidden;
 
   /// Outputs written by the step and their digests.
-  BuiltMap<AssetId, Digest> get outputs;
+  BuiltMap<AssetId, DigestedFile> get outputs;
 
   /// Inputs and missing sources read.
   BuiltSet<AssetId> get inputs;

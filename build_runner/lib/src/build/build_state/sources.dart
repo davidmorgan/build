@@ -7,12 +7,14 @@ import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
 
+import 'digested_file.dart';
+
 /// Assets that are inputs to the build.
 ///
 /// There are three types of source: actual files that haven't been read, actual
 /// files that have been read and digested, and missing sources.
 class Sources {
-  final Map<AssetId, Digest?> sources = {};
+  final Map<AssetId, DigestedFile?> sources = {};
   final Set<AssetId> missingSources = {};
 
   /// Sorted sources by package, or `null` if they have not been computed.
@@ -38,13 +40,23 @@ class Sources {
     if (!sources.containsKey(id)) {
       throw StateError('Tried to read digest of non-source $id.');
     }
+    return sources[id]?.digest;
+  }
+
+  /// The digested file info of source [id], or `null` if it has not been read.
+  ///
+  /// Throws if it is not a source.
+  DigestedFile? digestedFileOfSource(AssetId id) {
+    if (!sources.containsKey(id)) {
+      throw StateError('Tried to read digested file of non-source $id.');
+    }
     return sources[id];
   }
 
   /// Updates the digest of [id] if it's a known source.
   void updateDigestIfPresent(AssetId id, Digest? digest) {
     if (sources.containsKey(id)) {
-      sources[id] = digest;
+      sources[id] = digest == null ? null : DigestedFile(digest);
     }
   }
 
@@ -56,7 +68,7 @@ class Sources {
     if (sources.containsKey(id)) {
       throw StateError('Tried to add known source $id.');
     }
-    sources[id] = digest;
+    sources[id] = digest == null ? null : DigestedFile(digest);
     missingSources.remove(id);
   }
 

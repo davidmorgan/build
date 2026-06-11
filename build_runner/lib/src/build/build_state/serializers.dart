@@ -17,6 +17,7 @@ import 'build_step_id.dart';
 import 'build_step_result.dart';
 import 'glob_id.dart';
 import 'glob_result.dart';
+import 'digested_file.dart';
 import 'identity_serializer.dart';
 import 'post_process_build_step_id.dart';
 import 'post_process_build_step_result.dart';
@@ -48,6 +49,7 @@ final Serializers serializers =
     (_$serializers.toBuilder()
           ..add(identityAssetIdSerializer)
           ..add(DigestSerializer())
+          ..add(DigestedFileSerializer())
           ..addBuilderFactory(
             const FullType(BuiltSet, [FullType(AssetId)]),
             SetBuilder<AssetId>.new,
@@ -90,8 +92,8 @@ final Serializers serializers =
             MapBuilder<PostProcessBuildStepId, PostProcessBuildStepResult>.new,
           )
           ..addBuilderFactory(
-            const FullType(BuiltMap, [FullType(AssetId), FullType(Digest)]),
-            MapBuilder<AssetId, Digest>.new,
+            const FullType(BuiltMap, [FullType(AssetId), FullType(DigestedFile)]),
+            MapBuilder<AssetId, DigestedFile>.new,
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(Digest)]),
@@ -160,4 +162,29 @@ class DigestSerializer implements PrimitiveSerializer<Digest> {
     Digest object, {
     FullType specifiedType = FullType.unspecified,
   }) => base64.encode(object.bytes);
+}
+
+/// Serializer for [DigestedFile].
+///
+/// Serialized format is identical to [Digest] serializer (base64 string of digest).
+class DigestedFileSerializer implements PrimitiveSerializer<DigestedFile> {
+  @override
+  Iterable<Type> get types => [DigestedFile];
+
+  @override
+  String get wireName => 'Digest';
+
+  @override
+  DigestedFile deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => DigestedFile(Digest(base64.decode(serialized as String)));
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    DigestedFile object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => base64.encode(object.digest.bytes);
 }

@@ -9,6 +9,8 @@ import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
 
+import 'digested_file.dart';
+
 import '../../build_plan/build_packages.dart';
 import '../../build_plan/build_step_plan.dart';
 
@@ -167,6 +169,16 @@ class BuildState {
     if (isSource(id)) return _sources.digestOfSource(id);
     final step = buildStepPlan?.stepForDeclaredOutputOrNull(id);
     if (step == null) return null;
+    return stepResultOrNull(step)?.outputs[id]?.digest;
+  }
+
+  /// If [id] is a source or a declared output, returns the latest digested file info.
+  ///
+  /// Otherwise, returns `null`.
+  DigestedFile? digestedFileOf({BuildStepPlan? buildStepPlan, required AssetId id}) {
+    if (isSource(id)) return _sources.digestedFileOfSource(id);
+    final step = buildStepPlan?.stepForDeclaredOutputOrNull(id);
+    if (step == null) return null;
     return stepResultOrNull(step)?.outputs[id];
   }
 
@@ -174,6 +186,11 @@ class BuildState {
   ///
   /// Throws if it is not a source.
   Digest? digestOfSource(AssetId id) => _sources.digestOfSource(id);
+
+  /// The digested file info of source [id], or `null` if it has not been read.
+  ///
+  /// Throws if it is not a source.
+  DigestedFile? digestedFileOfSource(AssetId id) => _sources.digestedFileOfSource(id);
 
   // -- Missing sources.
 

@@ -34,6 +34,7 @@ import 'build_state/asset_graph_json.dart';
 import 'build_state/build_state.dart';
 import 'build_state/build_step_id.dart';
 import 'build_state/build_step_result.dart';
+import 'build_state/digested_file.dart';
 import 'build_state/glob_id.dart';
 import 'build_state/glob_result.dart';
 import 'build_state/post_process_build_step_id.dart';
@@ -1161,8 +1162,8 @@ class Build {
       ..errors.replace(errors);
     for (final output in outputs) {
       if (stepReaderWriter.assetsWritten.contains(output)) {
-        buildStepResultBuilder.outputs[output] = await readerWriter.digest(
-          output,
+        buildStepResultBuilder.outputs[output] = DigestedFile(
+          await readerWriter.digest(output),
         );
       }
     }
@@ -1177,11 +1178,11 @@ class Build {
 
   bool _isChangedOutput(AssetId output) {
     final generatingStep = buildStepPlan.stepForDeclaredOutput(output);
-    final oldDigest = previousBuildState
+    final oldDigestedFile = previousBuildState
         ?.stepResultOrNull(generatingStep)
         ?.outputs[output];
-    final newDigest = buildState.stepResult(generatingStep).outputs[output];
-    return oldDigest != newDigest;
+    final newDigestedFile = buildState.stepResult(generatingStep).outputs[output];
+    return oldDigestedFile != newDigestedFile;
   }
 }
 
