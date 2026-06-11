@@ -19,6 +19,7 @@ import '../build_plan/placeholders.dart';
 import '../io/asset_finder.dart';
 import '../io/reader_writer.dart';
 import 'build_state/build_state.dart';
+import 'build_state/digested_file.dart';
 import 'build_state/glob_id.dart';
 import 'input_tracker.dart';
 import 'library_cycle_graph/phased_reader.dart';
@@ -119,6 +120,9 @@ class SingleStepReaderWriter implements PhasedReader {
   /// The assets written via [writeAsString] or [writeAsBytes].
   final Set<AssetId> assetsWritten;
 
+  /// The outputs written during this step with their contents and digests.
+  final Map<AssetId, DigestedFile> writtenOutputs = {};
+
   SingleStepReaderWriter({
     required RunningBuild? runningBuild,
     required RunningBuildStep? runningBuildStep,
@@ -215,9 +219,9 @@ class SingleStepReaderWriter implements PhasedReader {
     if (!isReadable) return false;
     if (_runningBuild == null) return true;
 
-    if (_runningBuild.buildStepPlan.isDeclaredOutput(id) &&
-        !await _delegate.canRead(id)) {
-      return false;
+    if (_runningBuild.buildStepPlan.isDeclaredOutput(id)) {
+      final cached = await _digestedFileOf(id);
+      if (cached == null) return false;
     }
 
     await _ensureDigest(id);
@@ -240,17 +244,12 @@ class SingleStepReaderWriter implements PhasedReader {
     }
     final digest = await _ensureDigest(id);
 
-    if (_runningBuild != null) {
-      final cachedFile = _runningBuild!.buildState.digestedFileOf(
-        id: id,
-        buildStepPlan: _runningBuild!.buildStepPlan,
-      );
-      if (cachedFile != null) {
-        if (cachedFile.bytesContent != null) {
-          return cachedFile.bytesContent!;
-        } else if (cachedFile.stringContent != null) {
-          return utf8.encode(cachedFile.stringContent!);
-        }
+    final cachedFile = await _digestedFileOf(id);
+    if (cachedFile != null) {
+      if (cachedFile.bytesContent != null) {
+        return cachedFile.bytesContent!;
+      } else if (cachedFile.stringContent != null) {
+        return utf8.encode(cachedFile.stringContent!);
       }
     }
 
@@ -276,17 +275,12 @@ class SingleStepReaderWriter implements PhasedReader {
     }
     final digest = await _ensureDigest(id);
 
-    if (_runningBuild != null) {
-      final cachedFile = _runningBuild!.buildState.digestedFileOf(
-        id: id,
-        buildStepPlan: _runningBuild!.buildStepPlan,
-      );
-      if (cachedFile != null) {
-        if (cachedFile.stringContent != null) {
-          return cachedFile.stringContent!;
-        } else if (cachedFile.bytesContent != null) {
-          return utf8.decode(cachedFile.bytesContent!);
-        }
+    final cachedFile = await _digestedFileOf(id);
+    if (cachedFile != null) {
+      if (cachedFile.stringContent != null) {
+        return cachedFile.stringContent!;
+      } else if (cachedFile.bytesContent != null) {
+        return utf8.decode(cachedFile.bytesContent!);
       }
     }
 
@@ -316,6 +310,19 @@ class SingleStepReaderWriter implements PhasedReader {
     return streamCompleter.stream;
   }
 
+  Future<DigestedFile?> _digestedFileOf(AssetId id) async {
+    if (writtenOutputs.containsKey(id)) {
+      return writtenOutputs[id];
+    }
+    if (_runningBuild != null) {
+      return _runningBuild!.buildState.digestedFileOf(
+        id: id,
+        buildStepPlan: _runningBuild!.buildStepPlan,
+      );
+    }
+    return null;
+  }
+
   /// Returns the `lastKnownDigest` of [id], computing and caching it if
   /// necessary.
   ///
@@ -324,6 +331,9 @@ class SingleStepReaderWriter implements PhasedReader {
   ///
   /// Note that [id] must exist in the build state.
   Future<Digest> _ensureDigest(AssetId id) async {
+    if (writtenOutputs.containsKey(id)) {
+      return writtenOutputs[id]!.digest;
+    }
     if (_runningBuild == null) return _delegate.digest(id);
     final knownDigest = _runningBuild.buildState.digestOf(
       id: id,
@@ -400,18 +410,36 @@ class SingleStepReaderWriter implements PhasedReader {
     return globId;
   }
 
-  Future<void> writeAsBytes(AssetId id, List<int> bytes) {
+  Future<void> writeAsBytes(AssetId id, List<int> bytes) async {
     assetsWritten.add(id);
-    return _delegate.writeAsBytes(id, bytes);
+    if (_runningBuildStep?.buildPhase is PostBuildPhase) {
+      await _delegate.writeAsBytes(id, bytes);
+      return;
+    }
+    final digest = Digest(md5.convert(bytes).bytes);
+    writtenOutputs[id] = DigestedFile(
+      digest,
+      bytesContent: bytes,
+    );
   }
 
   Future<void> writeAsString(
     AssetId id,
     String contents, {
     Encoding encoding = utf8,
-  }) {
+  }) async {
     assetsWritten.add(id);
-    return _delegate.writeAsString(id, contents, encoding: encoding);
+    if (_runningBuildStep?.buildPhase is PostBuildPhase) {
+      await _delegate.writeAsString(id, contents, encoding: encoding);
+      return;
+    }
+    final bytes = encoding.encode(contents);
+    final digest = Digest(md5.convert(bytes).bytes);
+    writtenOutputs[id] = DigestedFile(
+      digest,
+      bytesContent: bytes,
+      stringContent: contents,
+    );
   }
 
   @override
@@ -448,10 +476,7 @@ class SingleStepReaderWriter implements PhasedReader {
               buildStepPlan: _runningBuild.buildStepPlan,
               id: id,
             );
-        final cached = _runningBuild.buildState.digestedFileOf(
-          id: id,
-          buildStepPlan: _runningBuild.buildStepPlan,
-        );
+        final cached = await _digestedFileOf(id);
         final content = cached?.stringContent ??
             (cached?.bytesContent != null
                 ? utf8.decode(cached!.bytesContent!)
@@ -465,10 +490,7 @@ class SingleStepReaderWriter implements PhasedReader {
       }
     }
 
-    final cached = _runningBuild.buildState.digestedFileOf(
-      id: id,
-      buildStepPlan: _runningBuild.buildStepPlan,
-    );
+    final cached = await _digestedFileOf(id);
     final content = cached?.stringContent ??
         (cached?.bytesContent != null
             ? utf8.decode(cached!.bytesContent!)

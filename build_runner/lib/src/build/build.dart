@@ -207,6 +207,7 @@ class Build {
           invalidatedSources: buildInputs.invalidatedSources,
         );
         final result = await _runPhases();
+        await _flushGeneratedOutputs();
 
         // Combine previous phased asset deps, if any, with the newly loaded
         // deps. Because of skipped builds, the newly loaded deps might just
@@ -1160,20 +1161,7 @@ class Build {
       ..globsEvaluated.replace(inputTracker.globsEvaluated)
       ..resolverEntrypoints.replace(inputTracker.resolverEntrypoints)
       ..errors.replace(errors);
-    for (final output in outputs) {
-      if (stepReaderWriter.assetsWritten.contains(output)) {
-        final bytes = await readerWriter.readAsBytes(output);
-        String? string;
-        try {
-          string = utf8.decode(bytes);
-        } catch (_) {}
-        buildStepResultBuilder.outputs[output] = DigestedFile(
-          await readerWriter.digest(output),
-          bytesContent: bytes,
-          stringContent: string,
-        );
-      }
-    }
+    buildStepResultBuilder.outputs.addAll(stepReaderWriter.writtenOutputs);
     final buildStepResult = buildStepResultBuilder.build();
 
     final buildStepId = BuildStepId(primaryInput: input, phaseNumber: phaseNum);
@@ -1190,6 +1178,22 @@ class Build {
         ?.outputs[output];
     final newDigestedFile = buildState.stepResult(generatingStep).outputs[output];
     return oldDigestedFile != newDigestedFile;
+  }
+
+  Future<void> _flushGeneratedOutputs() async {
+    for (final stepResult in buildState.allBuildStepResults) {
+      if (stepResult.result == true) {
+        for (final entry in stepResult.outputs.entries) {
+          final id = entry.key;
+          final file = entry.value;
+          if (file.bytesContent != null) {
+            await readerWriter.writeAsBytes(id, file.bytesContent!);
+          } else if (file.stringContent != null) {
+            await readerWriter.writeAsString(id, file.stringContent!);
+          }
+        }
+      }
+    }
   }
 }
 

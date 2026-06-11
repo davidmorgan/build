@@ -105,6 +105,10 @@ class BuildState {
   Iterable<AssetId> get actualOutputs => _buildStepResultsByPrimaryInput.values
       .expand((map) => map.values.expand((result) => result.outputs.keys));
 
+  /// All build step results from this build state.
+  Iterable<BuildStepResult> get allBuildStepResults =>
+      _buildStepResultsByPrimaryInput.values.expand((map) => map.values);
+
   /// Whether [id] is a declared build output that was actually generated.
   bool isActualOutput({
     required BuildStepPlan buildStepPlan,
