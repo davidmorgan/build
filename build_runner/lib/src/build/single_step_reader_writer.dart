@@ -239,6 +239,21 @@ class SingleStepReaderWriter implements PhasedReader {
       throw AssetNotFoundException(id);
     }
     final digest = await _ensureDigest(id);
+
+    if (_runningBuild != null) {
+      final cachedFile = _runningBuild!.buildState.digestedFileOf(
+        id: id,
+        buildStepPlan: _runningBuild!.buildStepPlan,
+      );
+      if (cachedFile != null) {
+        if (cachedFile.bytesContent != null) {
+          return cachedFile.bytesContent!;
+        } else if (cachedFile.stringContent != null) {
+          return utf8.encode(cachedFile.stringContent!);
+        }
+      }
+    }
+
     final bytes = await _delegate.readAsBytes(id);
     if (_runningBuild != null && _runningBuild!.buildState.isSource(id)) {
       _runningBuild!.buildState.updateSourceContent(
@@ -260,6 +275,21 @@ class SingleStepReaderWriter implements PhasedReader {
       throw AssetNotFoundException(id);
     }
     final digest = await _ensureDigest(id);
+
+    if (_runningBuild != null) {
+      final cachedFile = _runningBuild!.buildState.digestedFileOf(
+        id: id,
+        buildStepPlan: _runningBuild!.buildStepPlan,
+      );
+      if (cachedFile != null) {
+        if (cachedFile.stringContent != null) {
+          return cachedFile.stringContent!;
+        } else if (cachedFile.bytesContent != null) {
+          return utf8.decode(cachedFile.bytesContent!);
+        }
+      }
+    }
+
     final contents = await _delegate.readAsString(id, encoding: encoding);
     if (_runningBuild != null && _runningBuild!.buildState.isSource(id)) {
       _runningBuild!.buildState.updateSourceContent(
@@ -418,12 +448,33 @@ class SingleStepReaderWriter implements PhasedReader {
               buildStepPlan: _runningBuild.buildStepPlan,
               id: id,
             );
+        final cached = _runningBuild.buildState.digestedFileOf(
+          id: id,
+          buildStepPlan: _runningBuild.buildStepPlan,
+        );
+        final content = cached?.stringContent ??
+            (cached?.bytesContent != null
+                ? utf8.decode(cached!.bytesContent!)
+                : null) ??
+            (isSuccessOutput ? await _delegate.readAsString(id) : '');
         return PhasedValue.generated(
           atPhase: stepPhase,
           before: '',
-          isSuccessOutput ? await _delegate.readAsString(id) : '',
+          content,
         );
       }
+    }
+
+    final cached = _runningBuild.buildState.digestedFileOf(
+      id: id,
+      buildStepPlan: _runningBuild.buildStepPlan,
+    );
+    final content = cached?.stringContent ??
+        (cached?.bytesContent != null
+            ? utf8.decode(cached!.bytesContent!)
+            : null);
+    if (content != null) {
+      return PhasedValue.fixed(content);
     }
 
     return PhasedValue.fixed(
