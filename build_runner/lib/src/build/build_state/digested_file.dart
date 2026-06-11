@@ -6,9 +6,10 @@ import 'package:crypto/crypto.dart';
 
 class DigestedFile {
   final Digest digest;
-  final String? content;
+  final String? stringContent;
+  final List<int>? bytesContent;
 
-  DigestedFile(this.digest, [this.content]);
+  DigestedFile(this.digest, {this.stringContent, this.bytesContent});
 
   @override
   bool operator ==(Object other) =>
@@ -19,5 +20,6 @@ class DigestedFile {
   int get hashCode => digest.hashCode;
 
   @override
-  String toString() => 'DigestedFile($digest, content: ${content != null})';
+  String toString() =>
+      'DigestedFile($digest, string: ${stringContent != null}, bytes: ${bytesContent != null})';
 }

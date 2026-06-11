@@ -53,6 +53,23 @@ class Sources {
     return sources[id];
   }
 
+  /// Updates the content and digest of [id] if it's a known source.
+  void updateContent(
+    AssetId id,
+    Digest digest, {
+    String? stringContent,
+    List<int>? bytesContent,
+  }) {
+    if (sources.containsKey(id)) {
+      final existing = sources[id];
+      sources[id] = DigestedFile(
+        digest,
+        stringContent: stringContent ?? existing?.stringContent,
+        bytesContent: bytesContent ?? existing?.bytesContent,
+      );
+    }
+  }
+
   /// Updates the digest of [id] if it's a known source.
   void updateDigestIfPresent(AssetId id, Digest? digest) {
     if (sources.containsKey(id)) {

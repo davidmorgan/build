@@ -161,6 +161,21 @@ class BuildState {
     _sources.updateDigestIfPresent(id, digest);
   }
 
+  /// Updates the content of a source file.
+  void updateSourceContent(
+    AssetId id,
+    Digest digest, {
+    String? stringContent,
+    List<int>? bytesContent,
+  }) {
+    _sources.updateContent(
+      id,
+      digest,
+      stringContent: stringContent,
+      bytesContent: bytesContent,
+    );
+  }
+
   /// If [id] is a source or a declared output, returns the latest digest.
   ///
   /// Otherwise, returns `null`. In particular, post process outputs don't have

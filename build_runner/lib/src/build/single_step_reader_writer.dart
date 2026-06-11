@@ -238,8 +238,16 @@ class SingleStepReaderWriter implements PhasedReader {
     if (!isReadable) {
       throw AssetNotFoundException(id);
     }
-    await _ensureDigest(id);
-    return _delegate.readAsBytes(id);
+    final digest = await _ensureDigest(id);
+    final bytes = await _delegate.readAsBytes(id);
+    if (_runningBuild != null && _runningBuild!.buildState.isSource(id)) {
+      _runningBuild!.buildState.updateSourceContent(
+        id,
+        digest,
+        bytesContent: bytes,
+      );
+    }
+    return bytes;
   }
 
   Future<String> readAsString(
@@ -251,8 +259,16 @@ class SingleStepReaderWriter implements PhasedReader {
     if (!isReadable) {
       throw AssetNotFoundException(id);
     }
-    await _ensureDigest(id);
-    return _delegate.readAsString(id, encoding: encoding);
+    final digest = await _ensureDigest(id);
+    final contents = await _delegate.readAsString(id, encoding: encoding);
+    if (_runningBuild != null && _runningBuild!.buildState.isSource(id)) {
+      _runningBuild!.buildState.updateSourceContent(
+        id,
+        digest,
+        stringContent: contents,
+      );
+    }
+    return contents;
   }
 
   Stream<AssetId> _findAssets(Glob glob, {required String package}) {

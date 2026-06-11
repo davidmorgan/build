@@ -1162,8 +1162,15 @@ class Build {
       ..errors.replace(errors);
     for (final output in outputs) {
       if (stepReaderWriter.assetsWritten.contains(output)) {
+        final bytes = await readerWriter.readAsBytes(output);
+        String? string;
+        try {
+          string = utf8.decode(bytes);
+        } catch (_) {}
         buildStepResultBuilder.outputs[output] = DigestedFile(
           await readerWriter.digest(output),
+          bytesContent: bytes,
+          stringContent: string,
         );
       }
     }
