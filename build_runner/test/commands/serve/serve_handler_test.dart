@@ -72,7 +72,7 @@ class FakeWebSocketChannel extends StreamChannelMixin
   String? get protocol => throw UnimplementedError();
 
   @override
-  Future<void> get ready => Future.value();
+  Future<void> get ready => .value();
 
   @override
   WebSocketSink get sink => FakeSink(this);
@@ -118,7 +118,7 @@ void main() {
   late BuildStepPlan buildStepPlan;
 
   setUp(() async {
-    buildPackages = BuildPackages.singlePackageBuild('a', [
+    buildPackages = .singlePackageBuild('a', [
       BuildPackage.forTesting(name: 'a', isOutput: true),
     ]);
     readerWriter = InternalTestReaderWriter(
@@ -141,12 +141,7 @@ void main() {
       ),
     );
     watcher.addFutureResult(
-      Future.value(
-        BuildResult(
-          status: BuildStatus.success,
-          buildOutputReader: finalizedReader,
-        ),
-      ),
+      .value(BuildResult(status: .success, buildOutputReader: finalizedReader)),
     );
   });
 
@@ -168,7 +163,7 @@ void main() {
   test('can get handlers for a subdirectory', () async {
     addSource('a|web/index.html', 'content');
     final response = await serveHandler.handlerFor('web')(
-      Request('GET', Uri.parse('http://server.com/index.html')),
+      Request('GET', .parse('http://server.com/index.html')),
     );
     expect(await response.readAsString(), 'content');
   });
@@ -176,7 +171,7 @@ void main() {
   test('serves package files for /packages/<package name>', () async {
     addSource('a|lib/a.html', 'content');
     final response = await serveHandler.handlerFor('web')(
-      Request('GET', Uri.parse('http://server.com/packages/a/a.html')),
+      Request('GET', .parse('http://server.com/packages/a/a.html')),
     );
     expect(await response.readAsString(), 'content');
   });
@@ -184,7 +179,7 @@ void main() {
   test('serves packages for /anywhere/packages/<package name>', () async {
     addSource('a|lib/a.html', 'content');
     final response = await serveHandler.handlerFor('web')(
-      Request('GET', Uri.parse('http://server.com/anywhere/packages/a/a.html')),
+      Request('GET', .parse('http://server.com/anywhere/packages/a/a.html')),
     );
     expect(await response.readAsString(), 'content');
   });
@@ -194,14 +189,14 @@ void main() {
     addSource('a|lib/a.html', 'package_content');
     addSource('a|web/packages/a/a.html', 'web_content');
     final responseA = await serveHandler.handlerFor('web')(
-      Request('GET', Uri.parse('http://server.com/packages/a/a.html')),
+      Request('GET', .parse('http://server.com/packages/a/a.html')),
     );
     expect(await responseA.readAsString(), 'web_content');
 
     // Fall back to match in packages.
     addSource('b|lib/b.html', 'package_content');
     final responseB = await serveHandler.handlerFor('web')(
-      Request('GET', Uri.parse('http://server.com/packages/b/b.html')),
+      Request('GET', .parse('http://server.com/packages/b/b.html')),
     );
     expect(await responseB.readAsString(), 'package_content');
   });
@@ -211,7 +206,7 @@ void main() {
     () async {
       addSource('a|web/packages/index.html', 'content');
       final response = await serveHandler.handlerFor('web')(
-        Request('GET', Uri.parse('http://server.com/packages/')),
+        Request('GET', .parse('http://server.com/packages/')),
       );
       expect(await response.readAsString(), 'content');
     },
@@ -219,7 +214,7 @@ void main() {
 
   test('serves nothing from /packages/` if missing', () async {
     final response = await serveHandler.handlerFor('web')(
-      Request('GET', Uri.parse('http://server.com/packages/')),
+      Request('GET', .parse('http://server.com/packages/')),
     );
     expect(response.statusCode, HttpStatus.notFound);
   });
@@ -249,11 +244,11 @@ void main() {
     addSource('a|web/some.js', '$entrypointExtensionMarker\nalert(1)');
     final noReloadEtag =
         (await serveHandler.handlerFor('web', liveReload: false)(
-          Request('GET', Uri.parse('http://server.com/some.js')),
+          Request('GET', .parse('http://server.com/some.js')),
         )).headers[HttpHeaders.etagHeader];
     final liveReloadEtag =
         (await serveHandler.handlerFor('web', liveReload: true)(
-          Request('GET', Uri.parse('http://server.com/some.js')),
+          Request('GET', .parse('http://server.com/some.js')),
         )).headers[HttpHeaders.etagHeader];
     expect(noReloadEtag, isNot(liveReloadEtag));
   });
@@ -276,9 +271,9 @@ void main() {
       });
 
       finalizedReader = BuildOutputReader(
-        builderFilesystem: BuilderFilesystem(
+        builderFilesystem: .new(
           buildPackages: buildPackages,
-          buildConfigs: BuildConfigs.empty(),
+          buildConfigs: .empty(),
           buildState: buildState,
           buildStepPlan: buildStepPlan,
           readerWriter: readerWriter,
@@ -291,18 +286,15 @@ void main() {
       });
       buildState.updateBuildStepResult(buildStepId, stepResult);
       watcher.addFutureResult(
-        Future.value(
-          BuildResult(
-            status: BuildStatus.failure,
-            buildOutputReader: finalizedReader,
-          ),
+        .value(
+          BuildResult(status: .failure, buildOutputReader: finalizedReader),
         ),
       );
     });
 
     test('serves successful assets', () async {
       final response = await serveHandler.handlerFor('web')(
-        Request('GET', Uri.parse('http://server.com/index.html')),
+        Request('GET', .parse('http://server.com/index.html')),
       );
 
       expect(response.statusCode, HttpStatus.ok);
@@ -310,7 +302,7 @@ void main() {
 
     test('rejects requests for failed assets', () async {
       final response = await serveHandler.handlerFor('web')(
-        Request('GET', Uri.parse('http://server.com/main.ddc.js')),
+        Request('GET', .parse('http://server.com/main.ddc.js')),
       );
 
       expect(response.statusCode, HttpStatus.internalServerError);
@@ -337,7 +329,7 @@ void main() {
         ),
       );
       await serveHandler.handlerFor('web', logRequests: true)(
-        Request('GET', Uri.parse('http://server.com/main.ddc.js')),
+        Request('GET', .parse('http://server.com/main.ddc.js')),
       );
     });
   });
@@ -364,7 +356,7 @@ void main() {
       ),
     );
     await serveHandler.handlerFor('web', logRequests: true)(
-      Request('GET', Uri.parse('http://server.com/index.html')),
+      Request('GET', .parse('http://server.com/index.html')),
     );
   });
 
@@ -375,7 +367,7 @@ void main() {
     final response = await serveHandler.handlerFor('web')(
       Request(
         'GET',
-        Uri.parse('http://server.com/\$assetDigests'),
+        .parse('http://server.com/\$assetDigests'),
         body: jsonEncode([
           'index.html',
           'packages/a/some.dart.js',
@@ -406,14 +398,14 @@ void main() {
         final response = await serveHandler.handlerFor(
           'web',
           liveReload: liveReload,
-        )(Request('GET', Uri.parse('http://server.com/some.js')));
+        )(Request('GET', .parse('http://server.com/some.js')));
         expect(await response.readAsString(), contains(injectionMarker));
       });
 
       test('doesn\'t inject client code if disabled', () async {
         addSource('a|web/some.js', '$entrypointExtensionMarker\nalert(1)');
         final response = await serveHandler.handlerFor('web')(
-          Request('GET', Uri.parse('http://server.com/some.js')),
+          Request('GET', .parse('http://server.com/some.js')),
         );
         expect(await response.readAsString(), isNot(contains(injectionMarker)));
       });
@@ -423,7 +415,7 @@ void main() {
         final response = await serveHandler.handlerFor(
           'web',
           liveReload: liveReload,
-        )(Request('GET', Uri.parse('http://server.com/some.html')));
+        )(Request('GET', .parse('http://server.com/some.html')));
         expect(await response.readAsString(), isNot(contains(injectionMarker)));
       });
 
@@ -432,7 +424,7 @@ void main() {
         final response = await serveHandler.handlerFor(
           'web',
           liveReload: liveReload,
-        )(Request('GET', Uri.parse('http://server.com/some.js')));
+        )(Request('GET', .parse('http://server.com/some.js')));
         expect(await response.readAsString(), isNot(contains(injectionMarker)));
       });
 
@@ -469,7 +461,7 @@ void main() {
       final response = await serveHandler.handlerFor('web')(
         Request(
           'GET',
-          Uri.parse('ws://server.com/'),
+          .parse('ws://server.com/'),
           headers: {
             'Connection': 'Upgrade',
             'Upgrade': 'websocket',
@@ -529,10 +521,7 @@ void main() {
         await createMockConnection(serverChannel1, 'web');
         await createMockConnection(serverChannel2, 'web');
         await handler.emitUpdateMessage(
-          BuildResult(
-            status: BuildStatus.success,
-            buildOutputReader: finalizedReader,
-          ),
+          BuildResult(status: .success, buildOutputReader: finalizedReader),
         );
         await clientChannel1.sink.close();
         await clientChannel2.sink.close();
@@ -544,17 +533,11 @@ void main() {
         await createMockConnection(serverChannel1, 'web');
         await createMockConnection(serverChannel2, 'web');
         await handler.emitUpdateMessage(
-          BuildResult(
-            status: BuildStatus.success,
-            buildOutputReader: finalizedReader,
-          ),
+          BuildResult(status: .success, buildOutputReader: finalizedReader),
         );
         await clientChannel2.sink.close();
         await handler.emitUpdateMessage(
-          BuildResult(
-            status: BuildStatus.success,
-            buildOutputReader: finalizedReader,
-          ),
+          BuildResult(status: .success, buildOutputReader: finalizedReader),
         );
         await clientChannel1.sink.close();
       });
@@ -563,10 +546,7 @@ void main() {
         expect(clientChannel1.stream, emitsDone);
         await createMockConnection(serverChannel1, 'web');
         await handler.emitUpdateMessage(
-          BuildResult(
-            status: BuildStatus.failure,
-            buildOutputReader: finalizedReader,
-          ),
+          BuildResult(status: .failure, buildOutputReader: finalizedReader),
         );
         await clientChannel1.sink.close();
       });
@@ -602,14 +582,14 @@ void main() {
         await createMockConnection(serverChannel1, 'web');
         await handler.emitUpdateMessage(
           BuildResult(
-            status: BuildStatus.success,
+            status: .success,
             outputs: [AssetId('a', 'web/index.html')].build(),
             buildOutputReader: finalizedReader,
           ),
         );
         await handler.emitUpdateMessage(
           BuildResult(
-            status: BuildStatus.success,
+            status: .success,
             outputs: [
               AssetId('a', 'web/index.html'),
               AssetId('a', 'lib/some.dart.js'),
@@ -658,7 +638,7 @@ void main() {
         await createMockConnection(serverChannel2, 'web2');
         await handler.emitUpdateMessage(
           BuildResult(
-            status: BuildStatus.success,
+            status: .success,
             outputs: [
               AssetId('a', 'web1/index.html'),
               AssetId('a', 'web2/index.html'),

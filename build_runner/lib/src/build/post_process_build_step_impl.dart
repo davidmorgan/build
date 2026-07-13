@@ -49,7 +49,7 @@ class PostProcessBuildStepImpl implements PostProcessBuildStep {
   @override
   Future<void> writeAsBytes(AssetId id, FutureOr<List<int>> bytes) async {
     _addAsset(id);
-    outputs[id] = AssetContent.bytes(await bytes);
+    outputs[id] = .bytes(await bytes);
   }
 
   @override
@@ -59,7 +59,7 @@ class PostProcessBuildStepImpl implements PostProcessBuildStep {
     Encoding encoding = utf8,
   }) async {
     _addAsset(id);
-    outputs[id] = AssetContent.string(await content, encoding: encoding);
+    outputs[id] = .string(await content, encoding: encoding);
   }
 
   /// Marks an asset for deletion in the post process step.

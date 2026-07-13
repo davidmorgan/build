@@ -45,7 +45,7 @@ void main() {
     late BuildPlan buildPlan;
 
     Future<BuildPlan> loadPlan([TestingOverrides? overrides]) async {
-      return BuildPlan.load(
+      return .load(
         await BuildSpec.load(
           builderFactories: builderFactories,
           buildOptions: buildOptions,
@@ -55,18 +55,18 @@ void main() {
     }
 
     setUp(() async {
-      buildPackages = BuildPackages.singlePackageBuild('a', [
-        BuildPackage.forTesting(name: 'a', watch: true, isOutput: true),
+      buildPackages = .singlePackageBuild('a', [
+        .forTesting(name: 'a', watch: true, isOutput: true),
       ]);
       readerWriter = InternalTestReaderWriter(outputRootPackage: 'a');
       await readerWriter.writeAsString(assetId, '// a.dart');
       await readerWriter.writeAsString(assetId2, '// other');
-      buildOptions = BuildOptions.forTests();
-      builderFactories = BuilderFactories({
+      buildOptions = .forTests();
+      builderFactories = .new({
         '': [(_) => TestBuilder()],
         'b2': [(_) => TestBuilder(buildExtensions: appendExtension('.copy2'))],
       });
-      testingOverrides = TestingOverrides(
+      testingOverrides = .new(
         builderDefinitions: [BuilderDefinition('')].build(),
         readerWriter: readerWriter,
         buildPackages: buildPackages,
@@ -103,8 +103,8 @@ void main() {
         }),
       );
       // Give digests to inputs so they are monitored for modifications.
-      buildState.updateSourceContent(assetId, AssetContent.digest(Digest([])));
-      buildState.updateSourceContent(assetId2, AssetContent.digest(Digest([])));
+      buildState.updateSourceContent(assetId, .digest(.new([])));
+      buildState.updateSourceContent(assetId2, .digest(.new([])));
 
       await writeBuildStateAndPlan(buildState, buildPlan);
 
@@ -137,9 +137,7 @@ void main() {
           return BuildConfig(
             packageName: 'a',
             buildTargets: {
-              'a|a': BuildTarget(
-                sources: const InputSet(include: ['**/*.dart']),
-              ),
+              'a|a': .new(sources: const .new(include: ['**/*.dart'])),
             },
           );
         },
@@ -147,7 +145,7 @@ void main() {
         [],
       );
       final buildPlan1 = await BuildPlan.load(
-        await BuildSpec.load(
+        await .load(
           builderFactories: builderFactories,
           buildOptions: buildOptions,
           testingOverrides: testingOverrides.copyWith(
@@ -164,9 +162,7 @@ void main() {
           return BuildConfig(
             packageName: 'a',
             buildTargets: {
-              'a|a': BuildTarget(
-                sources: const InputSet(include: ['**/*.other']),
-              ),
+              'a|a': .new(sources: const .new(include: ['**/*.other'])),
             },
           );
         },
@@ -174,7 +170,7 @@ void main() {
         [],
       );
       final buildPlan2 = await BuildPlan.load(
-        await BuildSpec.load(
+        await .load(
           builderFactories: builderFactories,
           buildOptions: buildOptions,
           testingOverrides: testingOverrides.copyWith(
@@ -189,7 +185,7 @@ void main() {
     test('throws CannotBuildException if there are conflicting outputs '
         'in dependencies', () async {
       final buildPackages = BuildPackages.singlePackageBuild('a', [
-        BuildPackage.forTesting(
+        .forTesting(
           name: 'a',
           watch: true,
           isOutput: true,
@@ -198,9 +194,9 @@ void main() {
         BuildPackage.forTesting(name: 'dep', watch: true, isOutput: false),
       ]);
       final readerWriter = InternalTestReaderWriter(outputRootPackage: 'a');
-      await readerWriter.writeAsString(AssetId('a', 'lib/a.dart'), '// a.dart');
+      await readerWriter.writeAsString(.new('a', 'lib/a.dart'), '// a.dart');
       await readerWriter.writeAsString(
-        AssetId('dep', 'lib/a.dart'),
+        .new('dep', 'lib/a.dart'),
         '// dep a.dart',
       );
 
@@ -209,11 +205,7 @@ void main() {
 
       final testingOverrides = TestingOverrides(
         builderDefinitions: [
-          BuilderDefinition(
-            '',
-            hideOutput: true,
-            autoApply: AutoApply.allPackages,
-          ),
+          BuilderDefinition('', hideOutput: true, autoApply: .allPackages),
         ].build(),
         readerWriter: readerWriter,
         buildPackages: buildPackages,
@@ -222,7 +214,7 @@ void main() {
 
       expect(
         () async => await BuildPlan.load(
-          await BuildSpec.load(
+          await .load(
             builderFactories: builderFactories,
             buildOptions: buildOptions,
             testingOverrides: testingOverrides,

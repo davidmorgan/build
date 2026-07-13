@@ -74,7 +74,7 @@ class Watcher {
         })
         .debounceBuffer(
           _buildPlan.buildSpec.testingOverrides.debounceDelay ??
-              const Duration(milliseconds: 250),
+              const .new(milliseconds: 250),
         )
         .asyncMap(
           (changes) => _buildSeries.filterChanges(changes, _expectedDeletes),

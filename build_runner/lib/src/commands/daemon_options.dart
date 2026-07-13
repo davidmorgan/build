@@ -26,9 +26,6 @@ class DaemonOptions {
         commandLine.usage,
       );
     }
-    return DaemonOptions(
-      logRequests: commandLine.logRequests!,
-      buildMode: buildMode,
-    );
+    return .new(logRequests: commandLine.logRequests!, buildMode: buildMode);
   }
 }

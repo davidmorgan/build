@@ -9,7 +9,7 @@ import 'package:watcher/watcher.dart';
 import '../../build_plan/build_package.dart';
 import 'asset_change.dart';
 
-Watcher _default(String path) => Watcher(path);
+Watcher _default(String path) => .new(path);
 
 /// Allows watching significant files and directories in a given package.
 class BuildPackageWatcher {
@@ -32,6 +32,6 @@ class BuildPackageWatcher {
   Stream<AssetChange> watch() {
     _watcher = _strategy(buildPackage.path);
     final events = _watcher.events;
-    return events.map((e) => AssetChange.fromEvent(buildPackage, e));
+    return events.map((e) => .fromEvent(buildPackage, e));
   }
 }

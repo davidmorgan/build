@@ -18,7 +18,7 @@ void main() {
       ]) {
         sources.add(id);
       }
-      expect(sources.findFiles('a', [AssetId('a', 'lib/a.g.dart')]), [
+      expect(sources.findFiles('a', [.new('a', 'lib/a.g.dart')]), [
         AssetId('a', 'lib/a.dart'),
         AssetId('a', 'lib/a.g.dart'),
       ]);
@@ -36,20 +36,20 @@ void main() {
       ]) {
         sources.add(id);
       }
-      expect(sources.findFiles('a', [], glob: Glob('lib/a*.dart')), [
+      expect(sources.findFiles('a', [], glob: .new('lib/a*.dart')), [
         AssetId('a', 'lib/aa.dart'),
         AssetId('a', 'lib/ab.dart'),
       ]);
-      expect(sources.findFiles('a', [], glob: Glob('lib/*a.dart')), [
+      expect(sources.findFiles('a', [], glob: .new('lib/*a.dart')), [
         AssetId('a', 'lib/aa.dart'),
         AssetId('a', 'lib/ba.dart'),
       ]);
-      expect(sources.findFiles('a', [], glob: Glob('*/aa.dart')), [
+      expect(sources.findFiles('a', [], glob: .new('*/aa.dart')), [
         AssetId('a', 'lib/aa.dart'),
       ]);
-      expect(sources.findFiles('a', [], glob: Glob('*')), isEmpty);
+      expect(sources.findFiles('a', [], glob: .new('*')), isEmpty);
 
-      expect(sources.findFiles('a', [], glob: Glob('**')), [
+      expect(sources.findFiles('a', [], glob: .new('**')), [
         // Matches are sorted.
         AssetId('a', 'lib/aa.dart'),
         AssetId('a', 'lib/aa/a.dart'),
@@ -58,17 +58,17 @@ void main() {
         AssetId('a', 'lib/bb.dart'),
         AssetId('a', 'lib/bb/b.dart'),
       ]);
-      expect(sources.findFiles('a', [], glob: Glob('**/a.dart')), [
+      expect(sources.findFiles('a', [], glob: .new('**/a.dart')), [
         AssetId('a', 'lib/aa/a.dart'),
       ]);
     });
 
     test('findFirstWithPrefix finds first with prefix in large list', () {
       final list = <AssetId>[
-        AssetId('a', 'a'),
-        AssetId('a', 'ab'),
-        AssetId('a', 'c'),
-        AssetId('a', 'd'),
+        .new('a', 'a'),
+        .new('a', 'ab'),
+        .new('a', 'c'),
+        .new('a', 'd'),
       ];
       expect(list.findFirstWithPrefix('a'), 0);
       expect(list.findFirstWithPrefix('b'), -1);
@@ -80,7 +80,7 @@ void main() {
     test('findFirstWithPrefix finds first with prefix in large list', () {
       final list = <AssetId>[
         for (var i = 0; i != 1000; ++i)
-          AssetId('a', '${i.toString().padLeft(4, '0')}andsomeothertext'),
+          .new('a', '${i.toString().padLeft(4, '0')}andsomeothertext'),
       ];
       for (var i = 0; i != 1000; ++i) {
         expect(list.findFirstWithPrefix(i.toString().padLeft(4, '0')), i);
@@ -89,11 +89,11 @@ void main() {
 
     test('filterToPrefix filters to prefix', () {
       final list = <AssetId>[
-        AssetId('a', 'aa'),
-        AssetId('a', 'ab'),
-        AssetId('a', 'bb'),
-        AssetId('a', 'bc'),
-        AssetId('a', 'de'),
+        .new('a', 'aa'),
+        .new('a', 'ab'),
+        .new('a', 'bb'),
+        .new('a', 'bc'),
+        .new('a', 'de'),
       ];
       expect(list.filterToPrefix('a'), [
         AssetId('a', 'aa'),
@@ -114,11 +114,11 @@ void main() {
 
   test('simpleGlobPrefix', () {
     expect(simpleGlobPrefix(Glob('*def')), '');
-    expect(simpleGlobPrefix(Glob('abc*def')), 'abc');
-    expect(simpleGlobPrefix(Glob('abc?def')), 'abc');
-    expect(simpleGlobPrefix(Glob('abc{def,ghi}')), 'abc');
-    expect(simpleGlobPrefix(Glob('abc[def]')), 'abc');
-    expect(simpleGlobPrefix(Glob(r'abc\def')), 'abc');
-    expect(simpleGlobPrefix(Glob(r'abcdef*')), 'abcdef');
+    expect(simpleGlobPrefix(.new('abc*def')), 'abc');
+    expect(simpleGlobPrefix(.new('abc?def')), 'abc');
+    expect(simpleGlobPrefix(.new('abc{def,ghi}')), 'abc');
+    expect(simpleGlobPrefix(.new('abc[def]')), 'abc');
+    expect(simpleGlobPrefix(.new(r'abc\def')), 'abc');
+    expect(simpleGlobPrefix(.new(r'abcdef*')), 'abcdef');
   });
 }

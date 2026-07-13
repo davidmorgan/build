@@ -23,9 +23,9 @@ enum CommandType {
   watch;
 
   BuildLogMode get buildLogMode {
-    if (this == clean) return BuildLogMode.simple;
-    if (this == daemon) return BuildLogMode.daemon;
-    return BuildLogMode.build;
+    if (this == clean) return .simple;
+    if (this == daemon) return .daemon;
+    return .build;
   }
 
   /// Whether the command must be launched as a nested `build_runner` binary
@@ -64,10 +64,10 @@ class BuildRunnerCommandLine {
   final BuiltList<String> removedOptionsUsed;
 
   CompileStrategy get compileStrategy {
-    if (type == CommandType.run) return CompileStrategy.commandForcesJit;
-    if (forceJit ?? false) return CompileStrategy.forceJit;
-    if (forceAot ?? false) return CompileStrategy.forceAot;
-    return CompileStrategy.tryAot;
+    if (type == .run) return .commandForcesJit;
+    if (forceJit ?? false) return .forceJit;
+    if (forceAot ?? false) return .forceAot;
+    return .tryAot;
   }
 
   static Future<BuildRunnerCommandLine?> parse(Iterable<String> arguments) =>
@@ -108,21 +108,21 @@ class BuildRunnerCommandLine {
     // Calling `usage` only works if the command has been added to a
     // `CommandRunner`. So, use singletons that do get added to one.
     switch (type) {
-      case CommandType.build:
+      case .build:
         return _build.usage;
-      case CommandType.clean:
+      case .clean:
         return _clean.usage;
-      case CommandType.daemon:
+      case .daemon:
         return _daemon.usage;
-      case CommandType.run:
+      case .run:
         return _run.usage;
-      case CommandType.serve:
+      case .serve:
         return _serve.usage;
-      case CommandType.stop:
+      case .stop:
         return _stop.usage;
-      case CommandType.test:
+      case .test:
         return _test.usage;
-      case CommandType.watch:
+      case .watch:
         return _watch.usage;
     }
   }
@@ -201,7 +201,7 @@ final _build = _Build();
 /// [Command] with `ArgParser.usageLineLength` set.
 abstract class _Command<T> extends Command<T> {
   @override
-  final ArgParser argParser = ArgParser(
+  final ArgParser argParser = .new(
     usageLineLength: buildProcessState.stdio.terminalColumns,
   );
 }
@@ -357,8 +357,7 @@ class _Build extends _Command<BuildRunnerCommandLine> {
   String get description => 'Builds the current package.';
 
   @override
-  Future<BuildRunnerCommandLine> run() async =>
-      BuildRunnerCommandLine(CommandType.build, argResults!);
+  Future<BuildRunnerCommandLine> run() async => .new(.build, argResults!);
 }
 
 final _clean = _Clean();
@@ -382,8 +381,7 @@ class _Clean extends _Command<BuildRunnerCommandLine> {
   }
 
   @override
-  Future<BuildRunnerCommandLine> run() async =>
-      BuildRunnerCommandLine(CommandType.clean, argResults!);
+  Future<BuildRunnerCommandLine> run() async => .new(.clean, argResults!);
 }
 
 final _daemon = _Daemon();
@@ -419,8 +417,7 @@ class _Daemon extends _Command<BuildRunnerCommandLine> {
   }
 
   @override
-  Future<BuildRunnerCommandLine> run() async =>
-      BuildRunnerCommandLine(CommandType.daemon, argResults!);
+  Future<BuildRunnerCommandLine> run() async => .new(.daemon, argResults!);
 }
 
 final _run = _Run();
@@ -446,8 +443,7 @@ class _Run extends _Command<BuildRunnerCommandLine> {
       '<executable> [-- [script-arguments]]';
 
   @override
-  Future<BuildRunnerCommandLine> run() async =>
-      BuildRunnerCommandLine(CommandType.run, argResults!);
+  Future<BuildRunnerCommandLine> run() async => .new(.run, argResults!);
 }
 
 final _serve = _Serve();
@@ -490,8 +486,7 @@ class _Serve extends _Command<BuildRunnerCommandLine> {
       'Continuously builds and serves the current package.';
 
   @override
-  Future<BuildRunnerCommandLine> run() async =>
-      BuildRunnerCommandLine(CommandType.serve, argResults!);
+  Future<BuildRunnerCommandLine> run() async => .new(.serve, argResults!);
 }
 
 final _test = _Test();
@@ -517,8 +512,7 @@ class _Test extends _Command<BuildRunnerCommandLine> {
   String get description => 'Builds the current package then runs tests.';
 
   @override
-  Future<BuildRunnerCommandLine> run() async =>
-      BuildRunnerCommandLine(CommandType.test, argResults!);
+  Future<BuildRunnerCommandLine> run() async => .new(.test, argResults!);
 }
 
 final _watch = _Watch();
@@ -542,8 +536,7 @@ class _Watch extends _Command<BuildRunnerCommandLine> {
   String get description => 'Continuously builds the current package.';
 
   @override
-  Future<BuildRunnerCommandLine> run() async =>
-      BuildRunnerCommandLine(CommandType.watch, argResults!);
+  Future<BuildRunnerCommandLine> run() async => .new(.watch, argResults!);
 }
 
 final _stop = _Stop();
@@ -566,6 +559,5 @@ class _Stop extends _Command<BuildRunnerCommandLine> {
   }
 
   @override
-  Future<BuildRunnerCommandLine> run() async =>
-      BuildRunnerCommandLine(CommandType.stop, argResults!);
+  Future<BuildRunnerCommandLine> run() async => .new(.stop, argResults!);
 }

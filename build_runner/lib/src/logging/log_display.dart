@@ -44,7 +44,7 @@ class LogDisplay {
   bool get displayingBlocks =>
       buildLog.configuration.forceConsoleWidthForTesting != null ||
       (buildLog.configuration.onLog == null &&
-          buildLog.configuration.mode == BuildLogMode.build &&
+          buildLog.configuration.mode == .build &&
           buildProcessState.stdio.hasTerminal &&
           buildProcessState.stdio.supportsAnsiEscapes);
 
@@ -75,7 +75,7 @@ class LogDisplay {
         'Log overflowed the console, switching to line-by-line logging.',
       );
       buildLog.configuration = buildLog.configuration.rebuild((b) {
-        b.mode = BuildLogMode.simple;
+        b.mode = .simple;
       });
     }
   }
@@ -105,10 +105,10 @@ class LogDisplay {
     _logger.log(severity.toLogLevel, message);
 
     // Display.
-    if (buildLog.configuration.mode == BuildLogMode.daemon) {
+    if (buildLog.configuration.mode == .daemon) {
       // For `build_daemon` just display the messages, severity is determined
       // by stderr vs stdout.
-      if (severity == Severity.error) {
+      if (severity == .error) {
         stderr.writeln(message);
       } else {
         stdout.writeln(message);
@@ -148,7 +148,7 @@ class LogDisplay {
 class _LogRecord extends LogRecord {
   final Severity _severity;
   _LogRecord(super.level, super.message, [super.loggerName = ''])
-    : _severity = Severity.fromLogLevel(level);
+    : _severity = .fromLogLevel(level);
 
   @override
   String toString() => '${_severity.prefix}$message';

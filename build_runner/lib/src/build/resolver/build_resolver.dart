@@ -36,7 +36,7 @@ class BuildResolver {
   Future<List<LibraryElement>>? _sdkLibraries;
 
   BuildResolver(this._driver, Pool driverPool, this._analysisDriverModel)
-    : _driverPool = AnalyzeActivityPool(driverPool);
+    : _driverPool = .new(driverPool);
 
   Future<bool> isLibrary(AssetId assetId) async {
     if (!assetId.isDart) return false;
@@ -158,7 +158,7 @@ class BuildResolver {
   }
 
   Stream<LibraryElement> get sdkLibraries {
-    final loadLibraries = _sdkLibraries ??= Future.sync(() {
+    final loadLibraries = _sdkLibraries ??= .sync(() {
       final publicSdkUris = _driver.sdkLibraryUris.where(
         (e) => !e.path.startsWith('_'),
       );
@@ -175,7 +175,7 @@ class BuildResolver {
       );
     });
 
-    return Stream.fromFuture(loadLibraries).expand((libraries) => libraries);
+    return .fromFuture(loadLibraries).expand((libraries) => libraries);
   }
 
   Future<AssetId> assetIdForElement(Element element) async {
@@ -194,7 +194,7 @@ class BuildResolver {
     if (!uri.isScheme('package') && !uri.isScheme('asset')) {
       throw UnresolvableAssetException('${element.name} in ${source.uri}');
     }
-    return AssetId.resolve(source.uri);
+    return .resolve(source.uri);
   }
 
   /// Updates the analysis driver with updated source of [entrypoint] at
@@ -217,7 +217,7 @@ class BuildResolver {
   );
 }
 
-/// Wraps [pool] so resource use is timed as [TimedActivity.analyze].
+/// Wraps [pool] so resource use is timed as [.analyze].
 class AnalyzeActivityPool {
   final Pool pool;
 

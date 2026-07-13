@@ -34,10 +34,8 @@ void main() {
     late InternalTestReaderWriter readerWriter;
 
     setUp(() async {
-      _terminateServeController = StreamController();
-      readerWriter = InternalTestReaderWriter(
-        outputRootPackage: buildPackages.outputRoot,
-      );
+      _terminateServeController = .new();
+      readerWriter = .new(outputRootPackage: buildPackages.outputRoot);
       await readerWriter.writeAsString(
         makeAssetId('a|.dart_tool/package_config.json'),
         jsonEncode({
@@ -60,10 +58,10 @@ void main() {
 
     test('does basic builds', () async {
       final handler = await createHandler(
-        BuilderFactories({
+        .new({
           '': [(_) => TestBuilder()],
         }),
-        [BuilderDefinition('')],
+        [.new('')],
         {'a|web/a.txt': 'a'},
         buildPackages,
         readerWriter,
@@ -91,10 +89,10 @@ void main() {
       var nextBuildBlocker = buildBlocker1.future;
 
       final handler = await createHandler(
-        BuilderFactories({
+        .new({
           '': [(_) => TestBuilder(extraWork: (_, _) => nextBuildBlocker)],
         }),
-        [BuilderDefinition('')],
+        [.new('')],
         {'a|web/a.txt': 'a'},
         buildPackages,
         readerWriter,
@@ -104,7 +102,7 @@ void main() {
       // Give the build enough time to get started.
       await wait(100);
 
-      final request = Request('GET', Uri.parse('http://localhost:8000/a.txt'));
+      final request = Request('GET', .parse('http://localhost:8000/a.txt'));
       unawaited(
         (webHandler(request) as Future<Response>).then(
           expectAsync1((Response response) {
@@ -185,7 +183,7 @@ Future<ServeHandler> createHandler(
       );
     }),
   );
-  FakeWatcher watcherFactory(String path) => FakeWatcher(path);
+  FakeWatcher watcherFactory(String path) => .new(path);
 
   final watchCommand = WatchCommand(
     builderFactories: builderFactories,
@@ -201,12 +199,12 @@ Future<ServeHandler> createHandler(
     ),
   );
 
-  return ServeHandler((await watchCommand.watch())!);
+  return .new((await watchCommand.watch())!);
 }
 
 /// Tells the program to terminate.
 Future terminateServe() {
   /// Can add any type of event.
-  _terminateServeController!.add(ProcessSignal.sigabrt);
+  _terminateServeController!.add(.sigabrt);
   return _terminateServeController!.close();
 }

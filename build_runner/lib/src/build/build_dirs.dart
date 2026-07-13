@@ -19,7 +19,7 @@ import '../build_plan/phase.dart';
 ///   explicitly matches one of the filters.
 /// - If no [buildFilters] are supplied, then the old behavior applies - all
 ///   build to source builders and all public assets (according to
-///   [BuildConfigs.isPublicAsset]) are always built.
+///   [.isPublicAsset]) are always built.
 /// - Regardless of the [buildFilters] setting, if [buildDirs] is supplied then
 ///   `id.path` must start with one of the specified directory names.
 bool shouldBuildForDirs(
@@ -31,7 +31,7 @@ bool shouldBuildForDirs(
 }) {
   // Empty paths means "build everything".
   final paths = BuildDirectory.buildPaths(buildDirs);
-  buildFilters ??= BuiltSet();
+  buildFilters ??= .new();
   if (buildFilters.isEmpty) {
     // Build asset if: It's built to source, it's public or if it's matched by
     // a build directory.

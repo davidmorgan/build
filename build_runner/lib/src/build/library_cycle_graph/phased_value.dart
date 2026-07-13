@@ -30,9 +30,9 @@ part 'phased_value.g.dart';
 /// dependency trees.
 ///
 /// Represented as a list of [ExpiringValue] with ascending
-/// [ExpiringValue.expiresAfter].
+/// [.expiresAfter].
 ///
-/// If the last value in the list has non-null [ExpiringValue.expiresAfter] then
+/// If the last value in the list has non-null [.expiresAfter] then
 /// the `PhasedValue` is incomplete: after the specified phase it changes to an
 /// unknown value. Or, if the last value in the list has `null` `expiresAfter`
 /// then the `PhasedValue` is complete; no further changes are possible.
@@ -54,8 +54,8 @@ abstract class PhasedValue<T>
   PhasedValue._();
 
   /// A fixed [value] with no changes.
-  factory PhasedValue.fixed(T value) => PhasedValue((b) {
-    b.values.add(ExpiringValue<T>(value));
+  factory PhasedValue.fixed(T value) => .new((b) {
+    b.values.add(.new(value));
   });
 
   /// A value that will be generated in phase [expiresAfter].
@@ -64,8 +64,8 @@ abstract class PhasedValue<T>
   factory PhasedValue.unavailable({
     required int expiresAfter,
     required T before,
-  }) => PhasedValue((b) {
-    b.values.add(ExpiringValue<T>(before, expiresAfter: expiresAfter));
+  }) => .new((b) {
+    b.values.add(.new(before, expiresAfter: expiresAfter));
   });
 
   /// A value that is generated during [atPhase], changing from [before] to
@@ -74,16 +74,15 @@ abstract class PhasedValue<T>
     T value, {
     required int atPhase,
     required T before,
-  }) => PhasedValue((b) {
-    b.values.add(ExpiringValue<T>(before, expiresAfter: atPhase));
-    b.values.add(ExpiringValue<T>(value));
+  }) => .new((b) {
+    b.values.add(.new(before, expiresAfter: atPhase));
+    b.values.add(.new(value));
   });
 
   /// A [value] expiring after [expiresAfter] if it's not `null`.
-  factory PhasedValue.of(T value, {required int? expiresAfter}) =>
-      PhasedValue((b) {
-        b.values.add(ExpiringValue<T>(value, expiresAfter: expiresAfter));
-      });
+  factory PhasedValue.of(T value, {required int? expiresAfter}) => .new((b) {
+    b.values.add(.new(value, expiresAfter: expiresAfter));
+  });
 
   /// Whether this value is complete: all values are known, no further changes
   /// are possible.

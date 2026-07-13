@@ -32,7 +32,7 @@ class AssetServer {
     final cascade = Cascade()
         .add((_) async {
           await builder.building;
-          return Response.notFound('');
+          return .notFound('');
         })
         .add(
           AssetHandler(

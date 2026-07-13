@@ -32,10 +32,10 @@ class AnalysisDriverModel {
   PoolResource? _lock;
 
   /// In-memory filesystem for the analyzer.
-  final AnalysisDriverFilesystem filesystem = AnalysisDriverFilesystem();
+  final AnalysisDriverFilesystem filesystem = .new();
 
   /// The import graph of all sources needed for analysis.
-  final LibraryCycleGraphLoader _graphLoader = LibraryCycleGraphLoader();
+  final LibraryCycleGraphLoader _graphLoader = .new();
 
   /// Starts a build with [builderFilesystem].
   ///

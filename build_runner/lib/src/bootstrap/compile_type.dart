@@ -13,14 +13,14 @@ enum CompileType {
 
   Compiler createCompiler(BuildPaths buildPaths) {
     switch (this) {
-      case CompileType.aot:
+      case .aot:
         return AotCompiler(buildPaths);
-      case CompileType.jit:
+      case .jit:
         return KernelCompiler(buildPaths);
     }
   }
 
-  String get displayName => this == CompileType.aot ? 'aot' : 'jit';
+  String get displayName => this == .aot ? 'aot' : 'jit';
 }
 
 enum CompileStrategy {
@@ -38,12 +38,12 @@ enum CompileStrategy {
 
   CompileType get initialCompileType {
     switch (this) {
-      case CompileStrategy.forceAot:
-      case CompileStrategy.tryAot:
-        return CompileType.aot;
-      case CompileStrategy.forceJit:
-      case CompileStrategy.commandForcesJit:
-        return CompileType.jit;
+      case .forceAot:
+      case .tryAot:
+        return .aot;
+      case .forceJit:
+      case .commandForcesJit:
+        return .jit;
     }
   }
 }

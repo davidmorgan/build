@@ -12,7 +12,7 @@ import 'package:watcher/watcher.dart';
 void main() {
   group('AssetChange', () {
     test('should be equal if asset and type are equivalent', () {
-      AssetId asset(String name) => AssetId(name, 'lib/$asset.dart');
+      AssetId asset(String name) => .new(name, 'lib/$asset.dart');
       final pkgA1 = asset('a');
       final pkgA2 = asset('a');
 

@@ -43,7 +43,7 @@ void main() async {
       );
       await tester.run('basic_pkg', 'dart pub get');
 
-      buildPackages = await BuildPackages.forPaths(
+      buildPackages = await .forPaths(
         BuildPaths.load(
           p.join(tempDirectory, 'basic_pkg'),
           buildWorkspace: false,

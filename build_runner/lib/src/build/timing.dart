@@ -51,7 +51,7 @@ class TimeSliceGroup implements TimeSlice {
   /// If some of slices implements [TimeSliceGroup] [innerDuration] will be used
   /// to compute sum.
   Duration get innerDuration => slices.fold(
-    Duration.zero,
+    .zero,
     (duration, slice) =>
         duration +
         (slice is TimeSliceGroup ? slice.innerDuration : slice.duration),
@@ -357,9 +357,9 @@ class AsyncTimeTracker extends TimeSliceGroup implements TimeTracker {
   bool get isTracking => _tracking == true;
 }
 
-TimeSlice _$TimeSliceFromJson(Map<String, dynamic> json) => TimeSlice(
-  DateTime.parse(json['startTime'] as String),
-  DateTime.parse(json['stopTime'] as String),
+TimeSlice _$TimeSliceFromJson(Map<String, dynamic> json) => .new(
+  .parse(json['startTime'] as String),
+  .parse(json['stopTime'] as String),
 );
 
 Map<String, dynamic> _$TimeSliceToJson(TimeSlice instance) => <String, dynamic>{
@@ -367,19 +367,18 @@ Map<String, dynamic> _$TimeSliceToJson(TimeSlice instance) => <String, dynamic>{
   'stopTime': instance.stopTime.toIso8601String(),
 };
 
-TimeSliceGroup _$TimeSliceGroupFromJson(Map<String, dynamic> json) =>
-    TimeSliceGroup(
-      (json['slices'] as List<dynamic>)
-          .map((e) => TimeSlice.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
+TimeSliceGroup _$TimeSliceGroupFromJson(Map<String, dynamic> json) => .new(
+  (json['slices'] as List<dynamic>)
+      .map((e) => TimeSlice.fromJson(e as Map<String, dynamic>))
+      .toList(),
+);
 
 Map<String, dynamic> _$TimeSliceGroupToJson(TimeSliceGroup instance) =>
     <String, dynamic>{'slices': instance.slices};
 
 /// A function that returns the current [DateTime].
 typedef _Clock = DateTime Function();
-DateTime _defaultClock() => DateTime.now();
+DateTime _defaultClock() => .now();
 
 const _zoneKey = #timing_Clock;
 

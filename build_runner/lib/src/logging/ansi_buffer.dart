@@ -17,7 +17,7 @@ class AnsiBuffer {
   static const boldRed = '\x1B[1;31m';
   static const _hyperlinkPrefix = '\x1B]8;;';
   static const _hyperlinkTerminator = '\x1B\\';
-  static final RegExp _hyperlinkPattern = RegExp(
+  static final RegExp _hyperlinkPattern = .new(
     '${RegExp.escape(_hyperlinkPrefix)}'
     r'[^\x1B]*'
     '${RegExp.escape(_hyperlinkTerminator)}',
@@ -162,7 +162,7 @@ class AnsiBufferLine {
 
   AnsiBufferLine(this.items, {this.indent = 0, this.hangingIndent});
 
-  AnsiBufferLine withHangingIndent(int? hangingIndent) => AnsiBufferLine(
+  AnsiBufferLine withHangingIndent(int? hangingIndent) => .new(
     items,
     indent: indent,
     hangingIndent: hangingIndent ?? this.hangingIndent,

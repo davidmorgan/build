@@ -17,13 +17,13 @@ List<AssetId> pathToAssetIds(
   List<String> pathSegments,
 ) {
   final result = <AssetId>[
-    AssetId(outputRootPackage, p.joinAll([rootDir, ...pathSegments])),
+    .new(outputRootPackage, p.joinAll([rootDir, ...pathSegments])),
   ];
   final packagesIndex = pathSegments.indexOf('packages');
   if (packagesIndex >= 0 && pathSegments.length - packagesIndex > 2) {
     final package = pathSegments[packagesIndex + 1];
     final path = p.joinAll(pathSegments.sublist(packagesIndex + 2));
-    result.add(AssetId(package, p.join('lib', path)));
+    result.add(.new(package, p.join('lib', path)));
   }
   return result;
 }

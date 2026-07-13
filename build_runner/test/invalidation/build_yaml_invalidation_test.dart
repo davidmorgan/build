@@ -10,7 +10,7 @@ void main() {
   late InvalidationTester tester;
 
   setUp(() {
-    tester = InvalidationTester();
+    tester = .new();
   });
 
   group('a.1+(z) <-- a.2', () {

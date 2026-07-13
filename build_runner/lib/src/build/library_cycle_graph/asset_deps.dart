@@ -19,12 +19,11 @@ part 'asset_deps.g.dart';
 abstract class AssetDeps implements Built<AssetDeps, AssetDepsBuilder> {
   static Serializer<AssetDeps> get serializer => _$assetDepsSerializer;
 
-  static final AssetDeps empty = _$AssetDeps._(deps: BuiltSet());
+  static final AssetDeps empty = _$AssetDeps._(deps: .new());
 
   BuiltSet<AssetId> get deps;
 
-  factory AssetDeps(Iterable<AssetId> deps) =>
-      _$AssetDeps._(deps: BuiltSet.of(deps));
+  factory AssetDeps(Iterable<AssetId> deps) => _$AssetDeps._(deps: .of(deps));
   factory AssetDeps.build(void Function(AssetDepsBuilder) updates) =
       _$AssetDeps;
   AssetDeps._();

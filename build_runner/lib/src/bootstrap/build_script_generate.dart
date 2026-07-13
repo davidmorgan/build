@@ -81,7 +81,7 @@ Future<BuilderFactoriesExpressions> loadBuilderFactories({
     }
     final package = buildPackages[packageName]!;
     try {
-      return await BuildConfig.fromBuildConfigDir(
+      return await .fromBuildConfigDir(
         package.name,
         package.dependencies,
         package.path,
@@ -89,7 +89,7 @@ Future<BuilderFactoriesExpressions> loadBuilderFactories({
     } on ArgumentError // ignore: avoid_catching_errors
     catch (_) {
       // During the build an error will be logged.
-      return BuildConfig.useDefault(package.name, package.dependencies);
+      return .useDefault(package.name, package.dependencies);
     }
   }
 
@@ -117,7 +117,7 @@ Future<BuilderFactoriesExpressions> loadBuilderFactories({
           .toList()
         ..sort((a, b) => a.key.compareTo(b.key));
 
-  return BuilderFactoriesExpressions(
+  return .new(
     builderFactories: {
       for (final builder in builderDefinitions)
         builder.key: _builderFactories(builder),
@@ -180,8 +180,7 @@ class BuilderFactoriesExpressions {
 List<FactoryExpression> _builderFactories(BuilderDefinition definition) {
   final import = _buildScriptImport(definition.import);
   return [
-    for (final f in definition.builderFactories)
-      FactoryExpression(import: import, name: f),
+    for (final f in definition.builderFactories) .new(import: import, name: f),
   ];
 }
 
@@ -190,7 +189,7 @@ FactoryExpression _postProcessBuilderFactory(
   PostProcessBuilderDefinition definition,
 ) {
   final import = _buildScriptImport(definition.import);
-  return FactoryExpression(import: import, name: definition.builderFactory);
+  return .new(import: import, name: definition.builderFactory);
 }
 
 /// Returns the actual import to put in the generated script based on an import

@@ -32,6 +32,6 @@ class RunOptions {
       );
     }
 
-    return RunOptions(script: script, options: rest);
+    return .new(script: script, options: rest);
   }
 }

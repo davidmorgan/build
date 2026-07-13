@@ -74,7 +74,7 @@ class BuildStepImpl implements BuildStep {
   @override
   Future<PackageConfig> get packageConfig async {
     final resolved = _resolvedPackageConfig ??= Result.capture(
-      Future.value(
+      .value(
         _transformToAssetUris(buildFilesystem.buildPackages.asPackageConfig),
       ),
     );
@@ -176,7 +176,7 @@ class BuildStepImpl implements BuildStep {
   Future<void> writeAsBytes(AssetId id, FutureOr<List<int>> bytes) async {
     if (_isComplete) throw BuildStepCompletedException();
     _checkOutput(id);
-    outputs[id] = AssetContent.bytes(await bytes);
+    outputs[id] = .bytes(await bytes);
   }
 
   @override
@@ -187,7 +187,7 @@ class BuildStepImpl implements BuildStep {
   }) async {
     if (_isComplete) throw BuildStepCompletedException();
     _checkOutput(id);
-    outputs[id] = AssetContent.string(await content, encoding: encoding);
+    outputs[id] = .string(await content, encoding: encoding);
   }
 
   @override
@@ -248,11 +248,11 @@ class BuildStepImpl implements BuildStep {
 final _lib = Uri.parse('lib/');
 
 PackageConfig _transformToAssetUris(PackageConfig config) {
-  return PackageConfig([
+  return .new([
     for (final package in config.packages)
-      Package(
+      .new(
         package.name,
-        Uri(scheme: 'asset', pathSegments: [package.name, '']),
+        .new(scheme: 'asset', pathSegments: [package.name, '']),
         packageUriRoot: _lib,
         extraData: package.extraData,
         languageVersion: package.languageVersion,

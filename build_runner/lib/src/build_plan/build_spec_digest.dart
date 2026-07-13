@@ -42,7 +42,7 @@ abstract class BuildSpecDigest
     required BuildConfigs buildConfigs,
     required BuildPhases buildPhases,
     required BuildPackages buildPackages,
-  }) => BuildSpecDigest.build((b) {
+  }) => .build((b) {
     b.compileDigest = compileDigest;
     b.buildTriggersDigest = buildConfigs.buildTriggers.digest.toString();
     b.buildPhasesDigest = buildPhases.digest.toString();
@@ -86,9 +86,7 @@ abstract class BuildSpecDigest
     if (other == null ||
         other.inBuildPhasesOptionsDigests.length !=
             inBuildPhasesOptionsDigests.length) {
-      return BuiltList.of(
-        List<bool>.filled(inBuildPhasesOptionsDigests.length, true),
-      );
+      return .of(List<bool>.filled(inBuildPhasesOptionsDigests.length, true));
     }
     final result = ListBuilder<bool>();
     for (var i = 0; i < inBuildPhasesOptionsDigests.length; i++) {
@@ -108,7 +106,7 @@ abstract class BuildSpecDigest
     if (other == null ||
         postBuildActionsOptionsDigests.length !=
             other.postBuildActionsOptionsDigests.length) {
-      return BuiltList.of(
+      return .of(
         List<bool>.filled(postBuildActionsOptionsDigests.length, true),
       );
     }

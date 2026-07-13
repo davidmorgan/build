@@ -22,7 +22,7 @@ void main() {
   late InvalidationTester tester;
 
   setUp(() {
-    tester = InvalidationTester();
+    tester = .new();
   });
 
   group('a+(z) <-- a.1', () {

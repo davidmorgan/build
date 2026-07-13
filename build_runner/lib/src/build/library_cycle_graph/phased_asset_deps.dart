@@ -40,7 +40,7 @@ abstract class PhasedAssetDeps
       } else {
         // The only allow "not available yet" value is `AssetDeps.empty`.
         if (updatedValue.values.length != 1 ||
-            updatedValue.values.single.value != AssetDeps.empty) {
+            updatedValue.values.single.value != .empty) {
           throw StateError('Unexpected value: $updatedValue');
         }
       }
@@ -52,7 +52,7 @@ abstract class PhasedAssetDeps
     for (final entry in assetDeps.entries) {
       final value = entry.value;
       if (!value.isComplete) {
-        b.assetDeps[entry.key] = PhasedValue.fixed(value.values.single.value);
+        b.assetDeps[entry.key] = .fixed(value.values.single.value);
       }
     }
   });

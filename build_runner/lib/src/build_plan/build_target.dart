@@ -30,7 +30,7 @@ class BuildTarget {
        builders = buildTarget.builders.build(),
        dependencies = buildTarget.dependencies.build(),
        sources = buildTarget.sources,
-       _sourcesMatcher = InputMatcher(
+       _sourcesMatcher = .new(
          buildTarget.sources,
          defaultInclude: defaultInclude,
        );

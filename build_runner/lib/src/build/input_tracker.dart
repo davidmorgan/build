@@ -20,13 +20,13 @@ class InputTracker {
   ///
   /// TODO(davidmorgan): find a nicer way to do this.
   static Map<Filesystem, List<InputTracker>> inputTrackersForTesting =
-      Map.identity();
+      .identity();
 
   final AssetId? primaryInput;
   final String? builderLabel;
-  final HashSet<AssetId> _inputs = HashSet<AssetId>();
-  final HashSet<AssetId> _resolverEntrypoints = HashSet<AssetId>();
-  final HashSet<GlobId> _globsEvaluated = HashSet<GlobId>();
+  final HashSet<AssetId> _inputs = .new();
+  final HashSet<AssetId> _resolverEntrypoints = .new();
+  final HashSet<GlobId> _globsEvaluated = .new();
 
   /// Creates an input tracker.
   ///

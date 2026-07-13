@@ -33,7 +33,7 @@ class BuildLogMessages {
     AssetId? contextId,
     required Severity severity,
   }) {
-    if (severity == Severity.warning) _hasWarnings = true;
+    if (severity == .warning) _hasWarnings = true;
     _phaseNamesWithMessages.add(phaseName);
     final message = Message(
       text: string,
@@ -87,13 +87,11 @@ class BuildLogMessages {
     final context = category.context;
 
     final messages = _messageByCategory[category]!;
-    final failed = messages.any(
-      (message) => message.severity == Severity.error,
-    );
+    final failed = messages.any((message) => message.severity == .error);
 
     final result = <AnsiBufferLine>[];
     result.add(
-      AnsiBufferLine([
+      .new([
         if (context != null) ...[
           failed ? AnsiBuffer.boldRed : AnsiBuffer.bold,
           ...buildLog.renderLinkedContext(
@@ -111,10 +109,10 @@ class BuildLogMessages {
 
     for (final message in messages) {
       var first = true;
-      final isError = message.severity == Severity.error;
+      final isError = message.severity == .error;
       for (final line in message.text.split('\n')) {
         result.add(
-          AnsiBufferLine([
+          .new([
             if (isError) AnsiBuffer.boldRed,
             first ? message.severity.prefix : '  ',
             if (isError) AnsiBuffer.reset,
@@ -125,9 +123,7 @@ class BuildLogMessages {
       }
     }
 
-    return failed
-        ? RenderResult.failed(result)
-        : RenderResult.succeeded(result);
+    return failed ? .failed(result) : .succeeded(result);
   }
 }
 
@@ -190,22 +186,22 @@ enum Severity {
   error;
 
   static Severity fromLogLevel(Level level) {
-    if (level < Level.WARNING) return Severity.info;
-    if (level < Level.SEVERE) return Severity.warning;
-    return Severity.error;
+    if (level < Level.WARNING) return .info;
+    if (level < Level.SEVERE) return .warning;
+    return .error;
   }
 
   Level get toLogLevel => switch (this) {
-    Severity.info => Level.INFO,
-    Severity.warning => Level.WARNING,
-    Severity.error => Level.SEVERE,
+    .info => Level.INFO,
+    .warning => Level.WARNING,
+    .error => Level.SEVERE,
   };
 
   /// Prefix for display.
   String get prefix => switch (this) {
-    Severity.info => '  ',
-    Severity.warning => 'W ',
-    Severity.error => 'E ',
+    .info => '  ',
+    .warning => 'W ',
+    .error => 'E ',
   };
 }
 

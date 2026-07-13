@@ -38,11 +38,8 @@ void main() {
       BuildPackage(name: 'example', path: path, isOutput: true, watch: true),
     ]);
     readerWriter = InternalTestReaderWriter(outputRootPackage: 'example')
-      ..testing.writeString(AssetId('example', 'web/initial.txt'), 'initial')
-      ..testing.writeString(
-        AssetId('example', 'web/large.txt'),
-        'large' * 10000,
-      )
+      ..testing.writeString(.new('example', 'web/initial.txt'), 'initial')
+      ..testing.writeString(.new('example', 'web/large.txt'), 'large' * 10000)
       ..testing.writeString(
         makeAssetId('example|.dart_tool/package_config.json'),
         jsonEncode({
@@ -89,13 +86,13 @@ void main() {
 
   tearDown(() async {
     await subscription.cancel();
-    terminateController.add(ProcessSignal.sigabrt);
+    terminateController.add(.sigabrt);
     await terminateController.close();
   });
 
   test('should serve original files', () async {
     final getHello = Uri.parse('http://localhost/initial.txt');
-    final response = await handler(Request('GET', getHello));
+    final response = await handler(.new('GET', getHello));
     expect(await response.readAsString(), 'initial');
   });
 
@@ -103,7 +100,7 @@ void main() {
     final getHello = Uri.parse('http://localhost/large.txt');
     final futures = [
       for (var i = 0; i < 512; i++)
-        (() async => await handler(Request('GET', getHello)))(),
+        (() async => await handler(.new('GET', getHello)))(),
     ];
     final responses = await Future.wait(futures);
     for (final response in responses) {
@@ -114,36 +111,36 @@ void main() {
   test('should serve built files', () async {
     final getHello = Uri.parse('http://localhost/initial.g.txt');
     readerWriter.testing.writeString(
-      AssetId('example', 'web/initial.g.txt'),
+      .new('example', 'web/initial.g.txt'),
       'INITIAL',
     );
-    final response = await handler(Request('GET', getHello));
+    final response = await handler(.new('GET', getHello));
     expect(await response.readAsString(), 'INITIAL');
   });
 
   test('should 404 on missing files', () async {
     final get404 = Uri.parse('http://localhost/404.txt');
-    final response = await handler(Request('GET', get404));
+    final response = await handler(.new('GET', get404));
     expect(await response.readAsString(), 'Not Found');
   });
 
   test('should serve newly added files', () async {
     final getNew = Uri.parse('http://localhost/new.txt');
-    readerWriter.testing.writeString(AssetId('example', 'web/new.txt'), 'New');
+    readerWriter.testing.writeString(.new('example', 'web/new.txt'), 'New');
     await Future<void>.value();
-    FakeWatcher.notifyWatchers(WatchEvent(ChangeType.ADD, '$path/web/new.txt'));
+    FakeWatcher.notifyWatchers(.new(ChangeType.ADD, '$path/web/new.txt'));
     await nextBuild.future;
-    final response = await handler(Request('GET', getNew));
+    final response = await handler(.new('GET', getNew));
     expect(await response.readAsString(), 'New');
   });
 
   test('should serve built newly added files', () async {
     final getNew = Uri.parse('http://localhost/new.g.txt');
-    readerWriter.testing.writeString(AssetId('example', 'web/new.txt'), 'New');
+    readerWriter.testing.writeString(.new('example', 'web/new.txt'), 'New');
     await Future<void>.value();
-    FakeWatcher.notifyWatchers(WatchEvent(ChangeType.ADD, '$path/web/new.txt'));
+    FakeWatcher.notifyWatchers(.new(ChangeType.ADD, '$path/web/new.txt'));
     await nextBuild.future;
-    final response = await handler(Request('GET', getNew));
+    final response = await handler(.new('GET', getNew));
     expect(await response.readAsString(), 'NEW');
   });
 }

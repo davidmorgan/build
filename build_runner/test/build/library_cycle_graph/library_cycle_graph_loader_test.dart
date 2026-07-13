@@ -26,25 +26,21 @@ void main() {
   group('LibraryCycleGraphLoader', () {
     group('no generated nodes', () {
       test('single missing node', () async {
-        final nodeLoader = TestAssetDepsLoader(0, {
-          a1: PhasedValue.fixed(AssetDeps.empty),
-        });
+        final nodeLoader = TestAssetDepsLoader(0, {a1: .fixed(.empty)});
         final loader = LibraryCycleGraphLoader();
         expect(await loader.transitiveDepsOf(nodeLoader, a1), {a1});
       });
 
       test('single present node', () async {
-        final nodeLoader = TestAssetDepsLoader(0, {
-          a1: PhasedValue.fixed(AssetDeps({})),
-        });
+        final nodeLoader = TestAssetDepsLoader(0, {a1: .fixed(.new({}))});
         final loader = LibraryCycleGraphLoader();
         expect(await loader.transitiveDepsOf(nodeLoader, a1), {a1});
       });
 
       test('node with one dep', () async {
         final nodeLoader = TestAssetDepsLoader(0, {
-          a1: PhasedValue.fixed(AssetDeps({a2})),
-          a2: PhasedValue.fixed(AssetDeps({})),
+          a1: .fixed(.new({a2})),
+          a2: .fixed(.new({})),
         });
         final loader = LibraryCycleGraphLoader();
         expect(await loader.transitiveDepsOf(nodeLoader, a1), {a1, a2});
@@ -52,13 +48,13 @@ void main() {
 
       test('seven node tree', () async {
         final nodeLoader = TestAssetDepsLoader(0, {
-          a1: PhasedValue.fixed(AssetDeps({a2, a3})),
-          a2: PhasedValue.fixed(AssetDeps({a4, a5})),
-          a3: PhasedValue.fixed(AssetDeps({a6, a7})),
-          a4: PhasedValue.fixed(AssetDeps({})),
-          a5: PhasedValue.fixed(AssetDeps({})),
-          a6: PhasedValue.fixed(AssetDeps({})),
-          a7: PhasedValue.fixed(AssetDeps({})),
+          a1: .fixed(.new({a2, a3})),
+          a2: .fixed(.new({a4, a5})),
+          a3: .fixed(.new({a6, a7})),
+          a4: .fixed(.new({})),
+          a5: .fixed(.new({})),
+          a6: .fixed(.new({})),
+          a7: .fixed(.new({})),
         });
         final loader = LibraryCycleGraphLoader();
         expect(await loader.transitiveDepsOf(nodeLoader, a1), {
@@ -74,10 +70,10 @@ void main() {
 
       test('four node diamond', () async {
         final nodeLoader = TestAssetDepsLoader(0, {
-          a1: PhasedValue.fixed(AssetDeps({a2, a3})),
-          a2: PhasedValue.fixed(AssetDeps({a4})),
-          a3: PhasedValue.fixed(AssetDeps({a4})),
-          a4: PhasedValue.fixed(AssetDeps({})),
+          a1: .fixed(.new({a2, a3})),
+          a2: .fixed(.new({a4})),
+          a3: .fixed(.new({a4})),
+          a4: .fixed(.new({})),
         });
         final loader = LibraryCycleGraphLoader();
         expect(await loader.transitiveDepsOf(nodeLoader, a1), {a1, a2, a3, a4});
@@ -85,8 +81,8 @@ void main() {
 
       test('two node cycle', () async {
         final nodeLoader = TestAssetDepsLoader(0, {
-          a1: PhasedValue.fixed(AssetDeps({a2})),
-          a2: PhasedValue.fixed(AssetDeps({a1})),
+          a1: .fixed(.new({a2})),
+          a2: .fixed(.new({a1})),
         });
         final loader = LibraryCycleGraphLoader();
         expect(await loader.transitiveDepsOf(nodeLoader, a1), {a1, a2});
@@ -99,9 +95,9 @@ void main() {
 
       test('two node cycle excluding entrypoint', () async {
         final nodeLoader = TestAssetDepsLoader(0, {
-          a1: PhasedValue.fixed(AssetDeps({a2})),
-          a2: PhasedValue.fixed(AssetDeps({a3})),
-          a3: PhasedValue.fixed(AssetDeps({a2})),
+          a1: .fixed(.new({a2})),
+          a2: .fixed(.new({a3})),
+          a3: .fixed(.new({a2})),
         });
         final loader = LibraryCycleGraphLoader();
         expect(await loader.transitiveDepsOf(nodeLoader, a1), {a1, a2, a3});
@@ -119,9 +115,9 @@ void main() {
 
     test('phased cycle uses same instance', () async {
       final nodeLoader = TestAssetDepsLoader(0, {
-        a1: PhasedValue.fixed(AssetDeps({a2})),
-        a2: PhasedValue.fixed(AssetDeps({a3})),
-        a3: PhasedValue.fixed(AssetDeps({a2})),
+        a1: .fixed(.new({a2})),
+        a2: .fixed(.new({a3})),
+        a3: .fixed(.new({a2})),
       });
       final loader = LibraryCycleGraphLoader();
       expect(await loader.transitiveDepsOf(nodeLoader, a1), {a1, a2, a3});
@@ -134,9 +130,9 @@ void main() {
 
     test('phased graph uses same instance', () async {
       final nodeLoader = TestAssetDepsLoader(0, {
-        a1: PhasedValue.fixed(AssetDeps({a2})),
-        a2: PhasedValue.fixed(AssetDeps({a3})),
-        a3: PhasedValue.fixed(AssetDeps({a2})),
+        a1: .fixed(.new({a2})),
+        a2: .fixed(.new({a3})),
+        a3: .fixed(.new({a2})),
       });
       final loader = LibraryCycleGraphLoader();
       expect(await loader.transitiveDepsOf(nodeLoader, a1), {a1, a2, a3});
@@ -151,14 +147,10 @@ void main() {
   group('with generated nodes', () {
     test('single generated node', () async {
       final nodeLoader0 = TestAssetDepsLoader(0, {
-        a1: PhasedValue.unavailable(expiresAfter: 1, before: AssetDeps.empty),
+        a1: .unavailable(expiresAfter: 1, before: .empty),
       });
       final nodeLoader2 = TestAssetDepsLoader(2, {
-        a1: PhasedValue.generated(
-          atPhase: 1,
-          before: AssetDeps.empty,
-          AssetDeps({}),
-        ),
+        a1: .generated(atPhase: 1, before: .empty, .new({})),
       });
       final loader = LibraryCycleGraphLoader();
 
@@ -185,21 +177,9 @@ void main() {
 
     group('sequence of three nodes', () {
       final nodeLoader = TestAssetDepsLoader(4, {
-        a1: PhasedValue.generated(
-          atPhase: 1,
-          before: AssetDeps.empty,
-          AssetDeps({a2}),
-        ),
-        a2: PhasedValue.generated(
-          atPhase: 2,
-          before: AssetDeps.empty,
-          AssetDeps({a3}),
-        ),
-        a3: PhasedValue.generated(
-          atPhase: 3,
-          before: AssetDeps.empty,
-          AssetDeps({}),
-        ),
+        a1: .generated(atPhase: 1, before: .empty, .new({a2})),
+        a2: .generated(atPhase: 2, before: .empty, .new({a3})),
+        a3: .generated(atPhase: 3, before: .empty, .new({})),
       });
 
       test('loaded in the order they appear', () async {
@@ -301,51 +281,15 @@ void main() {
       // ```
 
       final nodeLoader = TestAssetDepsLoader(6, {
-        a1: PhasedValue.generated(
-          atPhase: 1,
-          before: AssetDeps.empty,
-          AssetDeps({a3}),
-        ),
-        a2: PhasedValue.generated(
-          atPhase: 1,
-          before: AssetDeps.empty,
-          AssetDeps({a4, a8}),
-        ),
-        a3: PhasedValue.generated(
-          atPhase: 2,
-          before: AssetDeps.empty,
-          AssetDeps({a3, a6, a7}),
-        ),
-        a4: PhasedValue.generated(
-          atPhase: 2,
-          before: AssetDeps.empty,
-          AssetDeps({a5}),
-        ),
-        a5: PhasedValue.generated(
-          atPhase: 2,
-          before: AssetDeps.empty,
-          AssetDeps({a2}),
-        ),
-        a6: PhasedValue.generated(
-          atPhase: 3,
-          before: AssetDeps.empty,
-          AssetDeps({a3}),
-        ),
-        a7: PhasedValue.generated(
-          atPhase: 3,
-          before: AssetDeps.empty,
-          AssetDeps({a4}),
-        ),
-        a8: PhasedValue.generated(
-          atPhase: 4,
-          before: AssetDeps.empty,
-          AssetDeps({a1}),
-        ),
-        a9: PhasedValue.generated(
-          atPhase: 5,
-          before: AssetDeps.empty,
-          AssetDeps({a8}),
-        ),
+        a1: .generated(atPhase: 1, before: .empty, .new({a3})),
+        a2: .generated(atPhase: 1, before: .empty, .new({a4, a8})),
+        a3: .generated(atPhase: 2, before: .empty, .new({a3, a6, a7})),
+        a4: .generated(atPhase: 2, before: .empty, .new({a5})),
+        a5: .generated(atPhase: 2, before: .empty, .new({a2})),
+        a6: .generated(atPhase: 3, before: .empty, .new({a3})),
+        a7: .generated(atPhase: 3, before: .empty, .new({a4})),
+        a8: .generated(atPhase: 4, before: .empty, .new({a1})),
+        a9: .generated(atPhase: 5, before: .empty, .new({a8})),
       });
 
       // Test expectations as data so they can be checked in
@@ -584,12 +528,12 @@ class TestAssetDepsLoader implements AssetDepsLoader {
         'a phase ${this.phase} loader.',
       );
     }
-    return TestAssetDepsLoader(
+    return .new(
       phase,
       results.map((id, value) {
-        return MapEntry(
+        return .new(
           id,
-          PhasedValue<AssetDeps>((b) {
+          .new((b) {
             for (final expiringValue in value.values) {
               b.values.add(expiringValue);
               if (expiringValue.expiresAfter != null &&
@@ -615,7 +559,7 @@ class TestAssetDepsLoader implements AssetDepsLoader {
   TestAssetDepsLoader withRecursiveLoads(
     LibraryCycleGraphLoader loader,
     Map<AssetId, List<AssetId>> triggeredBuilds,
-  ) => TestAssetDepsLoader(phase, results, loader, triggeredBuilds, {});
+  ) => .new(phase, results, loader, triggeredBuilds, {});
 }
 
 /// An expectation about [LibraryCycleGraphLoader#transitiveDepsOf].

@@ -57,13 +57,13 @@ class LibraryCycleGraphLoader {
   /// The dependencies of loaded assets, as far as is known.
   ///
   /// Source files do not change during the build, so as soon as loaded
-  /// their value is a [PhasedValue.fixed] that is valid for the whole build.
+  /// their value is a [.fixed] that is valid for the whole build.
   ///
   /// A generated file that could not yet be loaded is a
-  /// [PhasedValue.unavailable] specify the phase when it will be generated.
+  /// [.unavailable] specify the phase when it will be generated.
   /// When to finish loading the asset is tracked in [_idsToLoad].
   ///
-  /// A generated file that _has_ been loaded is a [PhasedValue.generated]
+  /// A generated file that _has_ been loaded is a [.generated]
   /// specifying both the phase it was generated at and its parsed dependencies.
   final Map<AssetId, PhasedValue<AssetDeps>> _assetDeps = {};
 
@@ -71,7 +71,7 @@ class LibraryCycleGraphLoader {
   ///
   /// The `key` is the phase to load them at or after. A [SplayTreeMap] is used
   /// for its sorting, so earlier phases are processed first in [_nextIdToLoad].
-  final SplayTreeMap<int, List<AssetId>> _idsToLoad = SplayTreeMap();
+  final SplayTreeMap<int, List<AssetId>> _idsToLoad = .new();
 
   /// All loaded library cycles, by asset.
   final Map<AssetId, PhasedValue<LibraryCycle>> _cycles = {};
@@ -321,10 +321,10 @@ class LibraryCycleGraphLoader {
           final existingCycle = _cycles[id];
           _cycles[id] = updatedValueByOldValue.putIfAbsent(existingCycle, () {
             if (existingCycle == null) {
-              return PhasedValue.of(cycle, expiresAfter: expiresAfter);
+              return .of(cycle, expiresAfter: expiresAfter);
             }
             return existingCycle.followedBy(
-              ExpiringValue<LibraryCycle>(cycle, expiresAfter: expiresAfter),
+              .new(cycle, expiresAfter: expiresAfter),
             );
           });
         }
@@ -409,10 +409,10 @@ class LibraryCycleGraphLoader {
         final oldValue = _graphs[idToUpdate];
         _graphs[idToUpdate] = updatedValueByOldValue.putIfAbsent(oldValue, () {
           if (oldValue == null) {
-            return PhasedValue.of(graph.build(), expiresAfter: expiresAfter);
+            return .of(graph.build(), expiresAfter: expiresAfter);
           }
           return oldValue.followedBy(
-            ExpiringValue(graph.build(), expiresAfter: expiresAfter),
+            .new(graph.build(), expiresAfter: expiresAfter),
           );
         });
       }
@@ -492,7 +492,7 @@ class LibraryCycleGraphLoader {
   /// Serializable data from which the library cycle graphs can be
   /// reconstructed.
   PhasedAssetDeps phasedAssetDeps() =>
-      PhasedAssetDeps((b) => b.assetDeps.addAll(_assetDeps));
+      .new((b) => b.assetDeps.addAll(_assetDeps));
 
   @override
   String toString() =>

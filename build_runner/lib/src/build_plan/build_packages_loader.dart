@@ -27,11 +27,11 @@ class BuildPackagesLoader {
     final workspacePath = paths.workspacePath;
     File packageConfigFile;
     if (workspacePath != null) {
-      packageConfigFile = File(
+      packageConfigFile = .new(
         p.join(workspacePath, '.dart_tool', 'package_config.json'),
       );
     } else {
-      packageConfigFile = File(
+      packageConfigFile = .new(
         p.join(packagePath, '.dart_tool', 'package_config.json'),
       );
     }
@@ -53,9 +53,9 @@ class BuildPackagesLoader {
       );
       workspaceName = workspacePubspec['name']! as String;
 
-      if (buildType != BuildType.singlePackage) {
+      if (buildType != .singlePackage) {
         final workspacePackageGraph = _buildPackagesForPath(workspacePath);
-        workspacePackages = List.from(
+        workspacePackages = .from(
           workspacePackageGraph['roots'] as List<Object?>,
         );
       }
@@ -69,7 +69,7 @@ class BuildPackagesLoader {
     String? singlePackageToBuild;
     String outputRootName;
     final packagesInBuild = <String>{};
-    if (buildType == BuildType.workspace) {
+    if (buildType == .workspace) {
       packagesInBuild.add(workspaceName!);
       packagesInBuild.addAll(workspacePackages!);
       outputRootName = workspaceName;
@@ -96,7 +96,7 @@ class BuildPackagesLoader {
         packagePubspec,
         loadDevDependencies: isInBuild,
       );
-      buildPackages[packageConfig.name] = BuildPackage(
+      buildPackages[packageConfig.name] = .new(
         name: packageConfig.name,
         path: packageConfig.root.toFilePath(),
         languageVersion: packageConfig.languageVersion,
@@ -114,7 +114,7 @@ class BuildPackagesLoader {
       buildPackages: buildPackages,
     );
 
-    return BuildPackages.compute(
+    return .compute(
       currentPackage: currentPackage,
       singlePackageToBuild: singlePackageToBuild,
       outputRoot: outputRootName,
@@ -134,7 +134,7 @@ class BuildPackagesLoader {
   }) {
     if (workspaceName == null) return false;
 
-    final alternateRoots = buildType == BuildType.workspace
+    final alternateRoots = buildType == .workspace
         ? packagesInBuild.where((p) => p != workspaceName)
         : [workspaceName];
     if (alternateRoots.isEmpty) return false;

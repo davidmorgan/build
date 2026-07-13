@@ -24,7 +24,7 @@ class BuildCommand implements BuildRunnerCommand {
   BuildCommand({
     required this.builderFactories,
     required this.buildOptions,
-    this.testingOverrides = const TestingOverrides(),
+    this.testingOverrides = const .new(),
   });
 
   @override
@@ -33,7 +33,7 @@ class BuildCommand implements BuildRunnerCommand {
 
   Future<int> _run() async {
     final result = await build();
-    if (result.status == BuildStatus.success) {
+    if (result.status == .success) {
       return ExitCode.success.code;
     } else {
       return result.failureType?.exitCode ?? 1;
@@ -55,7 +55,7 @@ class BuildCommand implements BuildRunnerCommand {
     );
     final buildPlan = await BuildPlan.load(buildSpec);
     if (buildSpec.restartIsNeeded) {
-      return BuildResult.buildScriptChanged();
+      return .buildScriptChanged();
     }
 
     final buildSeries = BuildSeries(buildPlan);

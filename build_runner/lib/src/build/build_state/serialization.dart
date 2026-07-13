@@ -13,15 +13,15 @@ BuildState? deserializeBuildState(Map serializedBuildState) {
   final sourceIds =
       serializers.deserialize(
             serializedBuildState['sourceIds'],
-            specifiedType: const FullType(BuiltSet, [FullType(AssetId)]),
+            specifiedType: const .new(BuiltSet, [.new(AssetId)]),
           )
           as BuiltSet<AssetId>;
   final sourceContents =
       serializers.deserialize(
             serializedBuildState['sourceContents'],
-            specifiedType: const FullType(BuiltMap, [
-              FullType(AssetId),
-              FullType(AssetContent),
+            specifiedType: const .new(BuiltMap, [
+              .new(AssetId),
+              .new(AssetContent),
             ]),
           )
           as BuiltMap<AssetId, AssetContent>;
@@ -45,7 +45,7 @@ BuildState? deserializeBuildState(Map serializedBuildState) {
     final deserialized =
         serializers.deserialize(
               serializedBuildState['missingSources'],
-              specifiedType: const FullType(BuiltSet, [FullType(AssetId)]),
+              specifiedType: const .new(BuiltSet, [.new(AssetId)]),
             )
             as BuiltSet<AssetId>;
     buildState._sources.missingSources.addAll(deserialized.toSet());
@@ -55,9 +55,9 @@ BuildState? deserializeBuildState(Map serializedBuildState) {
     final deserialized =
         serializers.deserialize(
               serializedBuildState['buildStepResults'],
-              specifiedType: const FullType(BuiltMap, [
-                FullType(BuildStepId),
-                FullType(BuildStepResult),
+              specifiedType: const .new(BuiltMap, [
+                .new(BuildStepId),
+                .new(BuildStepResult),
               ]),
             )
             as BuiltMap<BuildStepId, BuildStepResult>;
@@ -70,9 +70,9 @@ BuildState? deserializeBuildState(Map serializedBuildState) {
     final deserialized =
         serializers.deserialize(
               serializedBuildState['globResults'],
-              specifiedType: const FullType(BuiltMap, [
-                FullType(GlobId),
-                FullType(GlobResult),
+              specifiedType: const .new(BuiltMap, [
+                .new(GlobId),
+                .new(GlobResult),
               ]),
             )
             as BuiltMap<GlobId, GlobResult>;
@@ -89,49 +89,41 @@ Map<String, Object?> serializeBuildState(BuildState buildState) {
   final result = <String, Object?>{
     'sourceIds': serializers.serialize(
       BuiltSet<AssetId>.of(buildState._sources.sources.keys),
-      specifiedType: const FullType(BuiltSet, [FullType(AssetId)]),
+      specifiedType: const .new(BuiltSet, [.new(AssetId)]),
     ),
     'sourceContents': serializers.serialize(
       BuiltMap<AssetId, AssetContent>.of({
         for (final entry in buildState._sources.sources.entries)
           if (entry.value != null) entry.key: entry.value!,
       }),
-      specifiedType: const FullType(BuiltMap, [
-        FullType(AssetId),
-        FullType(AssetContent),
-      ]),
+      specifiedType: const .new(BuiltMap, [.new(AssetId), .new(AssetContent)]),
     ),
     'postProcessResults': serializers.serialize(
       BuiltMap<PostProcessBuildStepId, PostProcessBuildStepResult>.of({
         for (final outer in buildState._postProcessResultsByInput.entries)
           for (final inner in outer.value.entries)
-            PostProcessBuildStepId(input: outer.key, actionNumber: inner.key):
-                inner.value,
+            .new(input: outer.key, actionNumber: inner.key): inner.value,
       }),
       specifiedType: postProcessBuildStepResultsFullType,
     ),
     'missingSources': serializers.serialize(
       BuiltSet<AssetId>.of(buildState._sources.missingSources),
-      specifiedType: const FullType(BuiltSet, [FullType(AssetId)]),
+      specifiedType: const .new(BuiltSet, [.new(AssetId)]),
     ),
     'buildStepResults': serializers.serialize(
       BuiltMap<BuildStepId, BuildStepResult>.of({
         for (final outer in buildState._buildStepResultsByPrimaryInput.entries)
           for (final inner in outer.value.entries)
-            BuildStepId(primaryInput: outer.key, phaseNumber: inner.key):
-                inner.value,
+            .new(primaryInput: outer.key, phaseNumber: inner.key): inner.value,
       }),
-      specifiedType: const FullType(BuiltMap, [
-        FullType(BuildStepId),
-        FullType(BuildStepResult),
+      specifiedType: const .new(BuiltMap, [
+        .new(BuildStepId),
+        .new(BuildStepResult),
       ]),
     ),
     'globResults': serializers.serialize(
       BuiltMap<GlobId, GlobResult>.of(buildState._globResults),
-      specifiedType: const FullType(BuiltMap, [
-        FullType(GlobId),
-        FullType(GlobResult),
-      ]),
+      specifiedType: const .new(BuiltMap, [.new(GlobId), .new(GlobResult)]),
     ),
   };
 

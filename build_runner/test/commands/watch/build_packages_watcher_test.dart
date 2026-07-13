@@ -16,22 +16,20 @@ import 'package:watcher/watcher.dart';
 void main() {
   group('BuildPackagesWatcher', () {
     final buildPackages = BuildPackages.singlePackageBuild('a', {
-      BuildPackage(
+      .new(
         name: 'a',
         path: '/g/a',
         isOutput: true,
         watch: true,
         dependencies: ['b'],
       ),
-      BuildPackage(name: 'b', path: '/g/b', watch: true),
+      .new(name: 'b', path: '/g/b', watch: true),
     });
     test('should aggregate changes from all nodes', () {
       final nodes = {
         'a': FakeNodeWatcher(buildPackages['a']!),
         'b': FakeNodeWatcher(buildPackages['b']!),
-        r'$sdk': FakeNodeWatcher(
-          BuildPackage(name: '\$sdk', path: '', watch: true),
-        ),
+        r'$sdk': FakeNodeWatcher(.new(name: '\$sdk', path: '', watch: true)),
       };
       final watcher = BuildPackagesWatcher(
         buildPackages,
@@ -46,22 +44,22 @@ void main() {
       expect(
         watcher.watch(),
         emitsInOrder([
-          AssetChange(AssetId('a', 'lib/a.dart'), ChangeType.ADD),
-          AssetChange(AssetId('b', 'lib/b.dart'), ChangeType.ADD),
+          AssetChange(.new('a', 'lib/a.dart'), ChangeType.ADD),
+          AssetChange(.new('b', 'lib/b.dart'), ChangeType.ADD),
         ]),
       );
     });
 
     test('should avoid duplicate changes with nested packages', () async {
       final buildPackages = BuildPackages.singlePackageBuild('a', {
-        BuildPackage(
+        .new(
           name: 'a',
           path: '/g/a',
           isOutput: true,
           watch: true,
           dependencies: ['b'],
         ),
-        BuildPackage(name: 'b', path: '/g/a/b', watch: true),
+        .new(name: 'b', path: '/g/a/b', watch: true),
       });
       final nodes = {
         'a': FakeNodeWatcher(buildPackages['a']!)..markReady(),
@@ -83,25 +81,23 @@ void main() {
 
       await pumpEventQueue();
 
-      expect(events, [AssetChange(AssetId('b', 'lib/b.dart'), ChangeType.ADD)]);
+      expect(events, [AssetChange(.new('b', 'lib/b.dart'), ChangeType.ADD)]);
     });
 
     test('should avoid watchers on pub dependencies', () {
       final buildPackages = BuildPackages.singlePackageBuild('a', {
-        BuildPackage(
+        .new(
           name: 'a',
           path: '/g/a',
           isOutput: true,
           watch: true,
           dependencies: ['b'],
         ),
-        BuildPackage(name: 'b', path: '/g/b', watch: false),
+        .new(name: 'b', path: '/g/b', watch: false),
       });
       final nodes = {
         'a': FakeNodeWatcher(buildPackages['a']!),
-        r'$sdk': FakeNodeWatcher(
-          BuildPackage(name: '\$sdk', path: '', watch: true),
-        ),
+        r'$sdk': FakeNodeWatcher(.new(name: '\$sdk', path: '', watch: true)),
       };
       BuildPackageWatcher noBWatcher(BuildPackage node) {
         if (node.name == 'b') throw StateError('No watcher for B!');
@@ -123,9 +119,7 @@ void main() {
       final nodes = {
         'a': FakeNodeWatcher(buildPackages['a']!),
         'b': FakeNodeWatcher(buildPackages['b']!),
-        r'$sdk': FakeNodeWatcher(
-          BuildPackage(name: '\$sdk', path: '', watch: true),
-        ),
+        r'$sdk': FakeNodeWatcher(.new(name: '\$sdk', path: '', watch: true)),
       };
       final watcher = BuildPackagesWatcher(
         buildPackages,
@@ -152,15 +146,15 @@ void main() {
 
     test('only watches the root-most packages', () async {
       final buildPackages = BuildPackages.singlePackageBuild('a', {
-        BuildPackage(
+        .new(
           name: 'a',
           path: '/g/a',
           isOutput: true,
           watch: true,
           dependencies: ['b', 'c'],
         ),
-        BuildPackage(name: 'b', path: '/g/a/b', watch: true),
-        BuildPackage(name: 'c', path: '/g/c', watch: true),
+        .new(name: 'b', path: '/g/a/b', watch: true),
+        .new(name: 'c', path: '/g/c', watch: true),
       });
 
       final watchedPackages = <String>[];
@@ -189,15 +183,15 @@ void main() {
 
     test('handle 3-level nesting correctly', () async {
       final buildPackages = BuildPackages.singlePackageBuild('root', {
-        BuildPackage(
+        .new(
           name: 'root',
           path: '/g',
           isOutput: true,
           watch: true,
           dependencies: ['a', 'b'],
         ),
-        BuildPackage(name: 'a', path: '/g/a', watch: true),
-        BuildPackage(name: 'b', path: '/g/a/b', watch: true),
+        .new(name: 'a', path: '/g/a', watch: true),
+        .new(name: 'b', path: '/g/a/b', watch: true),
       });
 
       final watchedPackages = <String>[];
@@ -226,14 +220,14 @@ void main() {
 
     test('reports events on the deepest nested package', () async {
       final buildPackages = BuildPackages.singlePackageBuild('a', {
-        BuildPackage(
+        .new(
           name: 'a',
           path: '/g/a',
           isOutput: true,
           watch: true,
           dependencies: ['b'],
         ),
-        BuildPackage(name: 'b', path: '/g/a/b', watch: true),
+        .new(name: 'b', path: '/g/a/b', watch: true),
       });
 
       final nodes = {'a': FakeNodeWatcher(buildPackages['a']!)..markReady()};
@@ -257,8 +251,8 @@ void main() {
       expect(
         events,
         unorderedEquals([
-          AssetChange(AssetId('b', 'lib/b.dart'), ChangeType.ADD),
-          AssetChange(AssetId('a', 'lib/a.dart'), ChangeType.ADD),
+          AssetChange(.new('b', 'lib/b.dart'), ChangeType.ADD),
+          AssetChange(.new('a', 'lib/a.dart'), ChangeType.ADD),
         ]),
       );
     });
@@ -279,7 +273,7 @@ class FakeNodeWatcher implements BuildPackageWatcher {
   void markReady() => _watcher._readyCompleter.complete();
 
   void emitAdd(String path) {
-    _events.add(AssetChange(AssetId(buildPackage.name, path), ChangeType.ADD));
+    _events.add(.new(AssetId(buildPackage.name, path), ChangeType.ADD));
   }
 
   @override

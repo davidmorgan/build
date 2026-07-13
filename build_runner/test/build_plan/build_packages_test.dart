@@ -64,10 +64,7 @@ void main() {
         fakeHostedPackages(tester.tempDirectory, ['a', 'b', 'c', 'd']);
 
         buildPackages = await BuildPackages.forPaths(
-          BuildPaths.load(
-            p.join(tempDirectory, 'basic_pkg'),
-            buildWorkspace: false,
-          ),
+          .load(p.join(tempDirectory, 'basic_pkg'), buildWorkspace: false),
         );
       });
 
@@ -95,7 +92,7 @@ void main() {
             path: p.join(tempDirectory, 'basic_pkg'),
             watch: true,
             isOutput: true,
-            languageVersion: LanguageVersion(3, 7),
+            languageVersion: .new(3, 11),
             dependencies: ['a', 'b', 'c', 'd'],
           ),
         );
@@ -107,7 +104,7 @@ void main() {
           BuildPackage(
             name: 'a',
             path: p.join(tempDirectory, 'a'),
-            languageVersion: LanguageVersion(3, 7),
+            languageVersion: .new(3, 11),
             dependencies: ['b', 'c'],
           ),
         );
@@ -144,10 +141,7 @@ void main() {
         fakeHostedPackages(tester.tempDirectory, ['a', 'b', 'c']);
 
         buildPackages = await BuildPackages.forPaths(
-          BuildPaths.load(
-            p.join(tempDirectory, 'with_dev_deps'),
-            buildWorkspace: false,
-          ),
+          .load(p.join(tempDirectory, 'with_dev_deps'), buildWorkspace: false),
         );
       });
 
@@ -173,7 +167,7 @@ void main() {
             path: p.join(tempDirectory, 'with_dev_deps'),
             watch: true,
             isOutput: true,
-            languageVersion: LanguageVersion(3, 7),
+            languageVersion: .new(3, 11),
             dependencies: ['a', 'b'],
           ),
         );
@@ -184,7 +178,7 @@ void main() {
           BuildPackage(
             name: 'a',
             path: p.join(tempDirectory, 'a'),
-            languageVersion: LanguageVersion(3, 7),
+            languageVersion: .new(3, 11),
           ),
         );
 
@@ -193,7 +187,7 @@ void main() {
           BuildPackage(
             name: 'b',
             path: p.join(tempDirectory, 'b'),
-            languageVersion: LanguageVersion(3, 7),
+            languageVersion: .new(3, 11),
           ),
         );
 
@@ -206,7 +200,7 @@ void main() {
 
       setUp(() async {
         buildPackages = await BuildPackages.forPaths(
-          BuildPaths.load(withFlutterDeps, buildWorkspace: false),
+          .load(withFlutterDeps, buildWorkspace: false),
         );
       });
 
@@ -255,7 +249,7 @@ void main() {
     test('missing pubspec throws on create', () {
       expect(
         () => BuildPackages.forPaths(
-          BuildPaths.load(
+          .load(
             p.absolute(p.join('test', 'fixtures', 'no_pubspec')),
             buildWorkspace: false,
           ),
@@ -267,7 +261,7 @@ void main() {
     test('missing .dart_tool/package_config.json file throws on create', () {
       expect(
         () => BuildPackages.forPaths(
-          BuildPaths.load(
+          .load(
             p.absolute(p.join('test', 'fixtures', 'no_packages_file')),
             buildWorkspace: false,
           ),
@@ -306,7 +300,7 @@ workspace:
 
     test('without --workspace loads correctly', () async {
       buildPackages = await BuildPackages.forPaths(
-        BuildPaths.load(p.join(tempDirectory, 'a'), buildWorkspace: false),
+        .load(p.join(tempDirectory, 'a'), buildWorkspace: false),
       );
 
       expect(buildPackages.packages.asMap(), {
@@ -315,14 +309,14 @@ workspace:
           path: p.join(tempDirectory, 'a'),
           watch: true,
           isOutput: true,
-          languageVersion: LanguageVersion(3, 7),
+          languageVersion: .new(3, 11),
           dependencies: ['b'],
         ),
         'b': BuildPackage(
           name: 'b',
           path: p.join(tempDirectory, 'b'),
           watch: true,
-          languageVersion: LanguageVersion(3, 7),
+          languageVersion: .new(3, 11),
         ),
         r'$sdk': anything,
       });
@@ -341,7 +335,7 @@ workspace:
             path: p.join(tempDirectory, 'a'),
             watch: true,
             isOutput: true,
-            languageVersion: LanguageVersion(3, 7),
+            languageVersion: .new(3, 11),
             dependencies: ['b'],
           ),
           'b': BuildPackage(
@@ -349,14 +343,14 @@ workspace:
             path: p.join(tempDirectory, 'b'),
             watch: true,
             isOutput: true,
-            languageVersion: LanguageVersion(3, 7),
+            languageVersion: .new(3, 11),
           ),
           'some_workspace_name': BuildPackage(
             name: 'some_workspace_name',
             path: tempDirectory,
             watch: true,
             isOutput: true,
-            languageVersion: LanguageVersion(3, 5),
+            languageVersion: .new(3, 5),
           ),
           r'$sdk': anything,
         };
@@ -366,7 +360,7 @@ workspace:
         // Load the workspace passing the directory of a package in the
         // workspace.
         buildPackages = await BuildPackages.forPaths(
-          BuildPaths.load(p.join(tempDirectory, 'a'), buildWorkspace: true),
+          .load(p.join(tempDirectory, 'a'), buildWorkspace: true),
         );
 
         expect(buildPackages.packages.asMap(), expectedPackages);
@@ -378,7 +372,7 @@ workspace:
         // Load the workspace passing the directory of a package in the
         // workspace itself. The result should be identical.
         buildPackages = await BuildPackages.forPaths(
-          BuildPaths.load(tempDirectory, buildWorkspace: true),
+          .load(tempDirectory, buildWorkspace: true),
         );
 
         expect(buildPackages.packages.asMap(), expectedPackages);
@@ -393,16 +387,16 @@ workspace:
       currentPackage: 'workspace',
       workspace: 'workspace',
       packages: [
-        BuildPackage.forTesting(name: 'a', dependencies: ['b']),
-        BuildPackage.forTesting(name: 'b', dependencies: ['d']),
-        BuildPackage.forTesting(name: 'c', dependencies: ['d']),
-        BuildPackage.forTesting(name: 'd', dependencies: ['e']),
-        BuildPackage.forTesting(name: 'e', dependencies: ['d']),
-        BuildPackage.forTesting(name: 'f', dependencies: ['g']),
-        BuildPackage.forTesting(name: 'g', dependencies: ['h']),
-        BuildPackage.forTesting(name: 'h', dependencies: ['g', 'i']),
-        BuildPackage.forTesting(name: 'i'),
-        BuildPackage.forTesting(name: 'workspace'),
+        .forTesting(name: 'a', dependencies: ['b']),
+        .forTesting(name: 'b', dependencies: ['d']),
+        .forTesting(name: 'c', dependencies: ['d']),
+        .forTesting(name: 'd', dependencies: ['e']),
+        .forTesting(name: 'e', dependencies: ['d']),
+        .forTesting(name: 'f', dependencies: ['g']),
+        .forTesting(name: 'g', dependencies: ['h']),
+        .forTesting(name: 'h', dependencies: ['g', 'i']),
+        .forTesting(name: 'i'),
+        .forTesting(name: 'workspace'),
       ],
     );
 
@@ -415,10 +409,10 @@ workspace:
 
   test('filters to transitive dependencies of single build package', () {
     final buildPackages = BuildPackages.singlePackageBuild('f', [
-      BuildPackage.forTesting(name: 'a', dependencies: ['b']),
-      BuildPackage.forTesting(name: 'b'),
-      BuildPackage.forTesting(name: 'f', dependencies: ['g']),
-      BuildPackage.forTesting(name: 'g'),
+      .forTesting(name: 'a', dependencies: ['b']),
+      .forTesting(name: 'b'),
+      .forTesting(name: 'f', dependencies: ['g']),
+      .forTesting(name: 'g'),
     ]);
 
     expect(buildPackages.packages.keys, ['f', 'g', r'$sdk']);
@@ -429,15 +423,15 @@ workspace:
       currentPackage: 'workspace',
       workspace: 'workspace',
       packages: [
-        BuildPackage.forTesting(name: 'a', dependencies: ['b'], isOutput: true),
-        BuildPackage.forTesting(name: 'b', dependencies: ['d']),
-        BuildPackage.forTesting(name: 'c', dependencies: ['d'], isOutput: true),
-        BuildPackage.forTesting(name: 'd', dependencies: ['e']),
-        BuildPackage.forTesting(name: 'e', dependencies: ['d']),
-        BuildPackage.forTesting(name: 'f', dependencies: ['g'], isOutput: true),
-        BuildPackage.forTesting(name: 'g'),
-        BuildPackage.forTesting(name: 'h', dependencies: ['e'], isOutput: true),
-        BuildPackage.forTesting(name: 'workspace'),
+        .forTesting(name: 'a', dependencies: ['b'], isOutput: true),
+        .forTesting(name: 'b', dependencies: ['d']),
+        .forTesting(name: 'c', dependencies: ['d'], isOutput: true),
+        .forTesting(name: 'd', dependencies: ['e']),
+        .forTesting(name: 'e', dependencies: ['d']),
+        .forTesting(name: 'f', dependencies: ['g'], isOutput: true),
+        .forTesting(name: 'g'),
+        .forTesting(name: 'h', dependencies: ['e'], isOutput: true),
+        .forTesting(name: 'workspace'),
       ],
     );
 

@@ -43,12 +43,12 @@ class BuildResult {
     required this.buildOutputReader,
     this.buildState,
     FailureType? failureType,
-  }) : failureType = failureType == null && status == BuildStatus.failure
-           ? FailureType.general
+  }) : failureType = failureType == null && status == .failure
+           ? .general
            : failureType,
-       errors = errors ?? BuiltList(),
-       outputs = outputs ?? BuiltList(),
-       phasedAssetDeps = phasedAssetDeps ?? PhasedAssetDeps();
+       errors = errors ?? .new(),
+       outputs = outputs ?? .new(),
+       phasedAssetDeps = phasedAssetDeps ?? .new();
 
   BuildResult copyWith({
     BuildStatus? status,
@@ -58,7 +58,7 @@ class BuildResult {
     PhasedAssetDeps? phasedAssetDeps,
     BuildOutputReader? buildOutputReader,
     BuildState? buildState,
-  }) => BuildResult(
+  }) => .new(
     status: status ?? this.status,
     failureType: failureType ?? this.failureType,
     errors: errors ?? this.errors,
@@ -70,7 +70,7 @@ class BuildResult {
 
   @override
   String toString() {
-    if (status == BuildStatus.success) {
+    if (status == .success) {
       return '''
 
 Build Succeeded!
@@ -83,9 +83,9 @@ Build Failed :(
     }
   }
 
-  factory BuildResult.buildScriptChanged() => BuildResult(
-    status: BuildStatus.failure,
-    failureType: FailureType.buildScriptChanged,
+  factory BuildResult.buildScriptChanged() => .new(
+    status: .failure,
+    failureType: .buildScriptChanged,
     buildOutputReader: null,
   );
 }

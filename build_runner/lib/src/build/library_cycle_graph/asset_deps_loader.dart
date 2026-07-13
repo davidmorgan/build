@@ -29,7 +29,7 @@ class AssetDepsLoader {
   Future<PhasedValue<AssetDeps>> load(AssetId id) async {
     final content = await _buildFilesystem.readPhased(phase, id);
 
-    return PhasedValue((b) {
+    return .new((b) {
       b.values.addAll(content.values.map((content) => _parse(id, content)));
     });
   }
@@ -42,7 +42,7 @@ class AssetDepsLoader {
     final depsNodeBuilder = AssetDepsBuilder();
 
     if (content.value == '') {
-      result.value = AssetDeps.empty;
+      result.value = .empty;
     } else {
       final parsed = parseString(
         content: content.value,
@@ -67,9 +67,7 @@ class AssetDepsLoader {
 
 // An [AssetDepsLoader] from already-loaded asset deps.
 class _InMemoryAssetDepsLoader implements AssetDepsLoader {
-  final Future<PhasedValue<AssetDeps>> _empty = Future.value(
-    PhasedValue.fixed(AssetDeps.empty),
-  );
+  final Future<PhasedValue<AssetDeps>> _empty = .value(.fixed(.empty));
   PhasedAssetDeps phasedAssetDeps;
 
   _InMemoryAssetDepsLoader(PhasedAssetDeps phasedAssetDeps)
@@ -98,6 +96,6 @@ class _InMemoryAssetDepsLoader implements AssetDepsLoader {
   Future<PhasedValue<AssetDeps>> load(AssetId id) {
     final result = phasedAssetDeps.assetDeps[id];
     if (result == null) return _empty;
-    return Future.value(result);
+    return .value(result);
   }
 }

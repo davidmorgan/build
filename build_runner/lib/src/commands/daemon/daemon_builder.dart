@@ -79,33 +79,25 @@ class BuildRunnerDaemonBuilder implements DaemonBuilder {
       OutputLocation? outputLocation;
       if (target.outputLocation != null) {
         final targetOutputLocation = target.outputLocation!;
-        outputLocation = OutputLocation(
+        outputLocation = .new(
           targetOutputLocation.output,
           useSymlinks: targetOutputLocation.useSymlinks,
           hoist: targetOutputLocation.hoist,
         );
       }
-      buildDirs.add(
-        BuildDirectory(target.target, outputLocation: outputLocation),
-      );
+      buildDirs.add(.new(target.target, outputLocation: outputLocation));
       if (target.buildFilters != null && target.buildFilters!.isNotEmpty) {
         buildFilters.addAll([
           for (final pattern in target.buildFilters!)
-            BuildFilter.fromArg(
-              arg: pattern,
-              currentPackage: _currentPackageName,
-            ),
+            .fromArg(arg: pattern, currentPackage: _currentPackageName),
         ]);
       } else {
         buildFilters
           ..add(
-            BuildFilter.fromArg(
-              arg: 'package:*/**',
-              currentPackage: _currentPackageName,
-            ),
+            .fromArg(arg: 'package:*/**', currentPackage: _currentPackageName),
           )
           ..add(
-            BuildFilter.fromArg(
+            .fromArg(
               arg: '${target.target}/**',
               currentPackage: _currentPackageName,
             ),
@@ -140,14 +132,14 @@ class BuildRunnerDaemonBuilder implements DaemonBuilder {
           // TODO(grouma) - Can we notify if a target was cached?
           results.add(
             DefaultBuildResult((b) {
-              b.status = BuildStatus.succeeded;
+              b.status = .succeeded;
               b.target = target.target;
             }),
           );
         } else {
           results.add(
             DefaultBuildResult((b) {
-              b.status = BuildStatus.failed;
+              b.status = .failed;
               // TODO(grouma) - We should forward the error messages
               // instead.
               // We can use the BuildState and FailureReporter to provide
@@ -162,7 +154,7 @@ class BuildRunnerDaemonBuilder implements DaemonBuilder {
       for (final target in targets) {
         results.add(
           DefaultBuildResult((b) {
-            b.status = BuildStatus.failed;
+            b.status = .failed;
             b.error = '$e';
             b.target = target.target;
           }),
@@ -179,7 +171,7 @@ class BuildRunnerDaemonBuilder implements DaemonBuilder {
   }
 
   void _logMessage(Level level, String message) => _outputStreamController.add(
-    ServerLog((b) {
+    .new((b) {
       b.message = message;
       b.level = level;
     }),
@@ -191,7 +183,7 @@ class BuildRunnerDaemonBuilder implements DaemonBuilder {
   ]) {
     _buildingCompleter!.complete();
     _buildResults.add(
-      BuildResults((b) {
+      .new((b) {
         b.results.addAll(results);
 
         if (changedAssets != null) {
@@ -202,17 +194,17 @@ class BuildRunnerDaemonBuilder implements DaemonBuilder {
   }
 
   void _signalStart(Iterable<String> targets) {
-    _buildingCompleter = Completer();
+    _buildingCompleter = .new();
     final results = <BuildResult>[];
     for (final target in targets) {
       results.add(
         DefaultBuildResult((b) {
-          b.status = BuildStatus.started;
+          b.status = .started;
           b.target = target;
         }),
       );
     }
-    _buildResults.add(BuildResults((b) => b..results.addAll(results)));
+    _buildResults.add(.new((b) => b..results.addAll(results)));
   }
 
   static Future<BuildRunnerDaemonBuilder> create({
@@ -224,7 +216,7 @@ class BuildRunnerDaemonBuilder implements DaemonBuilder {
 
     buildLog.configuration = buildLog.configuration.rebuild((b) {
       b.onLog = (record) {
-        outputStreamController.add(ServerLog.fromLogRecord(record));
+        outputStreamController.add(.fromLogRecord(record));
       };
     });
     buildPlan = buildPlan.rebuild((b) => b.onDelete = expectedDeletes.add);
@@ -237,7 +229,7 @@ class BuildRunnerDaemonBuilder implements DaemonBuilder {
             .watch()
             .debounceBuffer(
               buildPlan.buildSpec.testingOverrides.debounceDelay ??
-                  const Duration(milliseconds: 250),
+                  const .new(milliseconds: 250),
             )
             .asyncMap(
               (changes) => buildSeries.filterChanges(changes, expectedDeletes),

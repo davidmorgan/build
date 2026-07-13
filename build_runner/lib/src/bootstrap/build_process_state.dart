@@ -17,7 +17,7 @@ import 'build_process_lock.dart';
 ///
 /// It's passed from the entrypoint to the spawned build script isolate, then
 /// updated in the host when the isolate exits.
-final BuildProcessState buildProcessState = BuildProcessState();
+final BuildProcessState buildProcessState = .new();
 
 class BuildProcessState {
   final Map<String, Object?> _state = {};
@@ -29,7 +29,7 @@ class BuildProcessState {
     _afterReceives.add(() {
       // Initialize lock using state from parent process if it was set.
       if (_buildPaths != null) {
-        _lock = BuildProcessLock(_buildPaths!);
+        _lock = .new(_buildPaths!);
       }
     });
   }
@@ -45,7 +45,7 @@ class BuildProcessState {
   Future<void> takeLock(BuildPaths buildPaths) {
     if (_lock != null) throw StateError('Already took lock.');
     _buildPaths = buildPaths;
-    _lock = BuildProcessLock(buildPaths);
+    _lock = .new(buildPaths);
     return _lock!.takeLock();
   }
 
@@ -68,15 +68,13 @@ class BuildProcessState {
   /// If not already set, sets from the current process stdio.
   StdioCapabilities get stdio {
     _state['stdioCapabilities'] ??= StdioCapabilities().serialize();
-    return StdioCapabilities.deserialize(
-      _state['stdioCapabilities'] as Map<String, Object?>,
-    );
+    return .deserialize(_state['stdioCapabilities'] as Map<String, Object?>);
   }
 
   /// For `buildLog`, the log mode.
-  BuildLogMode get buildLogMode => BuildLogMode.values.singleWhere(
+  BuildLogMode get buildLogMode => .values.singleWhere(
     (mode) => mode.name == _state['buildLogMode'],
-    orElse: () => BuildLogMode.simple,
+    orElse: () => .simple,
   );
   set buildLogMode(BuildLogMode mode) => _state['buildLogMode'] = mode.name;
 
@@ -114,7 +112,7 @@ class BuildProcessState {
 
   /// The [BuildPaths] used for the process lock.
   BuildPaths? get _buildPaths => _state.containsKey('packagePath')
-      ? BuildPaths(
+      ? .new(
           packagePath: _state['packagePath'] as String,
           workspacePath: _state['workspacePath'] as String?,
           buildWorkspace: _state['buildWorkspace'] as bool,

@@ -33,17 +33,17 @@ void main() {
       late File input1;
 
       setUp(() {
-        tempDir = Directory.systemTemp.createTempSync('depfile_test');
-        outputFile = File(p.join(tempDir.path, 'output.txt'))
+        tempDir = .systemTemp.createTempSync('depfile_test');
+        outputFile = .new(p.join(tempDir.path, 'output.txt'))
           ..writeAsStringSync('output');
-        input1 = File(p.join(tempDir.path, 'input1.txt'))
+        input1 = .new(p.join(tempDir.path, 'input1.txt'))
           ..writeAsStringSync('input1');
 
-        depsFile = File(p.join(tempDir.path, 'deps.d'))
+        depsFile = .new(p.join(tempDir.path, 'deps.d'))
           ..writeAsStringSync('${outputFile.path}: ${input1.path}\n');
 
-        digestFile = File(p.join(tempDir.path, 'deps.digest'));
-        stampFile = File('${digestFile.path}.stamp');
+        digestFile = .new(p.join(tempDir.path, 'deps.digest'));
+        stampFile = .new('${digestFile.path}.stamp');
       });
 
       tearDown(() {
@@ -52,9 +52,9 @@ void main() {
 
       test('not fresh if input modified between stamp and digest', () async {
         stampFile.writeAsStringSync('');
-        await Future<void>.delayed(const Duration(seconds: 2));
+        await Future<void>.delayed(const .new(seconds: 2));
         input1.writeAsStringSync('input1');
-        await Future<void>.delayed(const Duration(seconds: 2));
+        await Future<void>.delayed(const .new(seconds: 2));
         final depfile = Depfile(
           outputPath: outputFile.path,
           depfilePath: depsFile.path,
@@ -69,14 +69,14 @@ void main() {
 
       test('checks content if modified after digest', () async {
         stampFile.writeAsStringSync('');
-        await Future<void>.delayed(const Duration(seconds: 2));
+        await Future<void>.delayed(const .new(seconds: 2));
         final depfile = Depfile(
           outputPath: outputFile.path,
           depfilePath: depsFile.path,
           digestPath: digestFile.path,
         )..writeDigest();
         var result = depfile.checkFreshness(digestsAreFresh: false);
-        await Future<void>.delayed(const Duration(seconds: 2));
+        await Future<void>.delayed(const .new(seconds: 2));
         input1.writeAsStringSync('input1');
 
         // Digests are identical and modification was after digests.

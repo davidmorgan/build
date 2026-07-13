@@ -34,13 +34,13 @@ void main() {
       for (final entry in generatedPhases.entries) {
         final phase = entry.value;
         final stepId = BuildStepId(
-          primaryInput: AssetId('a', 'lib/a.dart'),
+          primaryInput: .new('a', 'lib/a.dart'),
           phaseNumber: phase,
         );
         b.buildStepsByDeclaredOutput[entry.key] = stepId;
 
         while (b.buildStepsByPhase.length <= phase) {
-          b.buildStepsByPhase.add(BuiltList<BuildStepId>());
+          b.buildStepsByPhase.add(.new());
         }
         final phaseSteps = b.buildStepsByPhase[phase].toList();
         if (!phaseSteps.contains(stepId)) phaseSteps.add(stepId);
@@ -50,7 +50,7 @@ void main() {
       }
       b.buildPhases = BuildPhases([]);
     });
-    return BuilderFilesystem(
+    return .new(
       buildPackages: buildPackages,
       buildConfigs: buildConfigs,
       buildState: BuildState(sources),
@@ -62,14 +62,12 @@ void main() {
   }
 
   setUp(() async {
-    filesystem = AnalysisDriverFilesystem();
-    buildPackages = BuildPackages.singlePackageBuild('a', [
+    filesystem = .new();
+    buildPackages = .singlePackageBuild('a', [
       BuildPackage.forTesting(name: 'a', isOutput: true),
     ]);
-    readerWriter = InternalTestReaderWriter(
-      outputRootPackage: buildPackages.outputRoot,
-    );
-    buildConfigs = await BuildConfigs.load(
+    readerWriter = .new(outputRootPackage: buildPackages.outputRoot);
+    buildConfigs = await .load(
       buildPackages: buildPackages,
       readerWriter: readerWriter,
     );
@@ -101,25 +99,22 @@ void main() {
       final sourceB = AssetId('a', 'lib/b.dart');
 
       builderFilesystem = createBuilderFilesystem(
-        sources: {
-          sourceA: AssetContent.string('A1'),
-          sourceB: AssetContent.string('B1'),
-        },
+        sources: {sourceA: .string('A1'), sourceB: .string('B1')},
       );
       filesystem.startBuild(
         builderFilesystem: builderFilesystem,
-        buildInputs: BuildInputs((b) => b..cleanBuild = true),
+        buildInputs: .new((b) => b..cleanBuild = true),
       );
 
       filesystem.clearChangedPaths();
 
       // Incremental build: Delete A, Update B.
       builderFilesystem = createBuilderFilesystem(
-        sources: {sourceB: AssetContent.string('B2')},
+        sources: {sourceB: .string('B2')},
       );
       filesystem.startBuild(
         builderFilesystem: builderFilesystem,
-        buildInputs: BuildInputs(
+        buildInputs: .new(
           (b) => b
             ..cleanBuild = false
             ..deletedSources.add(sourceA)
@@ -145,7 +140,7 @@ void main() {
 
       filesystem.startBuild(
         builderFilesystem: builderFilesystem,
-        buildInputs: BuildInputs((b) => b..cleanBuild = true),
+        buildInputs: .new((b) => b..cleanBuild = true),
       );
 
       expect(filesystem.exists('/a/lib/out.g.dart'), isFalse);
@@ -157,12 +152,12 @@ void main() {
           (b) => b
             ..result = true
             ..isHidden = false
-            ..outputs[outputId] = AssetContent.string('generated'),
+            ..outputs[outputId] = .string('generated'),
         ),
       );
       builderFilesystem.updateContent(
         id: outputId,
-        content: AssetContent.string('generated'),
+        content: .string('generated'),
       );
 
       // Advance phase to make it visible.
@@ -183,36 +178,30 @@ void main() {
 
       filesystem.startBuild(
         builderFilesystem: builderFilesystem,
-        buildInputs: BuildInputs((b) => b..cleanBuild = true),
+        buildInputs: .new((b) => b..cleanBuild = true),
       );
 
       builderFilesystem.buildState.updateBuildStepResult(
         builderFilesystem.buildStepPlan.stepForDeclaredOutputOrNull(output1)!,
-        BuildStepResult(
+        .new(
           (b) => b
             ..result = true
             ..isHidden = false
-            ..outputs[output1] = AssetContent.string('g1'),
+            ..outputs[output1] = .string('g1'),
         ),
       );
-      builderFilesystem.updateContent(
-        id: output1,
-        content: AssetContent.string('g1'),
-      );
+      builderFilesystem.updateContent(id: output1, content: .string('g1'));
 
       builderFilesystem.buildState.updateBuildStepResult(
         builderFilesystem.buildStepPlan.stepForDeclaredOutputOrNull(output2)!,
-        BuildStepResult(
+        .new(
           (b) => b
             ..result = true
             ..isHidden = false
-            ..outputs[output2] = AssetContent.string('g2'),
+            ..outputs[output2] = .string('g2'),
         ),
       );
-      builderFilesystem.updateContent(
-        id: output2,
-        content: AssetContent.string('g2'),
-      );
+      builderFilesystem.updateContent(id: output2, content: .string('g2'));
       filesystem.clearChangedPaths();
 
       // Phase 1 (executing): nothing visible yet.

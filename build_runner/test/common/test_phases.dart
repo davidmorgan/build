@@ -15,7 +15,7 @@ import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
 Future<void> wait(int milliseconds) =>
-    Future.delayed(Duration(milliseconds: milliseconds));
+    .delayed(.new(milliseconds: milliseconds));
 
 void _printOnFailure(LogRecord record) {
   printOnFailure(
@@ -77,7 +77,7 @@ Future<TestBuildersResult> testPhases(
   TestBuildersResult? resumeFrom,
   Map<String, /*String|List<int>*/ Object>? outputs,
   BuildPackages? buildPackages,
-  BuildStatus status = BuildStatus.success,
+  BuildStatus status = .success,
   // A better way to "silence" logging than setting logLevel to OFF.
   void Function(LogRecord record) onLog = _printOnFailure,
   bool checkBuildStatus = true,
@@ -86,8 +86,8 @@ Future<TestBuildersResult> testPhases(
   Set<BuildFilter> buildFilters = const {},
   void Function(AssetId id)? onDelete,
 }) async {
-  buildPackages ??= BuildPackages.singlePackageBuild('a', [
-    BuildPackage.forTesting(name: 'a', isOutput: true),
+  buildPackages ??= .singlePackageBuild('a', [
+    .forTesting(name: 'a', isOutput: true),
   ]);
   final readerWriter = resumeFrom == null
       ? InternalTestReaderWriter(outputRootPackage: buildPackages.outputRoot)
@@ -128,15 +128,15 @@ Future<TestBuildersResult> testPhases(
   });
 
   var buildPlan = await BuildPlan.load(
-    await BuildSpec.load(
+    await .load(
       builderFactories: builderFactories,
       // ignore: invalid_use_of_visible_for_testing_member
-      buildOptions: BuildOptions.forTests(
+      buildOptions: .forTests(
         buildDirs: buildDirs.build(),
         buildFilters: buildFilters.build(),
         verbose: verbose,
       ),
-      testingOverrides: TestingOverrides(
+      testingOverrides: .new(
         builderDefinitions: builders.build(),
         buildPackages: buildPackages,
         readerWriter: readerWriter,
@@ -163,7 +163,7 @@ Future<TestBuildersResult> testPhases(
     );
   }
 
-  return TestBuildersResult(
+  return .new(
     buildResult: result,
     readerWriter: readerWriter,
     buildPlan: buildPlan,
@@ -176,7 +176,7 @@ void checkBuild(
   BuildResult result, {
   Map<String, Object>? outputs,
   required TestReaderWriter readerWriter,
-  BuildStatus status = BuildStatus.success,
+  BuildStatus status = .success,
   String buildCachePackage = 'a',
 }) {
   expect(result.status, status, reason: '$result');
@@ -194,13 +194,13 @@ void checkBuild(
   }
 
   AssetId mapHidden(AssetId id) => unhiddenAssets.contains(id)
-      ? AssetId(
+      ? .new(
           buildCachePackage,
           '.dart_tool/build/generated/${id.package}/${id.path}',
         )
       : id;
 
-  if (status == BuildStatus.success) {
+  if (status == .success) {
     checkOutputs(
       unhiddenOutputs,
       result.outputs,

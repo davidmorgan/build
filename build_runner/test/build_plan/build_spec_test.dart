@@ -24,16 +24,16 @@ void main() {
     late TestingOverrides testingOverrides;
 
     setUp(() async {
-      buildPackages = BuildPackages.singlePackageBuild('a', [
+      buildPackages = .singlePackageBuild('a', [
         BuildPackage.forTesting(name: 'a', watch: true, isOutput: true),
       ]);
       readerWriter = InternalTestReaderWriter(outputRootPackage: 'a');
-      buildOptions = BuildOptions.forTests();
-      builderFactories = BuilderFactories({
+      buildOptions = .forTests();
+      builderFactories = .new({
         '': [(_) => TestBuilder()],
         'b2': [(_) => TestBuilder(buildExtensions: appendExtension('.copy2'))],
       });
-      testingOverrides = TestingOverrides(
+      testingOverrides = .new(
         builderDefinitions: [BuilderDefinition('')].build(),
         readerWriter: readerWriter,
         buildPackages: buildPackages,

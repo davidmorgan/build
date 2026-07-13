@@ -95,17 +95,17 @@ class InBuildPhase extends BuildPhase implements BuildAction {
     required Builder builder,
     required String key,
     required String package,
-    InputSet targetSources = const InputSet(),
-    InputSet generateFor = const InputSet(),
-    BuilderOptions options = const BuilderOptions({}),
+    InputSet targetSources = const .new(),
+    InputSet generateFor = const .new(),
+    BuilderOptions options = const .new({}),
     bool isOptional = false,
     bool hideOutput = false,
   }) : this._(
          package,
          builder,
          options,
-         targetSources: InputMatcher(targetSources),
-         generateFor: InputMatcher(generateFor),
+         targetSources: .new(targetSources),
+         generateFor: .new(generateFor),
          key: key,
          displayName: _simpleBuilderKey(key),
          isOptional: isOptional,
@@ -180,8 +180,8 @@ class PostBuildAction implements BuildAction {
     required InputSet generateFor,
     required this.hideOutput,
   }) : builderLabel = _builderLabel(builder),
-       targetSources = InputMatcher(targetSources),
-       generateFor = InputMatcher(generateFor);
+       targetSources = .new(targetSources),
+       generateFor = .new(generateFor);
 
   int get identity => _deepEquals.hash([
     builderLabel,

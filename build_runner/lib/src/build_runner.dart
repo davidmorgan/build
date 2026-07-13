@@ -93,7 +93,7 @@ class BuildRunner {
       p.current,
       buildWorkspace: commandLine.workspace ?? false,
     );
-    if (builderFactories == null && commandLine.type != CommandType.daemon) {
+    if (builderFactories == null && commandLine.type != .daemon) {
       await buildProcessState.takeLock(buildPaths);
     }
 
@@ -122,7 +122,7 @@ class BuildRunner {
 
     BuildRunnerCommand command;
     switch (commandLine.type) {
-      case CommandType.build:
+      case .build:
         command = BuildCommand(
           builderFactories: builderFactories!,
           buildOptions: BuildOptions.parse(
@@ -133,17 +133,17 @@ class BuildRunner {
           ),
         );
 
-      case CommandType.clean:
+      case .clean:
         command = CleanCommand(buildPaths);
 
-      case CommandType.stop:
+      case .stop:
         command = StopCommand();
 
-      case CommandType.daemon:
+      case .daemon:
         command = DaemonCommand(
           arguments: commandLine.arguments,
           builderFactories: builderFactories!,
-          buildOptions: BuildOptions.parse(
+          buildOptions: .parse(
             commandLine,
             restIsBuildDirs: false,
             currentPackage: currentPackage,
@@ -152,10 +152,10 @@ class BuildRunner {
           daemonOptions: DaemonOptions.parse(commandLine),
         );
 
-      case CommandType.run:
+      case .run:
         command = RunCommand(
           builderFactories: builderFactories!,
-          buildOptions: BuildOptions.parse(
+          buildOptions: .parse(
             commandLine,
             restIsBuildDirs: false,
             currentPackage: currentPackage,
@@ -164,11 +164,11 @@ class BuildRunner {
           runOptions: RunOptions.parse(commandLine),
         );
 
-      case CommandType.serve:
+      case .serve:
         final serveOptions = ServeOptions.parse(commandLine);
         command = ServeCommand(
           builderFactories: builderFactories!,
-          buildOptions: BuildOptions.parse(
+          buildOptions: .parse(
             commandLine,
             restIsBuildDirs: false,
             currentPackage: currentPackage,
@@ -178,10 +178,10 @@ class BuildRunner {
           serveOptions: serveOptions,
         );
 
-      case CommandType.test:
+      case .test:
         command = TestCommand(
           builderFactories: builderFactories!,
-          buildOptions: BuildOptions.parse(
+          buildOptions: .parse(
             commandLine,
             restIsBuildDirs: false,
             currentPackage: currentPackage,
@@ -190,10 +190,10 @@ class BuildRunner {
           testOptions: TestOptions.parse(commandLine),
         );
 
-      case CommandType.watch:
+      case .watch:
         command = WatchCommand(
           builderFactories: builderFactories!,
-          buildOptions: BuildOptions.parse(
+          buildOptions: .parse(
             commandLine,
             restIsBuildDirs: true,
             currentPackage: currentPackage,
@@ -226,11 +226,10 @@ class BuildRunner {
     return await bootstrapper.run(
       arguments,
       dartAotPerf: commandLine.dartAotPerf ?? false,
-      jitVmArgs: commandLine.jitVmArgs ?? const Iterable.empty(),
+      jitVmArgs: commandLine.jitVmArgs ?? const .empty(),
       experiments: commandLine.enableExperiments,
       retryCompileFailures:
-          commandLine.type == CommandType.watch ||
-          commandLine.type == CommandType.serve,
+          commandLine.type == .watch || commandLine.type == .serve,
     );
   }
 }

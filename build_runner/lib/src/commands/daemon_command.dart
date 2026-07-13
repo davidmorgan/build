@@ -39,7 +39,7 @@ class DaemonCommand implements BuildRunnerCommand {
     required this.arguments,
     required this.buildOptions,
     required this.daemonOptions,
-    this.testingOverrides = const TestingOverrides(),
+    this.testingOverrides = const .new(),
   });
 
   @override
@@ -138,7 +138,7 @@ $logEndMarker''');
         requestedOptions,
         builder,
         builder.changeProvider,
-        timeout: const Duration(seconds: 60),
+        timeout: const .new(seconds: 60),
       );
       stdout.writeln(readyToConnectLog);
       await logSub.cancel();

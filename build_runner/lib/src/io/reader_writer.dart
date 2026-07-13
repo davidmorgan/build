@@ -43,7 +43,7 @@ class ReaderWriter implements AssetReader, AssetWriter {
   factory ReaderWriter(
     BuildPackages buildPackages, {
     bool forceVisibleForTesting = false,
-  }) => ReaderWriter.using(
+  }) => .using(
     assetFinder: BuildPackagesAssetFinder(buildPackages),
     assetPathProvider: buildPackages,
     filesystem: IoFilesystem(),
@@ -71,7 +71,7 @@ class ReaderWriter implements AssetReader, AssetWriter {
 
   @override
   Future<bool> canRead(AssetId id, {bool hidden = false}) {
-    return Future.value(
+    return .value(
       TimedActivity.read.run(() {
         final path = _pathFor(id, hidden: hidden);
         return filesystem.existsSync(path);
@@ -81,7 +81,7 @@ class ReaderWriter implements AssetReader, AssetWriter {
 
   @override
   Future<List<int>> readAsBytes(AssetId id, {bool hidden = false}) {
-    return Future.value(
+    return .value(
       TimedActivity.read.run(() {
         final path = _pathFor(id, hidden: hidden);
         if (!filesystem.existsSync(path)) {
@@ -98,7 +98,7 @@ class ReaderWriter implements AssetReader, AssetWriter {
     Encoding encoding = utf8,
     bool hidden = false,
   }) {
-    return Future.value(
+    return .value(
       TimedActivity.read.run(() {
         final path = _pathFor(id, hidden: hidden);
         if (!filesystem.existsSync(path)) {
@@ -121,7 +121,7 @@ class ReaderWriter implements AssetReader, AssetWriter {
       final path = _pathFor(id, hidden: hidden);
       filesystem.writeAsBytesSync(path, bytes);
     });
-    return Future.value();
+    return .value();
   }
 
   @override
@@ -135,7 +135,7 @@ class ReaderWriter implements AssetReader, AssetWriter {
       final path = _pathFor(id, hidden: hidden);
       filesystem.writeAsStringSync(path, contents, encoding: encoding);
     });
-    return Future.value();
+    return .value();
   }
 
   @override
@@ -158,7 +158,7 @@ class ReaderWriter implements AssetReader, AssetWriter {
       final path = _pathFor(id, hidden: hidden, checkDeleteAllowed: true);
       filesystem.deleteSync(path);
     });
-    return Future.value();
+    return .value();
   }
 
   Future<void> deleteDirectory(
@@ -170,7 +170,7 @@ class ReaderWriter implements AssetReader, AssetWriter {
       final path = _pathFor(id, hidden: hidden);
       filesystem.deleteDirectorySync(path);
     });
-    return Future.value();
+    return .value();
   }
 
   // This is only for builders, so only `BuildStep` needs to implement it.
@@ -208,6 +208,6 @@ class BuildPackagesAssetFinder implements AssetFinder {
   static AssetId _fileToAssetId(File file, BuildPackage packageNode) {
     final filePath = path.normalize(file.absolute.path);
     final relativePath = path.relative(filePath, from: packageNode.path);
-    return AssetId(packageNode.name, relativePath);
+    return .new(packageNode.name, relativePath);
   }
 }

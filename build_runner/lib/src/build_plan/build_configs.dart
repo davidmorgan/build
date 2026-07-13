@@ -24,8 +24,8 @@ import 'testing_overrides.dart';
 
 /// Build configuration loaded from all `build.yaml` files in the build.
 class BuildConfigs {
-  static final InputMatcher _defaultMatcherForDependency = InputMatcher(
-    const InputSet(),
+  static final InputMatcher _defaultMatcherForDependency = .new(
+    const .new(),
     defaultInclude: defaultDependencyVisibleAssets,
   );
 
@@ -57,14 +57,11 @@ class BuildConfigs {
 
   @visibleForTesting
   BuildConfigs.empty()
-    : buildTargets = BuiltMap(),
-      buildTargetsByPackage = BuiltListMultimap(),
-      buildConfigByPackage = BuiltMap(),
-      buildTriggers = BuildTriggers(
-        triggers: BuiltMap(),
-        warningsByPackage: BuiltMap(),
-      ),
-      _publicAssetsByPackage = BuiltMap();
+    : buildTargets = .new(),
+      buildTargetsByPackage = .new(),
+      buildConfigByPackage = .new(),
+      buildTriggers = .new(triggers: .new(), warningsByPackage: .new()),
+      _publicAssetsByPackage = .new();
 
   /// Loads [BuildConfigs] for [buildPackages].
   ///
@@ -136,8 +133,8 @@ class BuildConfigs {
           ...config.additionalPublicAssets,
         ].build();
       }
-      publicAssetsByPackage[package.name] = InputMatcher(
-        const InputSet(),
+      publicAssetsByPackage[package.name] = .new(
+        const .new(),
         defaultInclude: [
           ...defaultDependencyVisibleAssets, // public by default
           ...config.additionalPublicAssets, // user-defined public assets
@@ -218,7 +215,7 @@ class BuildConfigs {
   /// All assets in the root package are visible. For non-root packages, an
   /// asset is visible if it's in a conceptually public folders of a Dart
   /// package (like `lib/` or `bin/`), or if the enclosing package made that
-  /// asset public by including it in [BuildConfig.additionalPublicAssets].
+  /// asset public by including it in [.additionalPublicAssets].
   ///
   /// Note that an asset being visible does not imply that it's readable too.
   /// For instance, an asset id can be visible in the build even if the
@@ -240,7 +237,7 @@ class BuildConfigs {
   /// public assets as they are interesting for dependent Dart packages.
   ///
   /// However, a package can add additional sources that it considers to be
-  /// public (see [BuildConfig.additionalPublicAssets]). This is not typically
+  /// public (see [.additionalPublicAssets]). This is not typically
   /// necessary, but may be helpful to embed non-Dart packages into the Dart
   /// package ecosystem. For instance, a C library built with `build_runner` may
   /// choose to include `include/**` as a public asset.
@@ -267,14 +264,14 @@ Future<BuildConfig> _packageBuildConfig(
   try {
     final id = AssetId(package.name, 'build.yaml');
     if (readerWriter != null && await readerWriter.canRead(id)) {
-      return BuildConfig.parse(
+      return .parse(
         package.name,
         package.dependencies,
         await readerWriter.readAsString(id),
         configYamlPath: p.join(package.path, 'build.yaml'),
       );
     } else {
-      return BuildConfig.useDefault(package.name, package.dependencies);
+      return .useDefault(package.name, package.dependencies);
     }
   } on ArgumentError // ignore: avoid_catching_errors
   catch (e) {

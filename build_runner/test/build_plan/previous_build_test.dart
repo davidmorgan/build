@@ -46,7 +46,7 @@ void main() {
     late TestingOverrides testingOverrides;
 
     Future<BuildSpec> loadSpec([TestingOverrides? overrides]) async {
-      return BuildSpec.load(
+      return .load(
         builderFactories: builderFactories,
         buildOptions: buildOptions,
         testingOverrides: overrides ?? testingOverrides,
@@ -56,22 +56,22 @@ void main() {
     Future<PreviousBuild> loadPreviousBuild([
       TestingOverrides? overrides,
     ]) async {
-      return PreviousBuild.load(await loadSpec(overrides));
+      return .load(await loadSpec(overrides));
     }
 
     setUp(() async {
-      buildPackages = BuildPackages.singlePackageBuild('a', [
+      buildPackages = .singlePackageBuild('a', [
         BuildPackage.forTesting(name: 'a', watch: true, isOutput: true),
       ]);
       readerWriter = InternalTestReaderWriter(outputRootPackage: 'a');
       await readerWriter.writeAsString(assetId, '// a.dart');
       await readerWriter.writeAsString(assetId2, '// other');
-      buildOptions = BuildOptions.forTests();
-      builderFactories = BuilderFactories({
+      buildOptions = .forTests();
+      builderFactories = .new({
         '': [(_) => TestBuilder()],
         'b2': [(_) => TestBuilder(buildExtensions: appendExtension('.copy2'))],
       });
-      testingOverrides = TestingOverrides(
+      testingOverrides = .new(
         builderDefinitions: [BuilderDefinition('')].build(),
         readerWriter: readerWriter,
         buildPackages: buildPackages,
@@ -101,7 +101,7 @@ void main() {
     test('loads previous build state', () async {
       final spec = await loadSpec();
       final previousBuild = await PreviousBuild.load(spec);
-      final buildState = previousBuild.buildState ?? BuildState();
+      final buildState = previousBuild.buildState ?? .new();
       await writeBuildStateAndPlan(buildState, spec.buildPlanDigest);
 
       final reloadedBuild = await loadPreviousBuild();
@@ -111,7 +111,7 @@ void main() {
     test('discards previous build state if build phases changed', () async {
       final spec = await loadSpec();
       final previousBuild = await PreviousBuild.load(spec);
-      final buildState = previousBuild.buildState ?? BuildState();
+      final buildState = previousBuild.buildState ?? .new();
       await writeBuildStateAndPlan(buildState, spec.buildPlanDigest);
 
       final buildSpec2 = await BuildSpec.load(
@@ -138,7 +138,7 @@ void main() {
         ),
       );
       final previousBuild = await PreviousBuild.load(spec);
-      final buildState = previousBuild.buildState ?? BuildState();
+      final buildState = previousBuild.buildState ?? .new();
 
       await readerWriter.writeAsString(outputId, '// output');
       final buildStepPlan = BuildStepPlan.compute(
@@ -178,7 +178,7 @@ void main() {
     test('discards previous build state if SDK version changed', () async {
       final spec = await loadSpec();
       final previousBuild = await PreviousBuild.load(spec);
-      final buildState = previousBuild.buildState ?? BuildState();
+      final buildState = previousBuild.buildState ?? .new();
       await writeBuildStateAndPlan(buildState, spec.buildPlanDigest);
 
       final spec2 = await BuildSpec.load(
@@ -199,11 +199,11 @@ void main() {
     test('discards previous build state if packages changed', () async {
       final spec = await loadSpec();
       final previousBuild = await PreviousBuild.load(spec);
-      final buildState = previousBuild.buildState ?? BuildState();
+      final buildState = previousBuild.buildState ?? .new();
       await writeBuildStateAndPlan(buildState, spec.buildPlanDigest);
 
       final buildPackages2 = BuildPackages.singlePackageBuild('b', [
-        BuildPackage.forTesting(name: 'b', watch: true, isOutput: true),
+        .forTesting(name: 'b', watch: true, isOutput: true),
       ]);
       final reloadedBuild = await loadPreviousBuild(
         testingOverrides.copyWith(buildPackages: buildPackages2),
@@ -217,7 +217,7 @@ void main() {
       () async {
         final spec = await loadSpec();
         final previousBuild = await PreviousBuild.load(spec);
-        final buildState = previousBuild.buildState ?? BuildState();
+        final buildState = previousBuild.buildState ?? .new();
         await writeBuildStateAndPlan(buildState, spec.buildPlanDigest);
 
         final reloadedBuild = await withEnabledExperiments(
@@ -240,7 +240,7 @@ void main() {
         final spec = await loadSpec();
         final previousBuild = await PreviousBuild.load(spec);
         await writeBuildStateAndPlan(
-          previousBuild.buildState ?? BuildState(),
+          previousBuild.buildState ?? .new(),
           spec.buildPlanDigest,
         );
         final reloadedBuild = await loadPreviousBuild();
@@ -257,7 +257,7 @@ void main() {
           (b) => b.compileDigest = 'stale_digest',
         );
         await writeBuildStateAndPlan(
-          previousBuild.buildState ?? BuildState(),
+          previousBuild.buildState ?? .new(),
           staleDigest,
         );
 
@@ -273,7 +273,7 @@ void main() {
         (b) => b.buildTriggersDigest = 'triggers_1',
       );
       await writeBuildStateAndPlan(
-        previousBuild.buildState ?? BuildState(),
+        previousBuild.buildState ?? .new(),
         staleDigest,
       );
 
@@ -281,11 +281,9 @@ void main() {
         () => BuildConfig(
           packageName: 'a',
           buildTargets: {
-            'a|a': BuildTarget(
+            'a|a': .new(
               builders: {
-                '': TargetBuilderConfig(
-                  generateFor: const InputSet(include: ['lib/*.dart']),
-                ),
+                '': .new(generateFor: const .new(include: ['lib/*.dart'])),
               },
             ),
           },
@@ -314,7 +312,7 @@ void main() {
         (b) => b.inBuildPhasesOptionsDigests[0] = 'dummy_digest_1',
       );
       await writeBuildStateAndPlan(
-        previousBuild.buildState ?? BuildState(),
+        previousBuild.buildState ?? .new(),
         staleDigest,
       );
 
@@ -322,11 +320,9 @@ void main() {
         () => BuildConfig(
           packageName: 'a',
           buildTargets: {
-            'a|a': BuildTarget(
+            'a|a': .new(
               builders: {
-                '': TargetBuilderConfig(
-                  options: const {'some_option': 'changed'},
-                ),
+                '': .new(options: const {'some_option': 'changed'}),
               },
             ),
           },
@@ -355,7 +351,7 @@ void main() {
         (b) => b.buildPhasesDigest = 'stale_digest',
       );
       await writeBuildStateAndPlan(
-        previousBuild.buildState ?? BuildState(),
+        previousBuild.buildState ?? .new(),
         staleDigest,
       );
 
@@ -370,7 +366,7 @@ void main() {
         (b) => b.dartVersion = 'stale_version',
       );
       await writeBuildStateAndPlan(
-        previousBuild.buildState ?? BuildState(),
+        previousBuild.buildState ?? .new(),
         staleDigest,
       );
 
@@ -385,7 +381,7 @@ void main() {
         (b) => b.enabledExperiments.add('stale_experiment'),
       );
       await writeBuildStateAndPlan(
-        previousBuild.buildState ?? BuildState(),
+        previousBuild.buildState ?? .new(),
         staleDigest,
       );
 
@@ -402,7 +398,7 @@ void main() {
           (b) => b.packageLanguageVersions['a'] = '1.0',
         );
         await writeBuildStateAndPlan(
-          previousBuild.buildState ?? BuildState(),
+          previousBuild.buildState ?? .new(),
           staleDigest,
         );
 
@@ -415,7 +411,7 @@ void main() {
       final spec = await loadSpec();
       final previousBuild = await PreviousBuild.load(spec);
       await writeBuildStateAndPlan(
-        previousBuild.buildState ?? BuildState(),
+        previousBuild.buildState ?? .new(),
         spec.buildPlanDigest,
       );
 

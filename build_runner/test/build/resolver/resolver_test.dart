@@ -361,7 +361,7 @@ void main() {
         Package(
           'a',
           Uri.file('/fake/a/'),
-          packageUriRoot: Uri.file('/fake/a/lib/'),
+          packageUriRoot: .file('/fake/a/lib/'),
           languageVersion: customVersion,
         ),
       ]);
@@ -377,7 +377,7 @@ void main() {
         Package(
           'a',
           Uri.file('/fake/a/'),
-          packageUriRoot: Uri.file('/fake/a/lib/'),
+          packageUriRoot: .file('/fake/a/lib/'),
           languageVersion: null,
         ),
       ]);

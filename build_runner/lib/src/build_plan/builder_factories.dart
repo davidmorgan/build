@@ -19,9 +19,7 @@ class BuilderFactories {
     Map<String, List<BuilderFactory>> builderFactories, {
     Map<String, PostProcessBuilderFactory>? postProcessBuilderFactories,
   }) : builderFactories = builderFactories
-           .map<String, BuiltList<BuilderFactory>>(
-             (k, v) => MapEntry(k, v.build()),
-           )
+           .map<String, BuiltList<BuilderFactory>>((k, v) => .new(k, v.build()))
            .build(),
        postProcessBuilderFactories = (postProcessBuilderFactories ?? {})
            .build();

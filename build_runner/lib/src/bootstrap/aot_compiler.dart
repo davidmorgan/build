@@ -24,7 +24,7 @@ class AotCompiler implements Compiler {
   final Depfile _outputDepfile;
 
   AotCompiler(this.buildPaths)
-    : _outputDepfile = Depfile(
+    : _outputDepfile = .new(
         outputPath: p.join(buildPaths.outputRootPath, entrypointAotPath),
         depfilePath: p.join(
           buildPaths.outputRootPath,
@@ -34,7 +34,7 @@ class AotCompiler implements Compiler {
       );
 
   @override
-  CompileType get compileType => CompileType.aot;
+  CompileType get compileType => .aot;
 
   @override
   FreshnessResult checkFreshness({required bool digestsAreFresh}) =>
@@ -78,7 +78,7 @@ class AotCompiler implements Compiler {
             .split('\n')
             .where((e) => e.startsWith('Unknown experiment'))
             .join('\n');
-        return CompileResult(messages: messages);
+        return .new(messages: messages);
       }
 
       // Update depfile digest on successful compile.
@@ -91,6 +91,6 @@ class AotCompiler implements Compiler {
         .replaceAll('Error: AOT compilation failed', '')
         .replaceAll('Bad state: Generating AOT snapshot failed!', '')
         .trim();
-    return CompileResult(messages: result.exitCode == 0 ? null : stderr);
+    return .new(messages: result.exitCode == 0 ? null : stderr);
   }
 }

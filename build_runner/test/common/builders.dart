@@ -66,5 +66,5 @@ AssetId _outputId(
   final newPath =
       inputId.path.substring(0, inputId.path.length - inputExtension.length) +
       outputExtension;
-  return AssetId(inputId.package, newPath);
+  return .new(inputId.package, newPath);
 }

@@ -107,7 +107,7 @@ class AssetTracker {
 
   Stream<AssetId> _listAssetIds(BuildTarget buildTarget) {
     return buildTarget.sourceIncludes.isEmpty
-        ? const Stream<AssetId>.empty()
+        ? const .empty()
         : StreamGroup.merge(
             buildTarget.sourceIncludes.map(
               (glob) => _listIdsSafe(glob, package: buildTarget.package)

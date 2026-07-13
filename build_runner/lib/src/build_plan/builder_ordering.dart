@@ -6,7 +6,7 @@ import 'package:build_config/build_config.dart';
 import 'package:graphs/graphs.dart';
 
 /// Put [builders] into an order such that any builder which specifies
-/// [BuilderDefinition.requiredInputs] will come after any builder which
+/// [.requiredInputs] will come after any builder which
 /// produces a desired output.
 ///
 /// Builders will be ordered such that their `required_inputs` and `runs_before`

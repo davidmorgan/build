@@ -29,7 +29,7 @@ class BuildTriggers {
   /// Parse warnings.
   final BuiltMap<String, BuiltList<String>> warningsByPackage;
 
-  static final RegExp _builderNamePattern = RegExp(
+  static final RegExp _builderNamePattern = .new(
     r'^[a-z][a-z0-9_]*:[a-z][a-z0-9_]',
   );
 
@@ -70,12 +70,10 @@ class BuildTriggers {
         }
       }
     }
-    return BuildTriggers(
-      triggers: BuiltMap.from(
-        buildTriggers.map((k, v) => MapEntry(k, v.build())),
-      ),
-      warningsByPackage: BuiltMap.from(
-        warningsByPackage.map((k, v) => MapEntry(k, v.build())),
+    return .new(
+      triggers: .from(buildTriggers.map((k, v) => .new(k, v.build()))),
+      warningsByPackage: .from(
+        warningsByPackage.map((k, v) => .new(k, v.build())),
       ),
     );
   }
@@ -165,7 +163,7 @@ abstract class ImportBuildTrigger
     implements
         Built<ImportBuildTrigger, ImportBuildTriggerBuilder>,
         BuildTrigger {
-  static final RegExp _regexp = RegExp(r'^[a-z][a-z0-9_/.]*$');
+  static final RegExp _regexp = .new(r'^[a-z][a-z0-9_/.]*$');
   String get import;
 
   ImportBuildTrigger._();
@@ -198,7 +196,7 @@ abstract class AnnotationBuildTrigger
     implements
         Built<AnnotationBuildTrigger, AnnotationBuildTriggerBuilder>,
         BuildTrigger {
-  static final RegExp _regexp = RegExp(r'^[a-zA-Z_][a-zA-Z0-9]*$');
+  static final RegExp _regexp = .new(r'^[a-zA-Z_][a-zA-Z0-9]*$');
   String get annotation;
 
   AnnotationBuildTrigger._();

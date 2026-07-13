@@ -63,13 +63,13 @@ extension type TimedActivity(String name) {
 
 /// Timings during one `build_runner` build.
 class TimedActivities {
-  final Stopwatch _stopwatch = Stopwatch()..start();
-  Duration _attributedDuration = Duration.zero;
+  final Stopwatch _stopwatch = .new()..start();
+  Duration _attributedDuration = .zero;
   final Map<String?, Map<TimedActivity, Duration>> _activities = {};
 
   void clear() {
     _stopwatch.reset();
-    _attributedDuration = Duration.zero;
+    _attributedDuration = .zero;
     _activities.clear();
   }
 
@@ -134,6 +134,6 @@ class TimedActivities {
 
   void _record(String? phaseName, TimedActivity activity, Duration duration) {
     final durations = this.durations(phaseName: phaseName);
-    durations[activity] = (durations[activity] ?? Duration.zero) + duration;
+    durations[activity] = (durations[activity] ?? .zero) + duration;
   }
 }

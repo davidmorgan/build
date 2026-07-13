@@ -44,7 +44,7 @@ class BuilderFilesystem {
 
   /// Returns a copy without in-build hooks: [assetBuilder], [globEvaluator],
   /// content update listener.
-  BuilderFilesystem forAfterBuild() => BuilderFilesystem(
+  BuilderFilesystem forAfterBuild() => .new(
     buildPackages: buildPackages,
     buildConfigs: buildConfigs,
     buildState: buildState,
@@ -252,39 +252,39 @@ class BuilderFilesystem {
     globEvaluator!(globId).then((_) {
       if (trackGlob != null) trackGlob(globId);
       final globResult = buildState.globResultFor(globId)!;
-      streamCompleter.setSourceStream(Stream.fromIterable(globResult.results));
+      streamCompleter.setSourceStream(.fromIterable(globResult.results));
     });
     return streamCompleter.stream;
   }
 
   /// Reads [id] at [phase] as a [PhasedValue].
   ///
-  /// If the asset is missing, returns a [PhasedValue.fixed] with an empty
+  /// If the asset is missing, returns a [.fixed] with an empty
   /// string.
   ///
-  /// If the asset is a source file, returns a [PhasedValue.fixed] with its
+  /// If the asset is a source file, returns a [.fixed] with its
   /// content.
   ///
   /// If the asset is generated, but has not yet been generated at [phase],
-  /// returns a [PhasedValue.unavailable] saying when it will be generated.
+  /// returns a [.unavailable] saying when it will be generated.
   ///
   /// If the asset is generated and _has_ already been generated, returns
-  /// a [PhasedValue.generated] specifying both when it was generated and
+  /// a [.generated] specifying both when it was generated and
   /// its content. Note that generation might output nothing, in which case an
   /// empty string is returned for its content.
   Future<PhasedValue<String>> readPhased(int phase, AssetId id) async {
     if (!isFile(id)) {
       buildState.addMissingSource(id);
-      return PhasedValue.fixed('');
+      return .fixed('');
     } else if (buildState.isMissingSource(id)) {
-      return PhasedValue.fixed('');
+      return .fixed('');
     }
 
     if (buildStepPlan.isDeclaredOutput(id)) {
       final step = buildStepPlan.stepForDeclaredOutput(id);
       final stepPhase = step.phaseNumber;
       if (stepPhase >= phase) {
-        return PhasedValue.unavailable(before: '', expiresAfter: stepPhase);
+        return .unavailable(before: '', expiresAfter: stepPhase);
       } else {
         if (!buildState.isProcessedOutput(
           buildStepPlan: buildStepPlan,
@@ -296,7 +296,7 @@ class BuilderFilesystem {
           buildStepPlan: buildStepPlan,
           id: id,
         );
-        return PhasedValue.generated(
+        return .generated(
           atPhase: stepPhase,
           before: '',
           isSuccessOutput
@@ -306,7 +306,7 @@ class BuilderFilesystem {
       }
     }
 
-    return PhasedValue.fixed(
+    return .fixed(
       await readerWriter.canRead(
             id,
             hidden: id.isHidden(

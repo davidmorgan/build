@@ -159,7 +159,7 @@ class InMemoryFilesystem implements Filesystem {
 
   @override
   void writeAsBytesSync(String path, List<int> contents) {
-    _files[path] = Uint8List.fromList(contents);
+    _files[path] = .fromList(contents);
   }
 
   @override
@@ -168,6 +168,6 @@ class InMemoryFilesystem implements Filesystem {
     String contents, {
     Encoding encoding = utf8,
   }) {
-    _files[path] = Uint8List.fromList(encoding.encode(contents));
+    _files[path] = .fromList(encoding.encode(contents));
   }
 }

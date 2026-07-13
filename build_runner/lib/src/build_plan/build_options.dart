@@ -79,16 +79,15 @@ class BuildOptions {
     bool? outputSymlinksOnly,
     bool? verbose,
     bool? verboseDurations,
-  }) => BuildOptions(
-    builderConfigOverrides: builderConfigOverrides ?? BuiltMap(),
-    buildDirs: buildDirs ?? BuiltSet(),
-    buildPaths:
-        buildPaths ?? BuildPaths(packagePath: '.', buildWorkspace: false),
-    buildFilters: buildFilters ?? BuiltSet(),
-    compileStrategy: compileStrategy ?? CompileStrategy.tryAot,
+  }) => .new(
+    builderConfigOverrides: builderConfigOverrides ?? .new(),
+    buildDirs: buildDirs ?? .new(),
+    buildPaths: buildPaths ?? .new(packagePath: '.', buildWorkspace: false),
+    buildFilters: buildFilters ?? .new(),
+    compileStrategy: compileStrategy ?? .tryAot,
     configKey: configKey,
     dartAotPerf: dartAotPerf ?? false,
-    enableExperiments: enableExperiments ?? BuiltList(),
+    enableExperiments: enableExperiments ?? .new(),
     isReleaseBuild: isReleaseBuild ?? false,
     outputSymlinksOnly: outputSymlinksOnly ?? false,
     verbose: verbose ?? false,
@@ -157,7 +156,7 @@ class BuildOptions {
     BuiltSet<BuildDirectory>? buildDirs,
     BuiltSet<BuildFilter>? buildFilters,
     CompileStrategy? compileStrategy,
-  }) => BuildOptions(
+  }) => .new(
     buildDirs: buildDirs ?? this.buildDirs,
     buildPaths: buildPaths,
     builderConfigOverrides: builderConfigOverrides,
@@ -201,12 +200,7 @@ Set<BuildDirectory> _parseBuildDirs(BuildRunnerCommandLine commandLine) {
     if (split.length == 1) {
       final output = split.first;
       checkExisting(output);
-      result.add(
-        BuildDirectory(
-          '',
-          outputLocation: OutputLocation(output, hoist: false),
-        ),
-      );
+      result.add(.new('', outputLocation: .new(output, hoist: false)));
     } else if (split.length >= 2) {
       final output = split.sublist(1).join(':');
       checkExisting(output);
@@ -218,9 +212,7 @@ Set<BuildDirectory> _parseBuildDirs(BuildRunnerCommandLine commandLine) {
           'Input root can not be nested',
         );
       }
-      result.add(
-        BuildDirectory(split.first, outputLocation: OutputLocation(output)),
-      );
+      result.add(.new(split.first, outputLocation: .new(output)));
     }
   }
   return result;
@@ -230,8 +222,7 @@ Set<BuildDirectory> _parseBuildDirs(BuildRunnerCommandLine commandLine) {
 Set<BuildDirectory> _parsePositionalBuildDirs(
   BuildRunnerCommandLine commandLine,
 ) => {
-  for (final arg in commandLine.rest)
-    BuildDirectory(_checkTopLevel(commandLine, arg)),
+  for (final arg in commandLine.rest) .new(_checkTopLevel(commandLine, arg)),
 };
 
 /// Throws a [UsageException] if [arg] looks like anything other than a top
@@ -252,7 +243,7 @@ BuiltMap<String, BuiltMap<String, dynamic>> _parseBuilderConfigOverrides(
   BuildRunnerCommandLine commandLine, {
   required String currentPackage,
 }) {
-  if (commandLine.defines == null) return BuiltMap();
+  if (commandLine.defines == null) return .new();
   final result = <String, Map<String, dynamic>>{};
   for (final define in commandLine.defines!) {
     final parts = define.split('=');
@@ -289,7 +280,7 @@ BuiltMap<String, BuiltMap<String, dynamic>> _parseBuilderConfigOverrides(
     }
     config[option] = value;
   }
-  return result.map((k, v) => MapEntry(k, v.build())).build();
+  return result.map((k, v) => .new(k, v.build())).build();
 }
 
 /// Returns build filters parsed from [buildFilterOption] arguments.
@@ -301,7 +292,7 @@ BuiltSet<BuildFilter> _parseBuildFilters(
   required String currentPackage,
 }) {
   final filterArgs = commandLine.buildFilter;
-  if (filterArgs == null || filterArgs.isEmpty) return BuiltSet();
+  if (filterArgs == null || filterArgs.isEmpty) return .new();
   try {
     return {
       for (final arg in filterArgs)

@@ -91,7 +91,7 @@ class BuildPhaseCreator {
       builderConfigOverrides,
     );
     final globalOptions = globalOptionsMap.map(
-      (key, config) => MapEntry(
+      (key, config) => .new(
         key,
         config.options.toBuilderOptions().overrideWith(
           isReleaseBuild
@@ -102,8 +102,9 @@ class BuildPhaseCreator {
     );
     for (final key in builderConfigOverrides.keys) {
       final overrides = BuilderOptions(builderConfigOverrides[key]!.asMap());
-      globalOptions[key] = (globalOptions[key] ?? BuilderOptions.empty)
-          .overrideWith(overrides);
+      globalOptions[key] = (globalOptions[key] ?? .empty).overrideWith(
+        overrides,
+      );
     }
 
     final cycles = stronglyConnectedComponents<BuildTarget>(
@@ -132,7 +133,7 @@ class BuildPhaseCreator {
               _createInBuildPhases(
                 cycle,
                 builderDefinition,
-                globalOptions[builderDefinition.key] ?? BuilderOptions.empty,
+                globalOptions[builderDefinition.key] ?? .empty,
               ),
             );
             break;
@@ -141,16 +142,16 @@ class BuildPhaseCreator {
               _createPostBuildActions(
                 cycle,
                 builderDefinition,
-                globalOptions[builderDefinition.key] ?? BuilderOptions.empty,
+                globalOptions[builderDefinition.key] ?? .empty,
               ),
             );
         }
       }
     }
 
-    return BuildPhases(
+    return .new(
       inBuildPhases,
-      postBuildActions.isEmpty ? null : PostBuildPhase(postBuildActions),
+      postBuildActions.isEmpty ? null : .new(postBuildActions),
     );
   }
 
@@ -183,7 +184,7 @@ class BuildPhaseCreator {
         _validateBuilder(builder);
 
         result.add(
-          InBuildPhase(
+          .new(
             builder: builder,
             key: builderDefinition.key,
             package: buildTarget.package,
@@ -254,7 +255,7 @@ class BuildPhaseCreator {
   /// Finally, [globalOptionOverrides] are highest priority and override
   /// anything.
   ///
-  /// [BuilderOptions.isRoot] is set to [isRoot].
+  /// [.isRoot] is set to [isRoot].
   BuilderOptions _createOptions({
     required TargetBuilderConfigDefaults builderConfig,
     required build_config.TargetBuilderConfig? targetConfig,
@@ -264,8 +265,8 @@ class BuildPhaseCreator {
     var result = BuilderOptions(builderConfig.options)
         .overrideWith(
           isReleaseBuild
-              ? BuilderOptions(builderConfig.releaseOptions)
-              : BuilderOptions(builderConfig.devOptions),
+              ? .new(builderConfig.releaseOptions)
+              : .new(builderConfig.devOptions),
         )
         .overrideWith((targetConfig?.options).toBuilderOptions())
         .overrideWith(
@@ -275,7 +276,7 @@ class BuildPhaseCreator {
         )
         .overrideWith(globalOptionOverrides);
     if (isRoot) {
-      result = result.overrideWith(BuilderOptions.forRoot);
+      result = result.overrideWith(.forRoot);
     }
     return result;
   }
@@ -325,7 +326,7 @@ class BuildPhaseCreator {
 
 extension BuilderOptionsExtension on Map<String, dynamic>? {
   BuilderOptions toBuilderOptions() =>
-      this?.isEmpty ?? true ? BuilderOptions.empty : BuilderOptions(this!);
+      this?.isEmpty ?? true ? .empty : .new(this!);
 }
 
 /// Warns about configuration related to unknown builders.

@@ -21,7 +21,7 @@ class IdentitySerializer<T> implements PrimitiveSerializer<T> {
   final PrimitiveSerializer<T>? _primitiveDelegate;
   final StructuredSerializer<T>? _structuredDelegate;
 
-  final Map<T, int> _ids = Map.identity();
+  final Map<T, int> _ids = .identity();
   final List<T> _objects = [];
   List<Object?> _serializedObjects = [];
 
@@ -68,14 +68,14 @@ class IdentitySerializer<T> implements PrimitiveSerializer<T> {
   T deserialize(
     Serializers serializers,
     Object serialized, {
-    FullType specifiedType = FullType.unspecified,
+    FullType specifiedType = .unspecified,
   }) => _objects[serialized as int];
 
   @override
   Object serialize(
     Serializers serializers,
     T object, {
-    FullType specifiedType = FullType.unspecified,
+    FullType specifiedType = .unspecified,
   }) {
     // If it has already been seen, return the ID.
     return _ids.putIfAbsent(object, () {

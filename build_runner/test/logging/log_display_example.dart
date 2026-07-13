@@ -13,15 +13,15 @@ void main() async {
       ..writeLine(['start with'])
       ..writeLine(['two lines']),
   );
-  await Future<void>.delayed(const Duration(seconds: 2));
-  display.block(AnsiBuffer()..writeLine(['now there should be one line']));
-  await Future<void>.delayed(const Duration(seconds: 2));
+  await Future<void>.delayed(const .new(seconds: 2));
+  display.block(.new()..writeLine(['now there should be one line']));
+  await Future<void>.delayed(const .new(seconds: 2));
   display.block(
-    AnsiBuffer()
+    .new()
       ..writeLine(['now'])
       ..writeLine(['three'])
       ..writeLine(['lines']),
   );
-  await Future<void>.delayed(const Duration(seconds: 2));
-  display.block(AnsiBuffer()..writeLine(['finally one line again']));
+  await Future<void>.delayed(const .new(seconds: 2));
+  display.block(.new()..writeLine(['finally one line again']));
 }

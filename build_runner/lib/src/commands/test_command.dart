@@ -31,7 +31,7 @@ class TestCommand implements BuildRunnerCommand {
     required this.builderFactories,
     required this.buildOptions,
     required this.testOptions,
-    this.testingOverrides = const TestingOverrides(),
+    this.testingOverrides = const .new(),
   });
 
   @override
@@ -75,7 +75,7 @@ dev_dependencies:
             b.add(
               BuildDirectory(
                 'test',
-                outputLocation: OutputLocation(
+                outputLocation: .new(
                   tempPath,
                   useSymlinks: buildOptions.outputSymlinksOnly,
                   hoist: false,
@@ -107,7 +107,7 @@ dev_dependencies:
       '--precompiled',
       precompiledPath,
       ...testOptions.options,
-    ], mode: ProcessStartMode.inheritStdio);
+    ], mode: .inheritStdio);
     _ensureProcessExit(testProcess);
     return testProcess.exitCode;
   }

@@ -30,7 +30,7 @@ import '../common/common.dart';
 void main() {
   setUpTestLogging();
 
-  group('AssetTracker.collectChanges()', () {
+  group('.collectChanges()', () {
     late AssetTracker assetTracker;
     late BuildState buildState;
     late BuildStepPlan buildStepPlan;
@@ -149,7 +149,7 @@ void main() {
 
       final outputId = AssetId('a', 'web/a.txt');
       final buildStepId = BuildStepId(
-        primaryInput: AssetId('a', 'web/a.dart'),
+        primaryInput: .new('a', 'web/a.dart'),
         phaseNumber: 0,
       );
 

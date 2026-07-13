@@ -14,7 +14,7 @@ void main() {
   late InvalidationTester tester;
 
   setUp(() {
-    tester = InvalidationTester();
+    tester = .new();
   });
 
   // This was sufficient to cause a stack overflow when `Build` used a recursive

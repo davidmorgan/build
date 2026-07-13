@@ -53,8 +53,8 @@ void main() {
         nodeWatcher.watch(),
         emitsInAnyOrder([
           AssetChange(AssetId('a', 'lib/1.dart'), ChangeType.ADD),
-          AssetChange(AssetId('a', 'lib/2.dart'), ChangeType.MODIFY),
-          AssetChange(AssetId('a', 'lib/3.dart'), ChangeType.REMOVE),
+          AssetChange(.new('a', 'lib/2.dart'), ChangeType.MODIFY),
+          AssetChange(.new('a', 'lib/3.dart'), ChangeType.REMOVE),
         ]),
       );
 
@@ -75,9 +75,9 @@ void main() {
       expect(
         nodeWatcher.watch(),
         emitsInAnyOrder([
-          AssetChange(AssetId('a', 'lib/1.dart'), ChangeType.ADD),
-          AssetChange(AssetId('a', 'lib/2.dart'), ChangeType.MODIFY),
-          AssetChange(AssetId('a', 'lib/3.dart'), ChangeType.REMOVE),
+          AssetChange(.new('a', 'lib/1.dart'), ChangeType.ADD),
+          AssetChange(.new('a', 'lib/2.dart'), ChangeType.MODIFY),
+          AssetChange(.new('a', 'lib/3.dart'), ChangeType.REMOVE),
         ]),
       );
 

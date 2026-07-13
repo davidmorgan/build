@@ -4,7 +4,6 @@
 
 import 'package:build/build.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:built_value/serializer.dart';
 
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
@@ -48,7 +47,7 @@ class BuildState {
   final Map<AssetId, PostProcessBuildStepId> _postProcessOutputs;
 
   BuildState([Map<AssetId, AssetContent?> sources = const {}])
-    : _sources = Sources(sources),
+    : _sources = .new(sources),
       _postProcessResultsByInput = {},
       _postProcessOutputs = {},
       _buildStepResultsByPrimaryInput = {},
@@ -308,7 +307,7 @@ class BuildState {
       final input = outer.key;
       for (final inner in outer.value.entries) {
         if (inner.value.failed) {
-          results.add(BuildStepId(primaryInput: input, phaseNumber: inner.key));
+          results.add(.new(primaryInput: input, phaseNumber: inner.key));
         }
       }
     }
@@ -321,9 +320,7 @@ class BuildState {
       final input = outer.key;
       for (final inner in outer.value.entries) {
         if (inner.value.errors.isNotEmpty) {
-          results.add(
-            PostProcessBuildStepId(input: input, actionNumber: inner.key),
-          );
+          results.add(.new(input: input, actionNumber: inner.key));
         }
       }
     }
@@ -360,7 +357,7 @@ class BuildState {
       }
       final singleOutputPackage = buildPackages.singleOutputPackage;
       if (singleOutputPackage == null) return null;
-      return AssetId(singleOutputPackage, id.path);
+      return .new(singleOutputPackage, id.path);
     }
 
     final result = <AssetId>[];

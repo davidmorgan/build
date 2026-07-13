@@ -28,7 +28,7 @@ class WatchCommand implements BuildRunnerCommand {
   WatchCommand({
     required this.builderFactories,
     required this.buildOptions,
-    this.testingOverrides = const TestingOverrides(),
+    this.testingOverrides = const .new(),
   });
 
   @override
@@ -87,8 +87,8 @@ void handleBuildResultsStream(
 ) async {
   final subscription = buildResults.listen((result) {
     if (completer.isCompleted) return;
-    if (result.status == BuildStatus.failure) {
-      if (result.failureType == FailureType.buildScriptChanged) {
+    if (result.status == .failure) {
+      if (result.failureType == .buildScriptChanged) {
         completer.complete(ChildProcess.recompileBuildersExitCode);
       }
     }

@@ -36,7 +36,7 @@ void main() {
       TestBuilder(
         check: (buildStep) async {
           expect(
-            await buildStep.readAsString(AssetId('a', 'lib/a.g.dart')),
+            await buildStep.readAsString(.new('a', 'lib/a.g.dart')),
             'someoutput',
           );
           expect(readerWriter.testing.assets, [AssetId('a', 'lib/a.dart')]);

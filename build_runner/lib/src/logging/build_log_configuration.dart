@@ -43,7 +43,7 @@ abstract class BuildLogConfiguration
 
   /// Default configuration.
   factory BuildLogConfiguration() => _$BuildLogConfiguration._(
-    mode: BuildLogMode.simple,
+    mode: .simple,
     onLog: null,
     throttleProgressUpdates: true,
     verbose: false,

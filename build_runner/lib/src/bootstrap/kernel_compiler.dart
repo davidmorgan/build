@@ -24,7 +24,7 @@ class KernelCompiler implements Compiler {
   final Depfile _outputDepfile;
 
   KernelCompiler(this.buildPaths)
-    : _outputDepfile = Depfile(
+    : _outputDepfile = .new(
         outputPath: p.join(buildPaths.outputRootPath, entrypointDillPath),
         depfilePath: p.join(
           buildPaths.outputRootPath,
@@ -34,7 +34,7 @@ class KernelCompiler implements Compiler {
       );
 
   @override
-  CompileType get compileType => CompileType.jit;
+  CompileType get compileType => .jit;
 
   @override
   FreshnessResult checkFreshness({required bool digestsAreFresh}) =>
@@ -78,7 +78,7 @@ class KernelCompiler implements Compiler {
             .split('\n')
             .where((e) => e.startsWith('Unknown experiment'))
             .join('\n');
-        return CompileResult(messages: messages);
+        return .new(messages: messages);
       }
 
       // Update depfile digest on successful compile.
@@ -90,6 +90,6 @@ class KernelCompiler implements Compiler {
     stderr = stderr
         .replaceAll('Bad state: Generating kernel failed!', '')
         .trim();
-    return CompileResult(messages: result.exitCode == 0 ? null : stderr);
+    return .new(messages: result.exitCode == 0 ? null : stderr);
   }
 }

@@ -10,7 +10,7 @@ void main() {
   late InvalidationTester tester;
 
   setUp(() {
-    tester = InvalidationTester();
+    tester = .new();
   });
 
   // Builds a.2 and a.3 both resolve z; the resolved library cycle graph
@@ -18,7 +18,7 @@ void main() {
   group('a.1 <== a.2, a.1 <== a.3, z.4 <== z.5, '
       'a.2 resolves: z --> z.5, a.3 resolves: z --> z.5 --> z2', () {
     setUp(() {
-      tester = InvalidationTester();
+      tester = .new();
       tester.sources(['a.1', 'x1', 'z', 'z.4', 'z2']);
       tester.importGraph({
         'z': ['z.5'],

@@ -73,9 +73,9 @@ class AssetContentSerializer implements PrimitiveSerializer<AssetContent> {
   AssetContent deserialize(
     Serializers serializers,
     Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => AssetContent.digest(
-    serializers.deserialize(serialized, specifiedType: const FullType(Digest))
+    FullType specifiedType = .unspecified,
+  }) => .digest(
+    serializers.deserialize(serialized, specifiedType: const .new(Digest))
         as Digest,
   );
 
@@ -83,9 +83,7 @@ class AssetContentSerializer implements PrimitiveSerializer<AssetContent> {
   Object serialize(
     Serializers serializers,
     AssetContent object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => serializers.serialize(
-    object.digest,
-    specifiedType: const FullType(Digest),
-  )!;
+    FullType specifiedType = .unspecified,
+  }) =>
+      serializers.serialize(object.digest, specifiedType: const .new(Digest))!;
 }

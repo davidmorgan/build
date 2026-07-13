@@ -49,7 +49,7 @@ class BuildPackage {
     bool watch = false,
     bool isOutput = false,
     Iterable<String> dependencies = const [],
-  }) => BuildPackage(
+  }) => .new(
     name: name,
     path: '/$name',
     watch: watch,

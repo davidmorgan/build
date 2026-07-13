@@ -124,7 +124,7 @@ class AnalysisDriverFilesystem
             ?.phaseNumber ??
         -1;
     _writeContent(
-      BuildRunnerFileContent(
+      .new(
         path: id.asPath,
         exists: true,
         content: content.dartStringValueOrEmptyFail(id: id),
@@ -211,12 +211,12 @@ class AnalysisDriverFilesystem
     // First segment is empty because of the starting `/`.
     final packageName = pathSegments[1];
     if (pathSegments[2] == 'lib') {
-      return Uri(
+      return .new(
         scheme: 'package',
         pathSegments: [packageName].followedBy(pathSegments.skip(3)),
       );
     } else {
-      return Uri(
+      return .new(
         scheme: 'asset',
         pathSegments: [packageName].followedBy(pathSegments.skip(2)),
       );
@@ -248,7 +248,7 @@ class AnalysisDriverFilesystem
   /// Returns null if the Uri cannot be parsed.
   static AssetId? parseAsset(Uri uri) {
     if (uri.isScheme('package') || uri.isScheme('asset')) {
-      return AssetId.resolve(uri);
+      return .resolve(uri);
     }
     if (uri.isScheme('file')) {
       if (!uri.path.startsWith('/')) {
@@ -261,7 +261,7 @@ class AnalysisDriverFilesystem
       final parts = uri.path.split('/');
       // First part is empty because of the starting `/`, second is package,
       // remainder is path in package.
-      return AssetId(parts[1], parts.skip(2).join('/'));
+      return .new(parts[1], parts.skip(2).join('/'));
     }
     return null;
   }
@@ -309,13 +309,8 @@ class BuildRunnerFileContent implements FileContent {
     required this.phase,
   });
 
-  static BuildRunnerFileContent missing(String path) => BuildRunnerFileContent(
-    path: path,
-    exists: false,
-    content: '',
-    contentHash: '',
-    phase: -1,
-  );
+  static BuildRunnerFileContent missing(String path) =>
+      .new(path: path, exists: false, content: '', contentHash: '', phase: -1);
 }
 
 /// Minimal implementation of [File] and [Folder].

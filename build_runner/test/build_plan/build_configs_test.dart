@@ -41,7 +41,7 @@ void main() {
       final packageA = BuildPackage(
         name: 'a',
         path: '/fakeA',
-        languageVersion: LanguageVersion(0, 0),
+        languageVersion: .new(0, 0),
         watch: true,
         isOutput: true,
         dependencies: ['b'],
@@ -126,21 +126,16 @@ void main() {
     test('for root package', () async {
       final buildConfigs = await BuildConfigs.load(
         buildPackages: buildPackages,
-        testingOverrides: TestingOverrides(
-          defaultRootPackageSources: ['**'].build(),
-        ),
+        testingOverrides: .new(defaultRootPackageSources: ['**'].build()),
       );
 
       expect(
         buildConfigs.isVisibleInBuild(AssetId('a', 'web/index.html'), a),
         isTrue,
       );
+      expect(buildConfigs.isVisibleInBuild(.new('a', 'lib/a.dart'), a), isTrue);
       expect(
-        buildConfigs.isVisibleInBuild(AssetId('a', 'lib/a.dart'), a),
-        isTrue,
-      );
-      expect(
-        buildConfigs.isVisibleInBuild(AssetId('a', 'test/my_test.dart'), a),
+        buildConfigs.isVisibleInBuild(.new('a', 'test/my_test.dart'), a),
         isTrue,
       );
       expect(buildConfigs.validInputsFor(a), ['**/*']);
@@ -149,26 +144,21 @@ void main() {
     test('for non-root package with default configuration', () async {
       final buildConfigs = await BuildConfigs.load(
         buildPackages: buildPackages,
-        testingOverrides: TestingOverrides(
-          defaultRootPackageSources: ['**'].build(),
-        ),
+        testingOverrides: .new(defaultRootPackageSources: ['**'].build()),
       );
 
       expect(
-        buildConfigs.isVisibleInBuild(AssetId('b', 'web/index.html'), b),
+        buildConfigs.isVisibleInBuild(.new('b', 'web/index.html'), b),
         isFalse,
       );
+      expect(buildConfigs.isVisibleInBuild(.new('b', 'lib/b.dart'), b), isTrue);
       expect(
-        buildConfigs.isVisibleInBuild(AssetId('b', 'lib/b.dart'), b),
+        buildConfigs.isVisibleInBuild(.new('b', 'LICENSE.txt'), b),
         isTrue,
       );
+      expect(buildConfigs.isVisibleInBuild(.new('b', 'README'), b), isTrue);
       expect(
-        buildConfigs.isVisibleInBuild(AssetId('b', 'LICENSE.txt'), b),
-        isTrue,
-      );
-      expect(buildConfigs.isVisibleInBuild(AssetId('b', 'README'), b), isTrue);
-      expect(
-        buildConfigs.isVisibleInBuild(AssetId('b', 'test/my_test.dart'), b),
+        buildConfigs.isVisibleInBuild(.new('b', 'test/my_test.dart'), b),
         isFalse,
       );
 
@@ -178,7 +168,7 @@ void main() {
     test('for non-root package exposing additional assets', () async {
       final buildConfigs = await BuildConfigs.load(
         buildPackages: buildPackages,
-        testingOverrides: TestingOverrides(
+        testingOverrides: .new(
           defaultRootPackageSources: ['**'].build(),
           buildConfig: {
             'b': BuildConfig.parse(
@@ -190,12 +180,9 @@ void main() {
         ),
       );
 
+      expect(buildConfigs.isVisibleInBuild(.new('b', 'lib/b.dart'), b), isTrue);
       expect(
-        buildConfigs.isVisibleInBuild(AssetId('b', 'lib/b.dart'), b),
-        isTrue,
-      );
-      expect(
-        buildConfigs.isVisibleInBuild(AssetId('b', 'test/my_test.dart'), b),
+        buildConfigs.isVisibleInBuild(.new('b', 'test/my_test.dart'), b),
         isTrue,
       );
 
@@ -211,7 +198,7 @@ void main() {
     test('a missing sources/include does not cause an error', () async {
       final buildConfigs = await BuildConfigs.load(
         buildPackages: buildPackages,
-        testingOverrides: TestingOverrides(
+        testingOverrides: .new(
           buildConfig: {
             'a': BuildConfig.fromMap('a', [], {
               'targets': {
@@ -237,7 +224,7 @@ void main() {
     test('a missing sources/include results in the default sources', () async {
       final buildConfigs = await BuildConfigs.load(
         buildPackages: buildPackages,
-        testingOverrides: TestingOverrides(
+        testingOverrides: .new(
           buildConfig: {
             'a': BuildConfig.fromMap('a', [], {
               'targets': {

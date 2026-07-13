@@ -30,7 +30,7 @@ void main() {
 
     group('simple build state', () {
       setUp(() async {
-        buildState = BuildState();
+        buildState = .new();
       });
 
       test('add, contains, get, allNodes', () {
@@ -43,7 +43,7 @@ void main() {
       final targetSources = const InputSet(exclude: ['excluded.txt']);
       final buildPhases = BuildPhases(
         [
-          InBuildPhase(
+          .new(
             builder: TestBuilder(
               buildExtensions: appendExtension('.copy', from: '.txt'),
             ),
@@ -53,12 +53,12 @@ void main() {
           ),
         ],
         PostBuildPhase([
-          PostBuildAction(
+          .new(
             builder: CopyingPostProcessBuilder(outputExtension: '.post'),
             package: 'foo',
             targetSources: targetSources,
-            options: const BuilderOptions({}),
-            generateFor: const InputSet(),
+            options: const .new({}),
+            generateFor: const .new(),
             hideOutput: true,
           ),
         ]),
@@ -68,8 +68,8 @@ void main() {
       final primaryOutputId = makeAssetId('foo|file.txt.copy');
 
       setUp(() async {
-        buildState = BuildState({primaryInputId: null, excludedInputId: null});
-        buildStepPlan = BuildStepPlan.compute(
+        buildState = .new({primaryInputId: null, excludedInputId: null});
+        buildStepPlan = .compute(
           buildPhases: buildPhases,
           placeholderIds: [],
           sources: buildState.sources,
@@ -103,10 +103,10 @@ void main() {
       test('overlapping build phases cause an error', () async {
         expect(
           () => BuildStepPlan.compute(
-            buildPhases: BuildPhases(
+            buildPhases: .new(
               List.filled(
                 2,
-                InBuildPhase(
+                .new(
                   builder: TestBuilder(),
                   key: 'TestBuilder',
                   package: 'foo',
@@ -123,7 +123,7 @@ void main() {
       group('regression tests', () {
         test('build can chains of pre-existing to-source outputs', () async {
           final buildPhases = BuildPhases([
-            InBuildPhase(
+            .new(
               builder: TestBuilder(
                 buildExtensions: replaceExtension('.txt', '.a.txt'),
               ),
@@ -131,7 +131,7 @@ void main() {
               package: 'foo',
               hideOutput: false,
             ),
-            InBuildPhase(
+            .new(
               builder: TestBuilder(
                 buildExtensions: replaceExtension('.txt', '.b.txt'),
               ),
@@ -139,7 +139,7 @@ void main() {
               package: 'foo',
               hideOutput: false,
             ),
-            InBuildPhase(
+            .new(
               builder: TestBuilder(
                 buildExtensions: replaceExtension('.a.b.txt', '.a.b.c.txt'),
               ),
@@ -177,20 +177,20 @@ void main() {
             'source globs', () async {
           final sources = {makeAssetId('foo|lib/1.txt')};
           final buildPhases = BuildPhases([
-            InBuildPhase(
+            .new(
               builder: TestBuilder(
                 buildExtensions: appendExtension('.1', from: '.txt'),
               ),
               key: 'TestBuilder',
               package: 'foo',
             ),
-            InBuildPhase(
+            .new(
               builder: TestBuilder(
                 buildExtensions: appendExtension('.2', from: '.1'),
               ),
               key: 'TestBuilder',
               package: 'foo',
-              targetSources: const InputSet(include: ['lib/*.txt']),
+              targetSources: const .new(include: ['lib/*.txt']),
             ),
           ]);
 
@@ -218,7 +218,7 @@ void main() {
     late BuildStepPlan plan;
 
     setUp(() {
-      plan = BuildStepPlan((builder) => builder..buildPhases = BuildPhases([]));
+      plan = .new((builder) => builder..buildPhases = .new([]));
     });
 
     test('empty plan', () {
@@ -232,9 +232,9 @@ void main() {
       final a = makeAssetId('foo|a');
       final b = makeAssetId('foo|b');
       final c = makeAssetId('foo|c');
-      plan = BuildStepPlan(
+      plan = .new(
         (builder) => builder
-          ..buildPhases = BuildPhases([])
+          ..buildPhases = .new([])
           ..declaredOutputsByPrimaryInput.addValues(a, [b])
           ..declaredOutputsByPrimaryInput.addValues(b, [c]),
       );
@@ -249,9 +249,9 @@ void main() {
       final b = makeAssetId('foo|b');
       final c = makeAssetId('foo|c');
       final d = makeAssetId('foo|d');
-      plan = BuildStepPlan(
+      plan = .new(
         (builder) => builder
-          ..buildPhases = BuildPhases([])
+          ..buildPhases = .new([])
           ..declaredOutputsByPrimaryInput.addValues(a, [b, c])
           ..declaredOutputsByPrimaryInput.addValues(b, [d])
           ..declaredOutputsByPrimaryInput.addValues(c, [d]),
@@ -268,9 +268,9 @@ void main() {
       final b = makeAssetId('foo|b');
       final c = makeAssetId('foo|c');
       final d = makeAssetId('foo|d');
-      plan = BuildStepPlan(
+      plan = .new(
         (builder) => builder
-          ..buildPhases = BuildPhases([])
+          ..buildPhases = .new([])
           ..declaredOutputsByPrimaryInput.addValues(a, [b])
           ..declaredOutputsByPrimaryInput.addValues(c, [d]),
       );

@@ -46,12 +46,12 @@ class InvalidationTester {
 
   /// The [OutputStrategy] for generated assets.
   ///
-  /// [OutputStrategy.inputDigest] is the default if there is no entry.
+  /// [.inputDigest] is the default if there is no entry.
   final Map<AssetId, OutputStrategy> _outputStrategies = {};
 
   /// The [FailureStrategy] for generated assets.
   ///
-  /// [FailureStrategy.succeed] is the default if there is no entry.
+  /// [.succeed] is the default if there is no entry.
   final Map<AssetId, FailureStrategy> _failureStrategies = {};
 
   /// Assets written by generators.
@@ -143,45 +143,45 @@ class InvalidationTester {
     }
     final builder = TestBuilder(this, from, [to], isOptional, outputIsVisible);
     _builders.add(builder);
-    return TestBuilderBuilder(builder);
+    return .new(builder);
   }
 
-  /// Sets the output strategy for [name] to [OutputStrategy.fixed].
+  /// Sets the output strategy for [name] to [.fixed].
   ///
   /// By default, output will be a digest of all read files. This changes it to
   /// fixed: it won't change when inputs change.
   void fixOutput(String name) {
     if (_logSetup) _setupLog.add('tester.fixOutput($name)');
-    _outputStrategies[name.assetId] = OutputStrategy.fixed;
+    _outputStrategies[name.assetId] = .fixed;
   }
 
   /// Sets the output strategy for [name] back to the default,
-  /// [OutputStrategy.inputDigest].
+  /// [.inputDigest].
   void digestOutput(String name) {
     if (_logSetup) _setupLog.add('tester.digestOutput($name)');
-    _outputStrategies[name.assetId] = OutputStrategy.inputDigest;
+    _outputStrategies[name.assetId] = .inputDigest;
   }
 
-  /// Sets the output strategy for [name] to [OutputStrategy.none].
+  /// Sets the output strategy for [name] to [.none].
   ///
   /// The generator will not output the file.
   void skipOutput(String name) {
     if (_logSetup) _setupLog.add('tester.skipOutput($name)');
-    _outputStrategies[name.assetId] = OutputStrategy.none;
+    _outputStrategies[name.assetId] = .none;
   }
 
-  /// Sets the failure strategy for [name] to [FailureStrategy.fail].
+  /// Sets the failure strategy for [name] to [.fail].
   ///
   /// The generator will write any outputs it is configured to write, then fail.
   void fail(String name) {
     if (_logSetup) _setupLog.add('tester.fail($name)');
-    _failureStrategies[name.assetId] = FailureStrategy.fail;
+    _failureStrategies[name.assetId] = .fail;
   }
 
-  /// Sets the failure strategy for [name] to [FailureStrategy.succeed].
+  /// Sets the failure strategy for [name] to [.succeed].
   void succeed(String name) {
     if (_logSetup) _setupLog.add('tester.succeed($name)');
-    _failureStrategies[name.assetId] = FailureStrategy.succeed;
+    _failureStrategies[name.assetId] = .succeed;
   }
 
   String _imports(AssetId id) {
@@ -215,7 +215,7 @@ class InvalidationTester {
         assets[id] = '${_imports(id)}// initial source';
       }
       if (_buildYaml != null) {
-        assets[AssetId('pkg', 'build.yaml')] = _buildYaml!;
+        assets[.new('pkg', 'build.yaml')] = _buildYaml!;
       }
     } else {
       // Create the new filesystem from the previous build state.
@@ -247,7 +247,7 @@ class InvalidationTester {
       assets[create.assetId] = '${_imports(create.assetId)}// initial source';
     }
     if (buildYaml != null) {
-      assets[AssetId('pkg', 'build.yaml')] = buildYaml;
+      assets[.new('pkg', 'build.yaml')] = buildYaml;
     }
 
     // Build and check what changed.
@@ -257,7 +257,7 @@ class InvalidationTester {
     final testBuildResult = await testBuilders(
       onLog: (record) => log.writeln(record.display),
       _builders,
-      assets.map((id, content) => MapEntry(id.toString(), content)),
+      assets.map((id, content) => .new(id.toString(), content)),
       rootPackage: 'pkg',
       optionalBuilders: _builders.where((b) => b.isOptional).toSet(),
       visibleOutputBuilders: _builders.where((b) => b.outputIsVisible).toSet(),
@@ -282,14 +282,13 @@ class InvalidationTester {
     final deleted = deletedAssets.map(_assetIdToName);
 
     return logString.contains(BuildLog.successPattern)
-        ? Result(written: written, deleted: deleted)
-        : Result.failure(written: written, deleted: deleted);
+        ? .new(written: written, deleted: deleted)
+        : .failure(written: written, deleted: deleted);
   }
 
   /// The size of the asset graph that was written by [build], in bytes.
-  int get assetGraphJsonSize => readerWriter!.testing
-      .readBytes(AssetId('pkg', assetGraphJsonPath))
-      .length;
+  int get assetGraphJsonSize =>
+      readerWriter!.testing.readBytes(.new('pkg', assetGraphJsonPath)).length;
 }
 
 /// Strategy used by generators for outputting files.
@@ -419,7 +418,7 @@ class TestBuilder implements Builder {
   /// Extensions of assets that the builder will read.
   ///
   /// The extensions are applied to the primary input asset ID with
-  /// [AssetIdExtension.replaceExtensions].
+  /// [.replaceExtensions].
   List<String> reads = [];
 
   /// Names of assets that the builder will read, by input name.
@@ -437,7 +436,7 @@ class TestBuilder implements Builder {
   /// Extensions of assets that the builder will write.
   ///
   /// The extensions are applied to the primary input asset ID with
-  /// [AssetIdExtension.replaceExtensions].
+  /// [.replaceExtensions].
   List<String> writes = [];
 
   TestBuilder(
@@ -527,7 +526,7 @@ class TestBuilder implements Builder {
         final library = await buildStep.resolver.libraryFor(resolve.assetId);
         for (final import in library.transitiveImports) {
           recordInput(
-            AssetId.resolve(import.uri),
+            .resolve(import.uri),
             import.firstFragment.source.exists()
                 ? import.firstFragment.source.contents.data
                 : null,
@@ -539,14 +538,13 @@ class TestBuilder implements Builder {
     }
     for (final write in writes) {
       final writeId = buildStep.inputId.replaceExtensions('$from.dart', write);
-      final outputStrategy =
-          _tester._outputStrategies[writeId] ?? OutputStrategy.inputDigest;
+      final outputStrategy = _tester._outputStrategies[writeId] ?? .inputDigest;
       final output = switch (outputStrategy) {
-        OutputStrategy.fixed => _tester._imports(writeId),
-        OutputStrategy.inputDigest =>
+        .fixed => _tester._imports(writeId),
+        .inputDigest =>
           '${_tester._imports(writeId)}\n'
               '${recordedInput.map((l) => '// $l\n').join('')}',
-        OutputStrategy.none => null,
+        .none => null,
       };
       if (output != null) {
         await buildStep.writeAsString(writeId, output);
@@ -555,7 +553,7 @@ class TestBuilder implements Builder {
     }
     for (final write in writes) {
       final writeId = buildStep.inputId.replaceExtensions('$from.dart', write);
-      if (_tester._failureStrategies[writeId] == FailureStrategy.fail) {
+      if (_tester._failureStrategies[writeId] == .fail) {
         throw StateError('Failing as requested by test setup.');
       }
     }
@@ -579,11 +577,11 @@ extension StringExtension on String {
   /// Maps "names" to [AssetId]s.
   ///
   /// See [InvalidationTester] class dartdoc.
-  AssetId get assetId => AssetId('pkg', 'lib/$this.dart');
+  AssetId get assetId => .new('pkg', 'lib/$this.dart');
 
   /// Maps "names" to [AssetId]s under `build/generated`.
   AssetId get generatedAssetId =>
-      AssetId('pkg', '.dart_tool/build/generated/pkg/lib/$this.dart');
+      .new('pkg', '.dart_tool/build/generated/pkg/lib/$this.dart');
 
   /// Maps "names" to relative import path.
   String get pathForImport => '$this.dart';
@@ -592,7 +590,7 @@ extension StringExtension on String {
   String get trimAndIndent => '  ${toString().trim().replaceAll('\n', '\n  ')}';
 }
 
-/// Converts [StringExtension.assetId] and [StringExtension.generatedAssetId]
+/// Converts [.assetId] and [.generatedAssetId]
 /// back to [AssetId].
 String _assetIdToName(AssetId id) {
   final path = id.path.replaceAll('.dart_tool/build/generated/pkg/', '');
@@ -606,7 +604,7 @@ String _assetIdToName(AssetId id) {
 
 extension AssetIdExtension on AssetId {
   AssetId replaceExtensions(String from, String to) =>
-      AssetId(package, path.replaceAll(RegExp('$from\$'), to));
+      .new(package, path.replaceAll(RegExp('$from\$'), to));
 }
 
 extension TransitiveLibrariesExtension on LibraryElement {

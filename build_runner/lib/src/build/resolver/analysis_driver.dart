@@ -39,13 +39,13 @@ AnalysisDriverForPackageBuild analysisDriver(
 Packages _buildAnalyzerPackages(
   PackageConfig packageConfig,
   ResourceProvider resourceProvider,
-) => Packages({
+) => .new({
   for (final package in packageConfig.packages)
-    package.name: Package(
+    package.name: .new(
       name: package.name,
       languageVersion: package.languageVersion == null
           ? sdkLanguageVersion
-          : Version(
+          : .new(
               package.languageVersion!.major,
               package.languageVersion!.minor,
               0,
@@ -72,7 +72,7 @@ Packages _buildAnalyzerPackages(
     ),
 });
 
-/// The language version of the current sdk parsed from the [Platform.version].
+/// The language version of the current sdk parsed from the [.version].
 final sdkLanguageVersion = () {
   final sdkVersion = Version.parse(Platform.version.split(' ').first);
   return Version(sdkVersion.major, sdkVersion.minor, 0);

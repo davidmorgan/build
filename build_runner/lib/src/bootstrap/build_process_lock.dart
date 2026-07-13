@@ -52,17 +52,17 @@ class BuildProcessLock {
     while (true) {
       if (paths.buildWorkspace) {
         // Workspace build needs exclusive lock on the workspace.
-        if (_workspaceLockFile!.tryLock(FileLock.exclusive) != null) {
+        if (_workspaceLockFile!.tryLock(.exclusive) != null) {
           // Success.
           break;
         }
       } else {
         // Package build needs shared lock on the workspace, if there is one.
-        final workspaceLock = _workspaceLockFile?.tryLock(FileLock.shared);
+        final workspaceLock = _workspaceLockFile?.tryLock(.shared);
 
         // If that succeeded, or was not needed, get the package lock.
         if (paths.workspacePath == null || workspaceLock != null) {
-          if (_packageLockFile.tryLock(FileLock.exclusive) != null) {
+          if (_packageLockFile.tryLock(.exclusive) != null) {
             // Success.
             break;
           }
@@ -76,7 +76,7 @@ class BuildProcessLock {
         buildLog.flushAndPrint('Waiting for already-running build_runner.');
         logged = true;
       }
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const .new(milliseconds: 100));
     }
 
     /// Success: clear `.requested` files.
@@ -134,15 +134,15 @@ class BuildProcessLock {
     });
   }
 
-  /// The lock file for [BuildPaths.packagePath].
-  File get _packageLockFile => File(
+  /// The lock file for [.packagePath].
+  File get _packageLockFile => .new(
     p.join(paths.packagePath, '.dart_tool/build/lock/$_packageLockName'),
   );
 
-  /// The lock file for [BuildPaths.workspacePath].
+  /// The lock file for [.workspacePath].
   File? get _workspaceLockFile => paths.workspacePath == null
       ? null
-      : File(
+      : .new(
           p.join(
             paths.workspacePath!,
             '.dart_tool/build/lock/$_workspaceLockName',
@@ -194,7 +194,7 @@ class _Lock {
   _Lock(File file, FileLock mode) {
     try {
       file.createSync(recursive: true);
-      _randomAccessFile = file.openSync(mode: FileMode.write);
+      _randomAccessFile = file.openSync(mode: .write);
       _randomAccessFile.lockSync(mode);
     } catch (_) {
       _requestLock(file.path);

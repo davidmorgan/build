@@ -56,17 +56,17 @@ class ServeOptions {
         );
       }
 
-      serveTargets.add(ServeTarget(path, port));
+      serveTargets.add(.new(path, port));
     }
     if (serveTargets.isEmpty) {
       for (final dir in _defaultWebDirs) {
         if (Directory(dir).existsSync()) {
-          serveTargets.add(ServeTarget(dir, nextDefaultPort++));
+          serveTargets.add(.new(dir, nextDefaultPort++));
         }
       }
     }
 
-    return ServeOptions(
+    return .new(
       hostname: commandLine.hostname!,
       liveReload: commandLine.liveReload!,
       logRequests: commandLine.logRequests!,

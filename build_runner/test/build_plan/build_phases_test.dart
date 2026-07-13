@@ -14,10 +14,10 @@ void main() {
   group('BuildPhases', () {
     test('digest is equal for equal phases', () {
       final buildPhases1 = BuildPhases([
-        InBuildPhase(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
+        .new(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
       ]);
       final buildPhases2 = BuildPhases([
-        InBuildPhase(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
+        .new(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
       ]);
 
       expect(buildPhases1.digest, buildPhases2.digest);
@@ -25,10 +25,10 @@ void main() {
 
     test('digest changes on additional builder', () {
       final buildPhases1 = BuildPhases([
-        InBuildPhase(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
+        .new(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
       ]);
       final buildPhases2 = BuildPhases([
-        InBuildPhase(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
+        .new(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
         InBuildPhase(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
       ]);
 
@@ -37,10 +37,10 @@ void main() {
 
     test('digest changes on extension change', () {
       final buildPhases1 = BuildPhases([
-        InBuildPhase(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
+        .new(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
       ]);
       final buildPhases2 = BuildPhases([
-        InBuildPhase(
+        .new(
           builder: TestBuilder(buildExtensions: appendExtension('different')),
           key: 'TestBuilder',
           package: 'a',
@@ -54,10 +54,10 @@ void main() {
       // Changes to builder code is checked via changes to the build script and
       // deps, not by `BuildPhases`.
       final buildPhases1 = BuildPhases([
-        InBuildPhase(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
+        .new(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
       ]);
       final buildPhases2 = BuildPhases([
-        InBuildPhase(builder: TestBuilder2(), key: 'TestBuilder', package: 'a'),
+        .new(builder: TestBuilder2(), key: 'TestBuilder', package: 'a'),
       ]);
 
       expect(buildPhases1.digest, buildPhases2.digest);
@@ -67,14 +67,14 @@ void main() {
       // Changes to builder code is checked via changes to the build script and
       // deps, not by `BuildPhases`.
       final buildPhases1 = BuildPhases([
-        InBuildPhase(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
+        .new(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
       ]);
       final buildPhases2 = BuildPhases([
-        InBuildPhase(
+        .new(
           builder: TestBuilder(),
           key: 'TestBuilder',
           package: 'a',
-          options: const BuilderOptions({'a': 'b'}),
+          options: const .new({'a': 'b'}),
         ),
       ]);
 
@@ -85,14 +85,14 @@ void main() {
       // Changes to builder code is checked via changes to the build script and
       // deps, not by `BuildPhases`.
       final buildPhases1 = BuildPhases([
-        InBuildPhase(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
+        .new(builder: TestBuilder(), key: 'TestBuilder', package: 'a'),
       ]);
       final buildPhases2 = BuildPhases([
-        InBuildPhase(
+        .new(
           builder: TestBuilder(),
           key: 'TestBuilder',
           package: 'a',
-          options: const BuilderOptions({'a': 'b'}),
+          options: const .new({'a': 'b'}),
         ),
       ]);
 
@@ -107,26 +107,26 @@ void main() {
       // deps, not by `BuildPhases`.
       final buildPhases1 = BuildPhases(
         [],
-        PostBuildPhase([
-          PostBuildAction(
+        .new([
+          .new(
             builder: const FileDeletingBuilder(['']),
             package: 'a',
-            options: const BuilderOptions({}),
+            options: const .new({}),
             targetSources: const InputSet(),
-            generateFor: const InputSet(),
+            generateFor: const .new(),
             hideOutput: true,
           ),
         ]),
       );
       final buildPhases2 = BuildPhases(
         [],
-        PostBuildPhase([
-          PostBuildAction(
+        .new([
+          .new(
             builder: const FileDeletingBuilder(['']),
             package: 'a',
-            options: const BuilderOptions({'a': 'b'}),
-            targetSources: const InputSet(),
-            generateFor: const InputSet(),
+            options: const .new({'a': 'b'}),
+            targetSources: const .new(),
+            generateFor: const .new(),
             hideOutput: true,
           ),
         ]),

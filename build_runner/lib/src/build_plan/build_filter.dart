@@ -30,14 +30,14 @@ class BuildFilter {
     if (uri.scheme == 'package') {
       final package = uri.pathSegments.first;
       final glob = Glob(p.url.joinAll(['lib', ...uri.pathSegments.skip(1)]));
-      return BuildFilter(Glob(package), glob);
+      return .new(.new(package), glob);
     }
     if (uri.scheme == 'asset') {
       final package = uri.pathSegments.first;
       final glob = Glob(p.url.joinAll(uri.pathSegments.skip(1)));
-      return BuildFilter(Glob(package), glob);
+      return .new(.new(package), glob);
     } else if (uri.scheme.isEmpty) {
-      return BuildFilter(Glob(currentPackage), Glob(uri.path));
+      return .new(.new(currentPackage), .new(uri.path));
     } else {
       throw FormatException('Unsupported scheme ${uri.scheme}', uri);
     }

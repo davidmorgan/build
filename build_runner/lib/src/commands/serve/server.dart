@@ -40,8 +40,7 @@ class ServeHandler {
 
   final BuildUpdatesWebSocketHandler _webSocketHandler;
 
-  ServeHandler(this._watcher)
-    : _webSocketHandler = BuildUpdatesWebSocketHandler() {
+  ServeHandler(this._watcher) : _webSocketHandler = .new() {
     _watcher.buildResults
         .listen(_webSocketHandler.emitUpdateMessage)
         .onDone(_webSocketHandler.close);
@@ -164,7 +163,7 @@ class BuildUpdatesWebSocketHandler {
   }
 
   Future emitUpdateMessage(BuildResult buildResult) async {
-    if (buildResult.status != BuildStatus.success) return;
+    if (buildResult.status != .success) return;
     final reader = buildResult.buildOutputReader!;
     final digests = <AssetId, String>{};
     for (final assetId in buildResult.outputs) {
@@ -200,7 +199,7 @@ class BuildUpdatesWebSocketHandler {
   }
 
   Future<void> close() {
-    return Future.wait(
+    return .wait(
       connectionsByRootDir.values
           .expand((x) => x)
           .map((connection) => connection.sink.close()),
@@ -298,13 +297,13 @@ class AssetHandler {
         if (!await reader.canRead(assetId)) {
           final reason = await reader.unreadableReason(assetId);
           switch (reason) {
-            case UnreadableReason.failed:
+            case .failed:
               return shelf.Response.internalServerError(
                 body: 'Build failed for $assetId',
               );
-            case UnreadableReason.notOutput:
+            case .notOutput:
               return shelf.Response.notFound('$assetId was not output');
-            case UnreadableReason.notFound:
+            case .notFound:
               if (fallbackToDirectoryList) {
                 return shelf.Response.notFound(
                   await _findDirectoryList(assetId),

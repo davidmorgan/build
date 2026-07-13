@@ -65,16 +65,16 @@ class BuildLog {
   static final String failurePattern = 'Failed to build with build_runner';
 
   /// The global, settable logging configuration.
-  BuildLogConfiguration configuration = BuildLogConfiguration();
+  BuildLogConfiguration configuration = .new();
 
   /// Timings attributed to build phases.
-  final TimedActivities activities = TimedActivities();
+  final TimedActivities activities = .new();
 
   /// The messages logged, bucketed by build phase.
-  final BuildLogMessages _messages = BuildLogMessages();
+  final BuildLogMessages _messages = .new();
 
   /// Errors logged.
-  final ListBuilder<String> _errors = ListBuilder();
+  final ListBuilder<String> _errors = .new();
 
   /// JIT compile progress, if there was a JIT compile.
   _CompileProgress? _jitCompileProgress;
@@ -86,16 +86,16 @@ class BuildLog {
   final Map<String, _PhaseProgress> _phaseProgress = {};
 
   /// Progress by build phase.
-  final LogDisplay _display = LogDisplay();
+  final LogDisplay _display = .new();
 
   /// The time the `build_runner` process has been running.
-  Duration _processDuration = Duration.zero;
+  Duration _processDuration = .zero;
 
   /// Stopwatch used to update [_processDuration] every [_tick].
-  final Stopwatch _stopwatch = Stopwatch()..start();
+  final Stopwatch _stopwatch = .new()..start();
 
   /// Amount of time since a progress update.
-  final Stopwatch _progressStopwatch = Stopwatch()..start();
+  final Stopwatch _progressStopwatch = .new()..start();
 
   /// A stack of the currently running phases.
   final List<String> _runningPhases = [];
@@ -119,9 +119,7 @@ class BuildLog {
       buildProcessState.buildNumber = _buildNumber;
     });
     void updateFromProcessState() {
-      _processDuration = Duration(
-        milliseconds: buildProcessState.elapsedMillis,
-      );
+      _processDuration = .new(milliseconds: buildProcessState.elapsedMillis);
       configuration = configuration.rebuild((b) {
         b.mode = buildProcessState.buildLogMode;
       });
@@ -163,7 +161,7 @@ class BuildLog {
     required InBuildPhase phase,
     required AssetId primaryInput,
     required bool lazy,
-  }) => BuildLogLogger(
+  }) => .new(
     phaseName: phase.name(lazy: lazy),
     context: renderId(primaryInput),
     contextId: primaryInput,
@@ -172,25 +170,25 @@ class BuildLog {
   /// Creates a logger that logs to the [BuildLog] for work other than building
   /// described by [context].
   BuildLogLogger loggerForOther(String context, {AssetId? contextId}) =>
-      BuildLogLogger(context: context, contextId: contextId);
+      .new(context: context, contextId: contextId);
 
   /// Logs a `build_runner` info.
   void info(String message) {
     if (_display.displayingBlocks) {
-      _messages.add(severity: Severity.info, message);
+      _messages.add(severity: .info, message);
       _display.block(render());
     } else {
-      _display.message(Severity.info, message);
+      _display.message(.info, message);
     }
   }
 
   /// Logs a `build_runner` warning.
   void warning(String message) {
     if (_display.displayingBlocks) {
-      _messages.add(severity: Severity.warning, message);
+      _messages.add(severity: .warning, message);
       _display.block(render());
     } else {
-      _display.message(Severity.warning, message);
+      _display.message(.warning, message);
     }
   }
 
@@ -198,10 +196,10 @@ class BuildLog {
   void error(String message) {
     _errors.add(message);
     if (_display.displayingBlocks) {
-      _messages.add(severity: Severity.error, message);
+      _messages.add(severity: .error, message);
       _display.block(render());
     } else {
-      _display.message(Severity.error, message);
+      _display.message(.error, message);
     }
   }
 
@@ -213,7 +211,7 @@ class BuildLog {
     String? context,
     AssetId? contextId,
   }) {
-    if (severity == Severity.error) _errors.add(message);
+    if (severity == .error) _errors.add(message);
     if (_display.displayingBlocks) {
       _messages.add(
         severity: severity,
@@ -266,7 +264,7 @@ class BuildLog {
     required Future<T> Function() function,
   }) async {
     final progress = _CompileProgress();
-    if (compileType == CompileType.aot) {
+    if (compileType == .aot) {
       _aotCompileProgress = progress;
     } else {
       _jitCompileProgress = progress;
@@ -274,7 +272,7 @@ class BuildLog {
     _compileTick(compileType: compileType, firstTick: true, lastTick: false);
 
     final timer = Timer.periodic(
-      const Duration(milliseconds: 100),
+      const .new(milliseconds: 100),
       (_) => _compileTick(
         compileType: compileType,
         firstTick: false,
@@ -299,7 +297,7 @@ class BuildLog {
     _processDuration += duration;
 
     if (!firstTick) {
-      if (compileType == CompileType.aot) {
+      if (compileType == .aot) {
         _aotCompileProgress!.duration += duration;
       } else {
         _jitCompileProgress!.duration += duration;
@@ -311,7 +309,7 @@ class BuildLog {
         _display.block(render());
       } else {
         _display.message(
-          Severity.info,
+          .info,
           _renderCompiling(compileType: compileType).toString(),
         );
       }
@@ -349,7 +347,7 @@ class BuildLog {
       if (_display.displayingBlocks) {
         _display.block(render());
       } else {
-        _display.message(Severity.info, _renderPhase(phaseName).toString());
+        _display.message(.info, _renderPhase(phaseName).toString());
       }
     }
   }
@@ -368,7 +366,7 @@ class BuildLog {
       if (_display.displayingBlocks) {
         _display.block(render());
       } else {
-        _display.message(Severity.info, _renderPhase(phaseName).toString());
+        _display.message(.info, _renderPhase(phaseName).toString());
       }
     }
 
@@ -389,7 +387,7 @@ class BuildLog {
       if (_display.displayingBlocks) {
         _display.block(render());
       } else {
-        _display.message(Severity.info, _renderPhase(phaseName).toString());
+        _display.message(.info, _renderPhase(phaseName).toString());
       }
     }
 
@@ -422,7 +420,7 @@ class BuildLog {
       if (_display.displayingBlocks) {
         _display.block(render());
       } else {
-        _display.message(Severity.info, _renderPhase(phaseName).toString());
+        _display.message(.info, _renderPhase(phaseName).toString());
       }
     }
 
@@ -435,7 +433,7 @@ class BuildLog {
   /// Clears timings and messages.
   void nextBuild({bool recompilingBuilders = false}) {
     _stopwatch.reset();
-    _processDuration = Duration.zero;
+    _processDuration = .zero;
     activities.clear();
     _messages.clear();
     _status.clear();
@@ -467,13 +465,13 @@ class BuildLog {
       _display.flush();
     } else {
       _display.message(
-        Severity.info,
+        .info,
         // Removes ANSI codes if necessary.
         AnsiBufferLine(_status).toString(),
       );
     }
 
-    _processDuration = Duration.zero;
+    _processDuration = .zero;
     _jitCompileProgress = null;
     _aotCompileProgress = null;
     buildPackages = null;
@@ -539,7 +537,7 @@ class BuildLog {
     }
     if (path == null) return null;
     try {
-      return Uri.file(path, windows: windows);
+      return .file(path, windows: windows);
     } catch (e) {
       // `Uri.file` can fail due to invalid characters on Windows.
       return null;
@@ -593,10 +591,10 @@ class BuildLog {
     final result = AnsiBuffer();
 
     if (_jitCompileProgress != null) {
-      result.write(_renderCompiling(compileType: CompileType.jit));
+      result.write(_renderCompiling(compileType: .jit));
     }
     if (_aotCompileProgress != null) {
-      result.write(_renderCompiling(compileType: CompileType.aot));
+      result.write(_renderCompiling(compileType: .aot));
     }
 
     final displayedProgressEntries = _phaseProgress.entries.where(
@@ -642,10 +640,10 @@ class BuildLog {
   }
 
   AnsiBufferLine _renderCompiling({required CompileType compileType}) {
-    final progress = compileType == CompileType.aot
+    final progress = compileType == .aot
         ? _aotCompileProgress!
         : _jitCompileProgress!;
-    return AnsiBufferLine([
+    return .new([
       renderDuration(progress.duration),
       ' ',
       AnsiBuffer.bold,
@@ -672,7 +670,7 @@ class BuildLog {
     }
 
     final progress = _phaseProgress[phaseName]!;
-    return AnsiBufferLine([
+    return .new([
       renderDuration(progress.duration),
       ' ',
       AnsiBuffer.bold,
@@ -706,8 +704,7 @@ class BuildLog {
   ///
   bool get _shouldShowProgressNow {
     if (!configuration.throttleProgressUpdates) return true;
-    final interval =
-        configuration.mode == BuildLogMode.build && _display.displayingBlocks
+    final interval = configuration.mode == .build && _display.displayingBlocks
         ? const Duration(milliseconds: 100)
         : const Duration(seconds: 1);
     if (_progressStopwatch.elapsed >= interval) {
@@ -730,20 +727,19 @@ extension _PhaseExtension on InBuildPhase {
 
 /// Compile progress.
 class _CompileProgress {
-  Duration duration = Duration.zero;
+  Duration duration = .zero;
 
   Object? serialize() => duration.inMilliseconds;
 
   static _CompileProgress? deserialize(Object? serialized) {
     if (serialized == null) return null;
-    return _CompileProgress()
-      ..duration = Duration(milliseconds: serialized as int);
+    return _CompileProgress()..duration = .new(milliseconds: serialized as int);
   }
 }
 
 /// Progress metrics tracked for each build phase.
 class _PhaseProgress {
-  Duration duration = Duration.zero;
+  Duration duration = .zero;
 
   /// The number of primary inputs built non-lazily by required phases.
   ///

@@ -31,7 +31,7 @@ class RunCommand implements BuildRunnerCommand {
     required this.builderFactories,
     required this.buildOptions,
     required this.runOptions,
-    this.testingOverrides = const TestingOverrides(),
+    this.testingOverrides = const .new(),
   });
 
   @override
@@ -73,7 +73,7 @@ class RunCommand implements BuildRunnerCommand {
           b.add(
             BuildDirectory(
               '',
-              outputLocation: OutputLocation(
+              outputLocation: .new(
                 tempPath,
                 useSymlinks: buildOptions.outputSymlinksOnly,
                 hoist: false,
@@ -103,8 +103,8 @@ class RunCommand implements BuildRunnerCommand {
     ReceivePort? onExit;
     ReceivePort? onError;
 
-    onExit = ReceivePort();
-    onError = ReceivePort();
+    onExit = .new();
+    onError = .new();
 
     // Cleanup after exit.
     onExit.listen((_) {
@@ -121,7 +121,7 @@ class RunCommand implements BuildRunnerCommand {
         buildLog.renderThrowable(
           'Unhandled error from script: ${runOptions.script}',
           e[0],
-          StackTrace.fromString(e[1].toString()),
+          .fromString(e[1].toString()),
         ),
       );
       if (!exitCodeCompleter.isCompleted) exitCodeCompleter.complete(1);

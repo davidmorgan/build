@@ -26,7 +26,7 @@ void _runTests(bool discardResolver) {
   late InvalidationTester tester;
 
   setUp(() {
-    tester = InvalidationTester(discardResolver: discardResolver);
+    tester = .new(discardResolver: discardResolver);
   });
 
   group('a.1 <== a.2, a.2 resolves: a.1 --> za --> zb', () {

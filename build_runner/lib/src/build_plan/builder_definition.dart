@@ -133,17 +133,17 @@ class BuilderDefinition implements AbstractBuilderDefinition {
   BuilderDefinition(
     this.key, {
     String? package,
-    this.autoApply = AutoApply.rootPackage,
+    this.autoApply = .rootPackage,
     Iterable<String> appliesBuilders = const [],
     this.hideOutput = true,
     this.isOptional = false,
-    this.targetBuilderConfigDefaults = const TargetBuilderConfigDefaults(),
+    this.targetBuilderConfigDefaults = const .new(),
   }) : package = package ?? (key.contains(':') ? key.split(':').first : ''),
        appliesBuilders = appliesBuilders.toBuiltList();
 
   factory BuilderDefinition.fromConfig(
     build_config.BuilderDefinition builderDefinition,
-  ) => BuilderDefinition(
+  ) => .new(
     builderDefinition.key,
     package: builderDefinition.package,
     autoApply: builderDefinition.autoApply,
@@ -165,9 +165,9 @@ class BuilderDefinition implements AbstractBuilderDefinition {
     BuildPackages? restrictForWorkspacePackages,
   }) {
     switch (autoApply) {
-      case AutoApply.none:
+      case .none:
         return false;
-      case AutoApply.allPackages:
+      case .allPackages:
         // In a workspace build, "allPackages" means "all peer packages". See
         // `peersOf` for the definition.
         return restrictForWorkspacePackages == null
@@ -175,7 +175,7 @@ class BuilderDefinition implements AbstractBuilderDefinition {
             : restrictForWorkspacePackages
                   .peersOf(package.name)
                   .contains(this.package);
-      case AutoApply.rootPackage:
+      case .rootPackage:
         // In a workspace build, "root package" means an output package that
         // depends transitively on the builder.
         return package.isOutput &&
@@ -183,7 +183,7 @@ class BuilderDefinition implements AbstractBuilderDefinition {
                 restrictForWorkspacePackages
                     .transitiveDepsOf(package.name)
                     .contains(this.package));
-      case AutoApply.dependents:
+      case .dependents:
         return package.dependencies.contains(this.package);
     }
   }
@@ -209,7 +209,7 @@ class PostProcessBuilderDefinition implements AbstractBuilderDefinition {
     this.key, {
     String? package,
     this.hideOutput = true,
-    this.targetBuilderConfigDefaults = const TargetBuilderConfigDefaults(),
+    this.targetBuilderConfigDefaults = const .new(),
   }) : package = package ?? (key.contains(':') ? key.split(':').first : '');
 
   PostProcessBuilderDefinition.fromConfig(

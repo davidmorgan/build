@@ -15,8 +15,7 @@ import '../../logging/build_log.dart';
 import 'asset_change.dart';
 import 'build_package_watcher.dart';
 
-BuildPackageWatcher _default(BuildPackage buildPackage) =>
-    BuildPackageWatcher(buildPackage);
+BuildPackageWatcher _default(BuildPackage buildPackage) => .new(buildPackage);
 
 /// Watches the watchable packages in a [BuildPackages] for file changes.
 class BuildPackagesWatcher {
@@ -96,7 +95,7 @@ class BuildPackagesWatcher {
         }
       }
       if (!inserted) {
-        result.add(WatchablePackageTree(package));
+        result.add(.new(package));
       }
     }
     return result;
@@ -127,7 +126,7 @@ class WatchablePackageTree {
       }
     }
 
-    children.add(WatchablePackageTree(newPackage));
+    children.add(.new(newPackage));
     return true;
   }
 
@@ -160,7 +159,7 @@ class WatchablePackageTree {
       return change;
     }
     final relativePath = p.relative(absolutePath, from: deepestPackage.path);
-    return AssetChange(AssetId(deepestPackage.name, relativePath), change.type);
+    return .new(.new(deepestPackage.name, relativePath), change.type);
   }
 }
 

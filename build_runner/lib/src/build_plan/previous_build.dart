@@ -96,7 +96,7 @@ abstract class PreviousBuild
     final postBuildOptionsChanged = buildPlanDigest
         .computeChangedPostBuildOptions(previousBuildPlanDigest);
 
-    return PreviousBuild((b) {
+    return .new((b) {
       b.buildState = previousBuildState;
       if (previousPhasedAssetDeps != null) {
         b.phasedAssetDeps.replace(previousPhasedAssetDeps);

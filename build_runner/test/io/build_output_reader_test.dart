@@ -41,7 +41,7 @@ void main() {
 
     setUp(() async {
       readerWriter = InternalTestReaderWriter(outputRootPackage: 'a');
-      buildPackages = BuildPackages.singlePackageBuild('a', [
+      buildPackages = .singlePackageBuild('a', [
         BuildPackage.forTesting(name: 'a', isOutput: true),
       ]);
       buildState = BuildState();
@@ -64,7 +64,7 @@ void main() {
         )
         ..addSourceForTest(
           deletedId,
-          digest: AssetContent.digest(computeDigest(deletedId, 'b')),
+          digest: .digest(computeDigest(deletedId, 'b')),
         );
 
       readerWriter.testing.writeString(notDeletedId, '');
@@ -120,12 +120,10 @@ void main() {
       ]);
 
       var buildPlan = await BuildPlan.load(
-        await BuildSpec.load(
-          builderFactories: BuilderFactories({}),
-          buildOptions: BuildOptions.forTests(
-            buildDirs: {BuildDirectory('web')}.build(),
-          ),
-          testingOverrides: TestingOverrides(
+        await .load(
+          builderFactories: .new({}),
+          buildOptions: .forTests(buildDirs: {BuildDirectory('web')}.build()),
+          testingOverrides: .new(
             buildPhases: buildPhases,
             readerWriter: readerWriter,
             buildPackages: buildPackages,
@@ -133,7 +131,7 @@ void main() {
         ),
       );
       reader = BuildOutputReader(
-        builderFilesystem: BuilderFilesystem(
+        builderFilesystem: .new(
           buildPackages: buildPlan.buildSpec.buildPackages,
           buildConfigs: buildPlan.buildSpec.buildConfigs,
           buildState: buildState,
@@ -147,14 +145,14 @@ void main() {
         reason: 'Should report a failure if no build filters apply',
       );
 
-      buildPlan = await BuildPlan.load(
-        await BuildSpec.load(
-          builderFactories: BuilderFactories({}),
-          buildOptions: BuildOptions.forTests(
+      buildPlan = await .load(
+        await .load(
+          builderFactories: .new({}),
+          buildOptions: .forTests(
             buildDirs: {BuildDirectory('web')}.build(),
-            buildFilters: {BuildFilter(Glob('b'), Glob('foo'))}.build(),
+            buildFilters: {BuildFilter(Glob('b'), .new('foo'))}.build(),
           ),
-          testingOverrides: TestingOverrides(
+          testingOverrides: .new(
             buildPhases: buildPhases,
             readerWriter: readerWriter,
             buildPackages: buildPackages,
@@ -167,7 +165,7 @@ void main() {
       buildState = BuildState();
 
       reader = BuildOutputReader(
-        builderFilesystem: BuilderFilesystem(
+        builderFilesystem: .new(
           buildPackages: buildPlan.buildSpec.buildPackages,
           buildConfigs: buildPlan.buildSpec.buildConfigs,
           buildState: buildState,

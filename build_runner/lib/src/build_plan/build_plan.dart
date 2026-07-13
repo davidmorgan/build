@@ -242,14 +242,14 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
     for (final id in result.sources.build()) {
       if (buildStepPlan.declaredOutputsOf(id).isNotEmpty) {
         try {
-          result.sourceContents[id] = AssetContent.bytes(
+          result.sourceContents[id] = .bytes(
             await readerWriter.readAsBytes(id),
           );
         } catch (_) {}
       }
     }
 
-    return BuildPlan((b) {
+    return .new((b) {
       b.buildSpec.replace(buildSpec);
       b.previousBuild.replace(previousBuild);
       b.buildStepPlan.replace(buildStepPlan);
@@ -308,7 +308,7 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
               id,
               hidden: id.isHidden(buildStepPlan: previousBuildStepPlan),
             );
-            newContent = AssetContent.bytes(bytes);
+            newContent = .bytes(bytes);
           } catch (_) {
             exists = false;
           }
@@ -335,7 +335,7 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
       }
     }
 
-    buildStepPlan = BuildStepPlan.compute(
+    buildStepPlan = .compute(
       buildPhases: buildSpec.buildPhases,
       placeholderIds: buildSpec.buildPackages.placeholderIds,
       sources: buildInputs.sources.build(),
@@ -349,7 +349,7 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
             id,
             hidden: id.isHidden(buildStepPlan: buildStepPlan),
           );
-          buildInputs.sourceContents[id] = AssetContent.bytes(bytes);
+          buildInputs.sourceContents[id] = .bytes(bytes);
         } catch (_) {}
       }
     }
@@ -370,7 +370,7 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
       );
     }
 
-    return BuildPlan((b) {
+    return .new((b) {
       b.buildSpec.replace(buildSpec);
       b.previousBuild.replace(previousBuild);
       b.buildStepPlan.replace(buildStepPlan);
@@ -387,8 +387,8 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
   /// `recentlyBootstrapped` to `false` to redo checks from bootstrapping.
   ///
   /// The caller must check `buildSpec.restartIsNeeded`.
-  Future<BuildPlan> reload() async => BuildPlan.load(
-    await BuildSpec.load(
+  Future<BuildPlan> reload() async => .load(
+    await .load(
       builderFactories: buildSpec.builderFactories,
       buildOptions: buildSpec.buildOptions.copyWith(
         buildDirs: buildDirs,

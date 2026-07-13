@@ -36,13 +36,12 @@ import 'resolver/asset_ids.dart';
 /// this serialized state is not actually used: the `BuildState` instance
 /// already in memory is used directly.
 class BuildSeries {
-  final ResourceManager _resourceManager = ResourceManager();
+  final ResourceManager _resourceManager = .new();
   BuildPlan _buildPlan;
 
-  final StreamController<BuildResult> _buildResultsController =
-      StreamController.broadcast();
+  final StreamController<BuildResult> _buildResultsController = .broadcast();
 
-  final Completer<void> _closingCompleter = Completer();
+  final Completer<void> _closingCompleter = .new();
 
   /// Whether the next build is the first build.
   bool firstBuild = true;
@@ -160,8 +159,8 @@ class BuildSeries {
           buildStepPlan: _buildPlan.buildStepPlan,
           buildState: _buildPlan.previousBuild.buildState ?? BuildState(),
         );
-    return List.of(
-      updates.entries.map((entry) => WatchEvent(entry.value, '${entry.key}')),
+    return .of(
+      updates.entries.map((entry) => .new(entry.value, '${entry.key}')),
     );
   }
 
@@ -263,7 +262,7 @@ class BuildSeries {
     );
     return result.copyWith(
       errors: buildLog.finishBuild(
-        result: result.status == BuildStatus.success,
+        result: result.status == .success,
         outputs: result.outputs.length,
       ),
     );
@@ -373,7 +372,7 @@ class BuildSeries {
     if (_buildPlan.buildDirs.any(
           (target) => target.outputLocation?.path.isNotEmpty ?? false,
         ) &&
-        result.status == BuildStatus.success) {
+        result.status == .success) {
       if (!await createMergedOutputDirectories(
         buildPackages: _buildPlan.buildSpec.buildPackages,
         outputSymlinksOnly:
@@ -381,10 +380,7 @@ class BuildSeries {
         buildDirs: _buildPlan.buildDirs,
         buildOutputReader: result.buildOutputReader!,
       )) {
-        return result.copyWith(
-          status: BuildStatus.failure,
-          failureType: FailureType.cantCreate,
-        );
+        return result.copyWith(status: .failure, failureType: .cantCreate);
       }
     }
     return result;
@@ -395,7 +391,7 @@ class BuildSeries {
   /// First, [closing] is completed and new builds are prohibited.
   ///
   /// Then, any currently-running build is waited for, followed by cleanup of
-  /// any resources via [ResourceManager.beforeExit].
+  /// any resources via [.beforeExit].
   ///
   /// Finally, [buildResults] is closed.
   Future<void> close() async {

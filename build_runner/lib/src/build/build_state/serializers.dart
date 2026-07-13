@@ -25,8 +25,8 @@ import 'post_process_build_step_result.dart';
 part 'serializers.g.dart';
 
 final postProcessBuildStepResultsFullType = const FullType(BuiltMap, [
-  FullType(PostProcessBuildStepId),
-  FullType(PostProcessBuildStepResult),
+  .new(PostProcessBuildStepId),
+  .new(PostProcessBuildStepResult),
 ]);
 
 final assetIdSerializer = AssetIdSerializer();
@@ -51,40 +51,34 @@ final Serializers serializers =
           ..add(AssetContentSerializer())
           ..add(DigestSerializer())
           ..addBuilderFactory(
-            const FullType(BuiltSet, [FullType(AssetId)]),
+            const .new(BuiltSet, [.new(AssetId)]),
             SetBuilder<AssetId>.new,
           )
           ..addBuilderFactory(
-            const FullType(BuiltList, [FullType(String)]),
+            const .new(BuiltList, [.new(String)]),
             ListBuilder<String>.new,
           )
           ..addBuilderFactory(
-            const FullType(BuiltMap, [
-              FullType(BuildStepId),
-              FullType(BuildStepResult),
-            ]),
+            const .new(BuiltMap, [.new(BuildStepId), .new(BuildStepResult)]),
             MapBuilder<BuildStepId, BuildStepResult>.new,
           )
           ..addBuilderFactory(
-            const FullType(BuiltMap, [FullType(GlobId), FullType(GlobResult)]),
+            const .new(BuiltMap, [.new(GlobId), .new(GlobResult)]),
             MapBuilder<GlobId, GlobResult>.new,
           )
           ..addBuilderFactory(
-            const FullType(BuiltMap, [
-              FullType(AssetId),
-              FullType(BuildStepId),
-            ]),
+            const .new(BuiltMap, [.new(AssetId), .new(BuildStepId)]),
             MapBuilder<AssetId, BuildStepId>.new,
           )
           ..addBuilderFactory(
-            const FullType(BuiltMap, [
-              FullType(AssetId),
-              FullType(BuiltSet, [FullType(AssetId)]),
+            const .new(BuiltMap, [
+              .new(AssetId),
+              .new(BuiltSet, [.new(AssetId)]),
             ]),
             MapBuilder<AssetId, BuiltSet<AssetId>>.new,
           )
           ..addBuilderFactory(
-            const FullType(Set, [FullType(AssetId)]),
+            const .new(Set, [.new(AssetId)]),
             () => <AssetId>{},
           )
           ..addBuilderFactory(
@@ -92,27 +86,24 @@ final Serializers serializers =
             MapBuilder<PostProcessBuildStepId, PostProcessBuildStepResult>.new,
           )
           ..addBuilderFactory(
-            const FullType(BuiltMap, [
-              FullType(AssetId),
-              FullType(AssetContent),
-            ]),
+            const .new(BuiltMap, [.new(AssetId), .new(AssetContent)]),
             MapBuilder<AssetId, AssetContent>.new,
           )
           ..addBuilderFactory(
-            const FullType(BuiltList, [FullType(AssetContent)]),
+            const .new(BuiltList, [.new(AssetContent)]),
             ListBuilder<AssetContent>.new,
           )
           ..addBuilderFactory(
-            const FullType(PhasedValue, [FullType(AssetDeps)]),
+            const .new(PhasedValue, [.new(AssetDeps)]),
             PhasedValueBuilder<AssetDeps>.new,
           )
           ..addBuilderFactory(
-            const FullType(ExpiringValue, [FullType(AssetDeps)]),
+            const .new(ExpiringValue, [.new(AssetDeps)]),
             ExpiringValueBuilder<AssetDeps>.new,
           )
           ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(ExpiringValue, [FullType(AssetDeps)]),
+            const .new(BuiltList, [
+              .new(ExpiringValue, [.new(AssetDeps)]),
             ]),
             ListBuilder<ExpiringValue<AssetDeps>>.new,
           ))
@@ -133,14 +124,14 @@ class AssetIdSerializer implements PrimitiveSerializer<AssetId> {
   AssetId deserialize(
     Serializers serializers,
     Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => AssetId.parse(serialized as String);
+    FullType specifiedType = .unspecified,
+  }) => .parse(serialized as String);
 
   @override
   Object serialize(
     Serializers serializers,
     AssetId object, {
-    FullType specifiedType = FullType.unspecified,
+    FullType specifiedType = .unspecified,
   }) => object.toString();
 }
 
@@ -156,13 +147,13 @@ class DigestSerializer implements PrimitiveSerializer<Digest> {
   Digest deserialize(
     Serializers serializers,
     Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => Digest(base64.decode(serialized as String));
+    FullType specifiedType = .unspecified,
+  }) => .new(base64.decode(serialized as String));
 
   @override
   Object serialize(
     Serializers serializers,
     Digest object, {
-    FullType specifiedType = FullType.unspecified,
+    FullType specifiedType = .unspecified,
   }) => base64.encode(object.bytes);
 }

@@ -24,9 +24,9 @@ class BuildPaths {
   final bool buildWorkspace;
 
   BuildType get buildType {
-    if (workspacePath == null) return BuildType.singlePackage;
-    if (buildWorkspace) return BuildType.workspace;
-    return BuildType.singlePackageInWorkspace;
+    if (workspacePath == null) return .singlePackage;
+    if (buildWorkspace) return .workspace;
+    return .singlePackageInWorkspace;
   }
 
   /// The path to the output root for this build.
@@ -65,7 +65,7 @@ class BuildPaths {
         );
       }
     }
-    return BuildPaths(
+    return .new(
       packagePath: packagePath,
       buildWorkspace: buildWorkspace && workspacePath != null,
       workspacePath: workspacePath,

@@ -67,10 +67,10 @@ abstract class BuildSpec implements Built<BuildSpec, BuildSpecBuilder> {
 
     final buildPackages =
         testingOverrides.buildPackages ??
-        await BuildPackages.forPaths(buildOptions.buildPaths);
+        await .forPaths(buildOptions.buildPaths);
     final readerWriter =
         testingOverrides.readerWriter ??
-        ReaderWriter(
+        .new(
           buildPackages,
           forceVisibleForTesting: testingOverrides.forceVisibleForTesting,
         );
@@ -115,7 +115,7 @@ abstract class BuildSpec implements Built<BuildSpec, BuildSpecBuilder> {
       buildPackages: buildPackages,
     );
 
-    return BuildSpec(
+    return .new(
       (b) => b
         ..buildPlanDigest.replace(buildPlanDigest)
         ..builderFactories = builderFactories

@@ -19,7 +19,7 @@ void main() {
   late InvalidationTester tester;
 
   setUp(() {
-    tester = InvalidationTester();
+    tester = .new();
     tester.sources(['a']);
   });
 

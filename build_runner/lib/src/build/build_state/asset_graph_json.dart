@@ -82,7 +82,7 @@ class AssetGraphJson {
         deserialized['phasedAssetDeps'],
       );
 
-      return AssetGraphJson(
+      return .new(
         buildState: buildState!,
         buildPlanDigest: buildPlanDigest!,
         phasedAssetDeps: phasedAssetDeps!,

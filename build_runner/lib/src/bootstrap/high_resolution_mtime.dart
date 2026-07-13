@@ -96,7 +96,7 @@ class HighResolutionMtime {
     // `DateTime.UnixEpoch.Ticks`, then multiply by 100 as ticks are
     //100-nanosecond units.
     //
-    // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/DateTime.cs
+    // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/.cs
     const unixEpochTicks = 719_162 * 864_000_000_000;
     return (ticks - unixEpochTicks) * 100;
   }
@@ -143,7 +143,7 @@ class HighResolutionMtime {
         if (getHighResMtimeWithFallback(tempFile.path) > stampTime) {
           break;
         }
-        await Future<void>.delayed(Duration(milliseconds: delayMs));
+        await Future<void>.delayed(.new(milliseconds: delayMs));
         delayMs = (delayMs * 2).clamp(1, 50);
       }
     } finally {

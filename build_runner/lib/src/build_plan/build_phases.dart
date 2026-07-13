@@ -37,7 +37,7 @@ class BuildPhases {
     PostBuildPhase? postBuildPhase,
   ]) : inBuildPhases = inBuildPhases.toBuiltList(),
        inBuildPhasesOptionsDigests = _digestsOf(inBuildPhases),
-       postBuildPhase = postBuildPhase ?? PostBuildPhase(const []),
+       postBuildPhase = postBuildPhase ?? .new(const []),
        postBuildActionsOptionsDigests = _digestsOf(
          postBuildPhase?.builderActions ?? [],
        ),

@@ -131,10 +131,7 @@ class ParentProcess {
 
     final exitCode = await process.exitCode;
 
-    return RunAndSendResult(
-      exitCode: exitCode,
-      message: receiveBuffer.toString(),
-    );
+    return .new(exitCode: exitCode, message: receiveBuffer.toString());
   }
 
   /// Runs a process like `Process.run` but with a reaper script so that the
@@ -149,12 +146,7 @@ class ParentProcess {
     process.stdout.transform(utf8.decoder).listen(stdout.write);
     process.stderr.transform(utf8.decoder).listen(stderr.write);
     final exitCode = await process.exitCode;
-    return ProcessResult(
-      process.pid,
-      exitCode,
-      stdout.toString(),
-      stderr.toString(),
-    );
+    return .new(process.pid, exitCode, stdout.toString(), stderr.toString());
   }
 
   /// `Process.start` plus a reaper script so that the child process is killed
@@ -184,7 +176,7 @@ class ParentProcess {
   }) async {
     try {
       if (Platform.isWindows) {
-        return await Process.start('powershell', [
+        return await .start('powershell', [
           ...Powershell.baseArgs,
           '-Command',
           'Wait-Process -Id $parentPid; Stop-Process -Id $childPid -Force',
@@ -192,10 +184,10 @@ class ParentProcess {
       } else {
         // The default shell on MacOS is zsh, but it also has an old version of
         // bash that is sufficient for this script.
-        return await Process.start('bash', [
+        return await .start('bash', [
           '-c',
           'while kill -0 $parentPid; do sleep 1; done; kill -9 $childPid',
-        ], mode: ProcessStartMode.detachedWithStdio);
+        ], mode: .detachedWithStdio);
       }
     } on ProcessException catch (_) {
       // Give up if `powershell` or `bash` is missing from PATH.
@@ -212,8 +204,8 @@ class RunAndSendResult {
   RunAndSendResult({required this.exitCode, required this.message});
 }
 
-/// Methods for child processes launched with [ParentProcess.runAndSend]
-/// or [ParentProcess.runAotSnapshotAndSend] to communicate with the parent.
+/// Methods for child processes launched with [.runAndSend]
+/// or [.runAotSnapshotAndSend] to communicate with the parent.
 class ChildProcess {
   static bool _isRunning = false;
 

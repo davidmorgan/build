@@ -48,10 +48,10 @@ Future<String> defaultSdkSummaryGenerator() async {
   final summaryFile = File(summaryPath);
 
   final packageConfig = await loadPackageConfigUri(
-    Uri.parse(buildProcessState.packageConfigUri),
+    .parse(buildProcessState.packageConfigUri),
   );
   Future<String> packagePath(String package) async {
-    final libRoot = packageConfig.resolve(Uri.parse('package:$package/'));
+    final libRoot = packageConfig.resolve(.parse('package:$package/'));
     return p.dirname(p.fromUri(libRoot));
   }
 

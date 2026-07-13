@@ -21,7 +21,7 @@ abstract interface class AssetPathProvider {
   });
 
   /// Returns [id] hidden in [buildCachePackage].
-  static AssetId hide(AssetId id, String buildCachePackage) => AssetId(
+  static AssetId hide(AssetId id, String buildCachePackage) => .new(
     buildCachePackage,
     '$generatedOutputDirectory/${id.package}/${id.path}',
   );

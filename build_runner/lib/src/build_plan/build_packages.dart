@@ -134,7 +134,7 @@ class BuildPackages implements AssetPathProvider {
     final transitiveDependencies = _computeAllTransitiveDeps(packages);
     final buildPackages = _computePeers(outputPackages, transitiveDependencies);
 
-    return BuildPackages(
+    return .new(
       currentPackage: currentPackage,
       singleOutputPackage: singlePackageToBuild,
       outputRoot: outputRoot,
@@ -154,7 +154,7 @@ class BuildPackages implements AssetPathProvider {
   factory BuildPackages.singlePackageBuild(
     String package,
     Iterable<BuildPackage> packages,
-  ) => BuildPackages.compute(
+  ) => .compute(
     currentPackage: package,
     singlePackageToBuild: package,
     outputRoot: package,
@@ -168,7 +168,7 @@ class BuildPackages implements AssetPathProvider {
     required String currentPackage,
     required String workspace,
     required Iterable<BuildPackage> packages,
-  }) => BuildPackages.compute(
+  }) => .compute(
     currentPackage: currentPackage,
     outputRoot: workspace,
     packages: {for (final package in packages) package.name: package}.build(),
@@ -188,12 +188,12 @@ class BuildPackages implements AssetPathProvider {
   static PackageConfig _packagesToConfig(Iterable<BuildPackage> packages) {
     final relativeLib = Uri.parse('lib/');
 
-    return PackageConfig([
+    return .new([
       for (final package in packages)
         if (package.name != _sdkPackage.name)
-          Package(
+          .new(
             package.name,
-            Uri.file(
+            .file(
               package.path.endsWith('/') ? package.path : '${package.path}/',
             ),
             languageVersion: package.languageVersion,
@@ -271,10 +271,10 @@ class BuildPackages implements AssetPathProvider {
 
   Iterable<AssetId> get placeholderIds => packages.keys.expand(
     (package) => [
-      AssetId(package, Placeholders.libPath),
-      AssetId(package, Placeholders.testPath),
-      AssetId(package, Placeholders.webPath),
-      AssetId(package, Placeholders.packageName),
+      .new(package, Placeholders.libPath),
+      .new(package, Placeholders.testPath),
+      .new(package, Placeholders.webPath),
+      .new(package, Placeholders.packageName),
     ],
   );
 
@@ -290,7 +290,7 @@ class BuildPackages implements AssetPathProvider {
 
 /// Returns the peer packages of each package.
 ///
-/// See [BuildPackages.peersOf] for the definition of a peer package.
+/// See [.peersOf] for the definition of a peer package.
 BuiltSetMultimap<String, String> _computePeers(
   Iterable<String> outputPackages,
   BuiltSetMultimap<String, String> transitiveDeps,
@@ -341,7 +341,7 @@ BuiltSetMultimap<String, String> _computeAllTransitiveDeps(
     }
   }
 
-  return BuiltSetMultimap<String, String>(result);
+  return .new(result);
 }
 
 /// Returns the transitive deps of [package].

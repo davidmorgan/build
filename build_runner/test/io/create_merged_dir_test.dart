@@ -40,7 +40,7 @@ void main() {
     late BuildPlan buildPlan;
     late BuildState buildState;
     final phases = BuildPhases([
-      InBuildPhase(
+      .new(
         builder: TestBuilder(
           buildExtensions: appendExtension('.copy', from: '.txt'),
         ),
@@ -82,7 +82,7 @@ void main() {
 ''',
     };
     final buildPackages = BuildPackages.singlePackageBuild('a', [
-      BuildPackage.forTesting(name: 'a', isOutput: true, dependencies: ['b']),
+      .forTesting(name: 'a', isOutput: true, dependencies: ['b']),
       BuildPackage.forTesting(name: 'b'),
     ]);
     late Directory tmpDir;
@@ -95,7 +95,7 @@ void main() {
       for (final source in sources.entries) {
         await readerWriter.writeAsString(source.key, source.value);
       }
-      buildPlan = await BuildPlan.load(
+      buildPlan = await .load(
         await BuildSpec.load(
           builderFactories: BuilderFactories({}),
           buildOptions: BuildOptions.forTests(),
@@ -156,7 +156,7 @@ void main() {
     test('creates a valid merged output directory', () async {
       final success = await createMergedOutputDirectories(
         buildDirs: {
-          BuildDirectory('', outputLocation: OutputLocation(tmpDir.path)),
+          BuildDirectory('', outputLocation: .new(tmpDir.path)),
         }.build(),
         buildPackages: buildPackages,
         buildOutputReader: buildOutputReader,
@@ -176,7 +176,7 @@ void main() {
 
       final success = await createMergedOutputDirectories(
         buildDirs: {
-          BuildDirectory('', outputLocation: OutputLocation(tmpDir.path)),
+          BuildDirectory('', outputLocation: .new(tmpDir.path)),
         }.build(),
         buildPackages: buildPackages,
         buildOutputReader: buildOutputReader,
@@ -198,11 +198,8 @@ void main() {
     test('can create multiple merged directories', () async {
       final success = await createMergedOutputDirectories(
         buildDirs: {
-          BuildDirectory('', outputLocation: OutputLocation(tmpDir.path)),
-          BuildDirectory(
-            '',
-            outputLocation: OutputLocation(anotherTmpDir.path),
-          ),
+          BuildDirectory('', outputLocation: .new(tmpDir.path)),
+          BuildDirectory('', outputLocation: .new(anotherTmpDir.path)),
         }.build(),
         buildPackages: buildPackages,
         buildOutputReader: buildOutputReader,
@@ -217,8 +214,8 @@ void main() {
     test('errors if there are conflicting directories', () async {
       final success = await createMergedOutputDirectories(
         buildDirs: {
-          BuildDirectory('web', outputLocation: OutputLocation(tmpDir.path)),
-          BuildDirectory('foo', outputLocation: OutputLocation(tmpDir.path)),
+          BuildDirectory('web', outputLocation: .new(tmpDir.path)),
+          BuildDirectory('foo', outputLocation: .new(tmpDir.path)),
         }.build(),
         buildPackages: buildPackages,
         buildOutputReader: buildOutputReader,
@@ -241,7 +238,7 @@ void main() {
     test('removes the provided root from the output path', () async {
       final success = await createMergedOutputDirectories(
         buildDirs: {
-          BuildDirectory('web', outputLocation: OutputLocation(tmpDir.path)),
+          BuildDirectory('web', outputLocation: .new(tmpDir.path)),
         }.build(),
         buildPackages: buildPackages,
         buildOutputReader: buildOutputReader,
@@ -257,10 +254,7 @@ void main() {
     test('skips output directories with no assets', () async {
       final success = await createMergedOutputDirectories(
         buildDirs: {
-          BuildDirectory(
-            'no_assets_here',
-            outputLocation: OutputLocation(tmpDir.path),
-          ),
+          BuildDirectory('no_assets_here', outputLocation: .new(tmpDir.path)),
         }.build(),
         buildPackages: buildPackages,
         buildOutputReader: buildOutputReader,
@@ -273,7 +267,7 @@ void main() {
     test('does not output the input directory', () async {
       final success = await createMergedOutputDirectories(
         buildDirs: {
-          BuildDirectory('web', outputLocation: OutputLocation(tmpDir.path)),
+          BuildDirectory('web', outputLocation: .new(tmpDir.path)),
         }.build(),
         buildPackages: buildPackages,
         buildOutputReader: buildOutputReader,
@@ -287,11 +281,8 @@ void main() {
     test('outputs the packages when input root is provided', () async {
       final success = await createMergedOutputDirectories(
         buildDirs: {
-          BuildDirectory('web', outputLocation: OutputLocation(tmpDir.path)),
-          BuildDirectory(
-            'foo',
-            outputLocation: OutputLocation(anotherTmpDir.path),
-          ),
+          BuildDirectory('web', outputLocation: .new(tmpDir.path)),
+          BuildDirectory('foo', outputLocation: .new(anotherTmpDir.path)),
         }.build(),
         buildPackages: buildPackages,
         buildOutputReader: buildOutputReader,
@@ -317,7 +308,7 @@ void main() {
     test('does not nest packages symlinks with no root', () async {
       final success = await createMergedOutputDirectories(
         buildDirs: {
-          BuildDirectory('', outputLocation: OutputLocation(tmpDir.path)),
+          BuildDirectory('', outputLocation: .new(tmpDir.path)),
         }.build(),
         buildPackages: buildPackages,
         buildOutputReader: buildOutputReader,
@@ -330,11 +321,8 @@ void main() {
     test('only outputs files contained in the provided root', () async {
       final success = await createMergedOutputDirectories(
         buildDirs: {
-          BuildDirectory('web', outputLocation: OutputLocation(tmpDir.path)),
-          BuildDirectory(
-            'foo',
-            outputLocation: OutputLocation(anotherTmpDir.path),
-          ),
+          BuildDirectory('web', outputLocation: .new(tmpDir.path)),
+          BuildDirectory('foo', outputLocation: .new(anotherTmpDir.path)),
         }.build(),
         buildPackages: buildPackages,
         buildOutputReader: buildOutputReader,
@@ -368,7 +356,7 @@ void main() {
 
       final success = await createMergedOutputDirectories(
         buildDirs: {
-          BuildDirectory('', outputLocation: OutputLocation(tmpDir.path)),
+          BuildDirectory('', outputLocation: .new(tmpDir.path)),
         }.build(),
         buildPackages: buildPackages,
         buildOutputReader: buildOutputReader,
@@ -382,7 +370,7 @@ void main() {
 
     test('doesnt always write files not matching outputDirs', () async {
       buildOutputReader = BuildOutputReader(
-        builderFilesystem: BuilderFilesystem(
+        builderFilesystem: .new(
           buildPackages: buildPlan.buildSpec.buildPackages,
           buildConfigs: buildPlan.buildSpec.buildConfigs,
           buildState: buildState,
@@ -392,7 +380,7 @@ void main() {
       );
       final success = await createMergedOutputDirectories(
         buildDirs: {
-          BuildDirectory('foo', outputLocation: OutputLocation(tmpDir.path)),
+          BuildDirectory('foo', outputLocation: .new(tmpDir.path)),
         }.build(),
         buildPackages: buildPackages,
         buildOutputReader: buildOutputReader,
@@ -424,7 +412,7 @@ void main() {
       test('fails the build', () async {
         final success = await createMergedOutputDirectories(
           buildDirs: {
-            BuildDirectory('', outputLocation: OutputLocation(tmpDir.path)),
+            BuildDirectory('', outputLocation: .new(tmpDir.path)),
           }.build(),
           buildPackages: buildPackages,
           buildOutputReader: buildOutputReader,
@@ -449,7 +437,7 @@ void main() {
       test('removes directories that become empty', () async {
         var success = await createMergedOutputDirectories(
           buildDirs: {
-            BuildDirectory('', outputLocation: OutputLocation(tmpDir.path)),
+            BuildDirectory('', outputLocation: .new(tmpDir.path)),
           }.build(),
           buildPackages: buildPackages,
           buildOutputReader: buildOutputReader,
@@ -460,13 +448,13 @@ void main() {
         for (final remove in removes) {
           final removeId = makeAssetId(remove);
           buildState.addPostProcessBuildStepResult(
-            PostProcessBuildStepId(input: removeId, actionNumber: 1),
-            PostProcessBuildStepResult(hidden: true, deletedPrimaryInput: true),
+            .new(input: removeId, actionNumber: 1),
+            .new(hidden: true, deletedPrimaryInput: true),
           );
         }
         // Recreate buildOutputReader so it notices the delete.
         buildOutputReader = BuildOutputReader(
-          builderFilesystem: BuilderFilesystem(
+          builderFilesystem: .new(
             buildPackages: buildPlan.buildSpec.buildPackages,
             buildConfigs: buildPlan.buildSpec.buildConfigs,
             buildState: buildState,
@@ -476,7 +464,7 @@ void main() {
         );
         success = await createMergedOutputDirectories(
           buildDirs: {
-            BuildDirectory('', outputLocation: OutputLocation(tmpDir.path)),
+            BuildDirectory('', outputLocation: .new(tmpDir.path)),
           }.build(),
           buildPackages: buildPackages,
           buildOutputReader: buildOutputReader,

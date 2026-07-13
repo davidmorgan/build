@@ -51,7 +51,7 @@ class BuildLogLogger implements Logger {
         if (done.isCompleted) return;
         done.completeError(e, st);
       },
-      zoneSpecification: ZoneSpecification(
+      zoneSpecification: .new(
         print: (self, parent, zone, message) {
           log.warning(message);
         },
@@ -74,7 +74,7 @@ class BuildLogLogger implements Logger {
       (e, st) {
         log.severe(null, e, st);
       },
-      zoneSpecification: ZoneSpecification(
+      zoneSpecification: .new(
         print: (self, parent, zone, message) {
           log.info(message);
         },

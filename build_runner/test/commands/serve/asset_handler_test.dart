@@ -40,7 +40,7 @@ void main() {
       (BuildStepPlanBuilder b) =>
           b..buildPhases = BuildPhases(const <InBuildPhase>[]),
     );
-    buildPackages = BuildPackages.singlePackageBuild('a', [
+    buildPackages = .singlePackageBuild('a', [
       BuildPackage.forTesting(name: 'a', isOutput: true),
     ]);
     reader = BuildOutputReader(
@@ -73,7 +73,7 @@ void main() {
   test('can not read deleted files', () async {
     addAsset('a|web/index.html', 'content', deleted: true);
     final response = await handler.handle(
-      Request('GET', Uri.parse('http://server.com/index.html')),
+      Request('GET', .parse('http://server.com/index.html')),
       rootDir: 'web',
     );
     expect(response.statusCode, 404);
@@ -83,7 +83,7 @@ void main() {
   test('can read from the root package', () async {
     addAsset('a|web/index.html', 'content');
     final response = await handler.handle(
-      Request('GET', Uri.parse('http://server.com/index.html')),
+      .new('GET', .parse('http://server.com/index.html')),
       rootDir: 'web',
     );
     expect(await response.readAsString(), 'content');
@@ -92,7 +92,7 @@ void main() {
   test('can read from dependencies', () async {
     addAsset('b|lib/b.dart', 'content');
     final response = await handler.handle(
-      Request('GET', Uri.parse('http://server.com/packages/b/b.dart')),
+      .new('GET', .parse('http://server.com/packages/b/b.dart')),
       rootDir: 'web',
     );
     expect(await response.readAsString(), 'content');
@@ -101,7 +101,7 @@ void main() {
   test('properly sets charset for dart content', () async {
     addAsset('b|lib/b.dart', 'content');
     final response = await handler.handle(
-      Request('GET', Uri.parse('http://server.com/packages/b/b.dart')),
+      .new('GET', .parse('http://server.com/packages/b/b.dart')),
       rootDir: 'web',
     );
     expect(response.headers['content-type'], contains('charset=utf-8'));
@@ -110,7 +110,7 @@ void main() {
   test('can read from dependencies nested under top-level dir', () async {
     addAsset('b|lib/b.dart', 'content');
     final response = await handler.handle(
-      Request('GET', Uri.parse('http://server.com/packages/b/b.dart')),
+      .new('GET', .parse('http://server.com/packages/b/b.dart')),
       rootDir: 'web',
     );
     expect(await response.readAsString(), 'content');
@@ -119,7 +119,7 @@ void main() {
   test('defaults to index.html if path is empty', () async {
     addAsset('a|web/index.html', 'content');
     final response = await handler.handle(
-      Request('GET', Uri.parse('http://server.com/')),
+      .new('GET', .parse('http://server.com/')),
       rootDir: 'web',
     );
     expect(await response.readAsString(), 'content');
@@ -128,7 +128,7 @@ void main() {
   test('defaults to index.html if URI ends with slash', () async {
     addAsset('a|web/sub/index.html', 'content');
     final response = await handler.handle(
-      Request('GET', Uri.parse('http://server.com/sub/')),
+      .new('GET', .parse('http://server.com/sub/')),
       rootDir: 'web',
     );
     expect(await response.readAsString(), 'content');
@@ -137,7 +137,7 @@ void main() {
   test('does not default to index.html if URI does not end in slash', () async {
     addAsset('a|web/sub/index.html', 'content');
     final response = await handler.handle(
-      Request('GET', Uri.parse('http://server.com/sub')),
+      .new('GET', .parse('http://server.com/sub')),
       rootDir: 'web',
     );
     expect(response.statusCode, 404);
@@ -152,9 +152,9 @@ void main() {
       b.buildStepsByDeclaredOutput.addAll({outputId: buildStepId});
     });
     reader = BuildOutputReader(
-      builderFilesystem: BuilderFilesystem(
+      builderFilesystem: .new(
         buildPackages: buildPackages,
-        buildConfigs: BuildConfigs.empty(),
+        buildConfigs: .empty(),
         buildState: buildState,
         buildStepPlan: buildStepPlan,
         readerWriter: readerWriter,
@@ -168,7 +168,7 @@ void main() {
     buildState.updateBuildStepResult(buildStepId, stepResult);
 
     final response = await handler.handle(
-      Request('GET', Uri.parse('http://server.com/main.ddc.js')),
+      .new('GET', .parse('http://server.com/main.ddc.js')),
       rootDir: 'web',
     );
     expect(response.statusCode, HttpStatus.internalServerError);
@@ -177,7 +177,7 @@ void main() {
   test('Supports HEAD requests', () async {
     addAsset('a|web/index.html', 'content');
     final response = await handler.handle(
-      Request('HEAD', Uri.parse('http://server.com/index.html')),
+      .new('HEAD', .parse('http://server.com/index.html')),
       rootDir: 'web',
     );
     expect(response.contentLength, 0);

@@ -88,7 +88,7 @@ void main() {
 
     test('removes OSC 8 hyperlink control sequences', () {
       final text = [
-        AnsiBuffer.openHyperlink(Uri.parse('file:///tmp/example.dart')),
+        AnsiBuffer.openHyperlink(.parse('file:///tmp/example.dart')),
         'example.dart',
         AnsiBuffer.closeHyperlink,
       ].join();

@@ -23,8 +23,6 @@ import '../build_plan/build_step_plan.dart';
 import '../build_plan/phase.dart';
 import '../build_plan/testing_overrides.dart';
 
-import '../io/build_output_reader.dart';
-
 import '../logging/build_log.dart';
 import '../logging/build_log_logger.dart';
 import '../logging/timed_activities.dart';
@@ -45,12 +43,10 @@ import 'library_cycle_graph/library_cycle_graph.dart';
 import 'library_cycle_graph/library_cycle_graph_loader.dart';
 import 'library_cycle_graph/phased_asset_deps.dart';
 import 'post_process_build_step_impl.dart';
-import 'resolver/analysis_driver_model.dart';
+
 import 'resolver/resolvers_impl.dart';
 
-final ResolversImpl _defaultResolvers = ResolversImpl(
-  analysisDriverModel: AnalysisDriverModel(),
-);
+final ResolversImpl _defaultResolvers = .new(analysisDriverModel: .new());
 
 /// A single build.
 class Build {
@@ -58,8 +54,7 @@ class Build {
 
   // Collaborators.
   final ResourceManager resourceManager;
-  final LibraryCycleGraphLoader previousLibraryCycleGraphLoader =
-      LibraryCycleGraphLoader();
+  final LibraryCycleGraphLoader previousLibraryCycleGraphLoader = .new();
   final AssetDepsLoader? previousDepsLoader;
   final Resolvers resolvers;
 
@@ -76,9 +71,9 @@ class Build {
 
   /// Whether a graph from [previousLibraryCycleGraphLoader] has any changed
   /// transitive source.
-  final Map<LibraryCycleGraph, bool> changedGraphs = Map.identity();
+  final Map<LibraryCycleGraph, bool> changedGraphs = .identity();
 
-  late final BuilderFilesystem _builderFilesystem = BuilderFilesystem(
+  late final BuilderFilesystem _builderFilesystem = .new(
     buildPackages: buildPackages,
     buildConfigs: buildConfigs,
     buildStepPlan: buildStepPlan,
@@ -91,7 +86,7 @@ class Build {
   Build({required this.buildPlan, required this.resourceManager})
     : previousDepsLoader = buildPlan.previousBuild.phasedAssetDeps == null
           ? null
-          : AssetDepsLoader.fromDeps(buildPlan.previousBuild.phasedAssetDeps!),
+          : .fromDeps(buildPlan.previousBuild.phasedAssetDeps!),
       resolvers =
           buildPlan.buildSpec.testingOverrides.resolvers ?? _defaultResolvers,
       resolversImpl = switch (buildPlan.buildSpec.testingOverrides.resolvers ??
@@ -99,7 +94,7 @@ class Build {
         ResolversImpl r => r,
         _ => null,
       },
-      buildState = BuildState({
+      buildState = .new({
         for (final id in buildPlan.buildInputs.sources)
           id: buildPlan.buildInputs.sourceContents[id],
       });
@@ -119,7 +114,7 @@ class Build {
       (b) => b..singleOutputPackage = buildPackages.singleOutputPackage,
     );
     var result = await _safeBuild();
-    if (result.status == BuildStatus.success) {
+    if (result.status == .success) {
       final failedSteps = buildState.failedSteps;
       if (failedSteps.isNotEmpty) {
         for (final step in failedSteps) {
@@ -162,7 +157,7 @@ class Build {
       }
 
       if (failedSteps.isNotEmpty || failedPostProcessSteps.isNotEmpty) {
-        result = result.copyWith(status: BuildStatus.failure);
+        result = result.copyWith(status: .failure);
       }
     }
     await resourceManager.disposeAll();
@@ -204,11 +199,11 @@ class Build {
             buildLog.renderThrowable('Unhandled build failure!', e, st),
           );
           done.complete(
-            BuildResult(
-              status: BuildStatus.failure,
-              outputs: BuiltList(),
+            .new(
+              status: .failure,
+              outputs: .new(),
               buildState: buildState,
-              buildOutputReader: BuildOutputReader(
+              buildOutputReader: .new(
                 builderFilesystem: _builderFilesystem.forAfterBuild(),
               ),
             ),
@@ -295,11 +290,11 @@ class Build {
     );
     // Assume success, failed outputs will be checked later.
 
-    return BuildResult(
-      status: BuildStatus.success,
+    return .new(
+      status: .success,
       outputs: outputs.build(),
       buildState: buildState,
-      buildOutputReader: BuildOutputReader(
+      buildOutputReader: .new(
         builderFilesystem: _builderFilesystem.forAfterBuild(),
       ),
     );
@@ -414,11 +409,11 @@ class Build {
     final stepAction = await _computeStepAction(buildStepId, builderOutputs);
     if (stepAction.isSkip) {
       buildLog.skipStep(phase: phase, lazy: lazy);
-      if (stepAction == StepAction.skipMissingPrimaryInput) {
+      if (stepAction == .skipMissingPrimaryInput) {
         _markStepSkipped(buildStepId, builderOutputs);
-      } else if (stepAction == StepAction.skipFailedPrimaryInput) {
+      } else if (stepAction == .skipFailedPrimaryInput) {
         await _markStepFailed(buildStepId, builderOutputs);
-      } else if (stepAction == StepAction.skipReuse) {
+      } else if (stepAction == .skipReuse) {
         _builderFilesystem.updateBuildStepResult(
           buildStepId,
           previousBuildState!.stepResult(buildStepId),
@@ -540,7 +535,7 @@ class Build {
     for (final directive in compilationUnit.directives) {
       if (directive is! PartDirective) continue;
       final partId = AssetId.resolve(
-        Uri.parse(directive.uri.stringValue!),
+        .parse(directive.uri.stringValue!),
         from: id,
       );
       // Check that the part is readable, including generating it if it's
@@ -678,7 +673,7 @@ class Build {
         buildPhases.inBuildPhases[buildStepId.phaseNumber].hideOutput;
     _builderFilesystem.updateBuildStepResult(
       buildStepId,
-      BuildStepResult((b) => b..isHidden = isHidden),
+      .new((b) => b..isHidden = isHidden),
     );
   }
 
@@ -690,7 +685,7 @@ class Build {
         buildPhases.inBuildPhases[buildStepId.phaseNumber].hideOutput;
     _builderFilesystem.updateBuildStepResult(
       buildStepId,
-      BuildStepResult((b) {
+      .new((b) {
         b.result = false;
         b.isHidden = isHidden;
       }),
@@ -720,7 +715,7 @@ class Build {
       if (!buildStepPlan.isDeclaredOutput(step.primaryInput) &&
           (buildInputs.deletedSources.contains(step.primaryInput) ||
               buildInputs.deletedOutputs.contains(step.primaryInput))) {
-        return StepAction.skipMissingPrimaryInput;
+        return .skipMissingPrimaryInput;
       }
 
       // Propagate results for declared output primary input.
@@ -732,7 +727,7 @@ class Build {
         // If the primary input's generating step failed, this build is also
         // failed.
         if (inputStepResult.failed) {
-          return StepAction.skipFailedPrimaryInput;
+          return .skipFailedPrimaryInput;
         }
 
         // If the primary input succeeded but was not output, this build is
@@ -741,16 +736,16 @@ class Build {
           buildStepPlan: buildStepPlan,
           id: step.primaryInput,
         )) {
-          return StepAction.skipMissingPrimaryInput;
+          return .skipMissingPrimaryInput;
         }
       }
 
-      if (buildInputs.cleanBuild) return StepAction.run;
+      if (buildInputs.cleanBuild) return .run;
 
-      if (buildPlan.previousBuild.triggersChanged) return StepAction.run;
+      if (buildPlan.previousBuild.triggersChanged) return .run;
 
       if (buildPlan.phaseOptionsChanged(step.phaseNumber)) {
-        return StepAction.run;
+        return .run;
       }
 
       final primaryInput = step.primaryInput;
@@ -767,19 +762,19 @@ class Build {
             newResult.outputs.containsKey(primaryInput);
 
         if (!oldWasOutput && newWasOutput) {
-          return StepAction.run;
+          return .run;
         }
       }
 
       for (final output in outputs) {
         if (buildInputs.deletedSources.contains(output) ||
             buildInputs.deletedOutputs.contains(output)) {
-          return StepAction.run;
+          return .run;
         }
       }
 
       final stepResult = previousBuildState?.stepResultOrNull(step);
-      if (stepResult == null || !stepResult.hasRun) return StepAction.run;
+      if (stepResult == null || !stepResult.hasRun) return .run;
 
       // Check for changes to any secondary inputs.
       for (final input in stepResult.inputs) {
@@ -788,7 +783,7 @@ class Build {
           input: input,
         );
 
-        if (changed) return StepAction.run;
+        if (changed) return .run;
       }
 
       // Check for changes to any glob inputs.
@@ -800,7 +795,7 @@ class Build {
         }
         if (previousBuildState?.globResultFor(globId)?.digest !=
             currentGlobResult?.digest) {
-          return StepAction.run;
+          return .run;
         }
       }
 
@@ -809,12 +804,12 @@ class Build {
           phaseNumber: step.phaseNumber,
           entrypointId: graphId,
         )) {
-          return StepAction.run;
+          return .run;
         }
       }
 
       // No input changes: build is not needed, and outputs state is up to date.
-      return StepAction.skipReuse;
+      return .skipReuse;
     });
   }
 

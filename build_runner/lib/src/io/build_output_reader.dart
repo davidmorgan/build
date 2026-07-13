@@ -50,10 +50,10 @@ class BuildOutputReader {
     final buildState = _buildState;
     final builderFilesystem = _builderFilesystem;
     if (!_isFile(id)) {
-      return UnreadableReason.notFound;
+      return .notFound;
     }
     if (_assetsDeletedByPostProcessBuilders.contains(id)) {
-      return UnreadableReason.deleted;
+      return .deleted;
     }
 
     if (buildState.isActualPostOutput(id)) {
@@ -67,14 +67,14 @@ class BuildOutputReader {
       )) {
         // The generated output was not considered for building because its
         // transitive input(s) did not match build dirs and/or build filters.
-        return UnreadableReason.notOutput;
+        return .notOutput;
       }
       final stepResult = buildState.stepResult(step);
       if (stepResult.failed) {
-        return UnreadableReason.failed;
+        return .failed;
       }
       if (!buildState.isActualOutput(buildStepPlan: _buildStepPlan, id: id)) {
-        return UnreadableReason.notOutput;
+        return .notOutput;
       }
 
       // No need to explicitly check readability for generated files, their
@@ -92,7 +92,7 @@ class BuildOutputReader {
         )) {
       return null;
     }
-    return UnreadableReason.notFound;
+    return .notFound;
   }
 
   Future<bool> canRead(AssetId id) async =>
@@ -104,8 +104,8 @@ class BuildOutputReader {
     // or known to be deleted. `build serve` uses these digests, which
     // reflect that the file is missing.
     if (unreadableReason != null &&
-        unreadableReason != UnreadableReason.notOutput &&
-        unreadableReason != UnreadableReason.deleted) {
+        unreadableReason != .notOutput &&
+        unreadableReason != .deleted) {
       throw AssetNotFoundException(id);
     }
     return _ensureDigest(id);

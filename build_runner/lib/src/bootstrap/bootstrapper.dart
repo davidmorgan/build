@@ -20,7 +20,7 @@ import 'processes.dart';
 
 /// Generates, runs and checks freshness of the entrypoint script.
 ///
-/// The entrypoint script calls [ChildProcess.run] passing a `BuilderFactories`
+/// The entrypoint script calls [.run] passing a `BuilderFactories`
 /// that knows how to instantiate all the builders that will run during the
 /// build.
 ///
@@ -32,8 +32,8 @@ import 'processes.dart';
 /// the sources it is compiled from. Then a digest is written based on the
 /// contents of all these files so they can be checked for freshness later.
 ///
-/// The entrypoint script is launched using [ParentProcess.runAndSend]
-/// or [ParentProcess.runAotSnapshotAndSend] which passes initial state to it
+/// The entrypoint script is launched using [.runAndSend]
+/// or [.runAotSnapshotAndSend] which passes initial state to it
 /// and receives updated state when it exits.
 class Bootstrapper {
   final BuildPaths buildPaths;
@@ -89,11 +89,11 @@ class Bootstrapper {
             failedDueToMirrors = false;
           } else {
             failedDueToMirrors =
-                _compiler.compileType == CompileType.aot &&
+                _compiler.compileType == .aot &&
                 result.messages!.contains('dart:mirrors');
           }
           if (failedDueToMirrors) {
-            if (compileStrategy == CompileStrategy.forceAot) {
+            if (compileStrategy == .forceAot) {
               buildLog.error(result.messages!);
               buildLog.info(
                 'AOT compilation failed due to dart:mirrors usage. '
@@ -130,7 +130,7 @@ class Bootstrapper {
       // The child process needs to know how it was compiled to check its
       // freshness, so pass `--force-aot` or `--force-jit`, except for when
       // strategy is alwaysJit.
-      final result = _compiler.compileType == CompileType.aot
+      final result = _compiler.compileType == .aot
           ? await ParentProcess.runAotSnapshotAndSend(
               aotSnapshot: p.join(buildPaths.outputRootPath, entrypointAotPath),
               arguments: _insertFlag(arguments, '--force-aot'),
@@ -139,7 +139,7 @@ class Bootstrapper {
             )
           : await ParentProcess.runAndSend(
               script: p.join(buildPaths.outputRootPath, entrypointDillPath),
-              arguments: compileStrategy == CompileStrategy.commandForcesJit
+              arguments: compileStrategy == .commandForcesJit
                   ? arguments.toList()
                   : _insertFlag(arguments, '--force-jit'),
               message: buildProcessState.serialize(),
@@ -186,7 +186,7 @@ class Bootstrapper {
       // Any real use or realistic test has a child process; so this is only hit
       // in small tests. Return "fresh" so nothing related to recompiling is
       // triggered.
-      return FreshnessResult(outputIsFresh: true);
+      return .new(outputIsFresh: true);
     }
     if (digestsAreFresh) {
       final maybeResult = _compiler.checkFreshness(digestsAreFresh: true);

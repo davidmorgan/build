@@ -54,7 +54,7 @@ class TestingOverrides {
     BuiltMap<String, BuildConfig>? buildConfig,
     BuildPackages? buildPackages,
     bool? checkBuilderFreshness,
-  }) => TestingOverrides(
+  }) => .new(
     buildConfig: buildConfig ?? this.buildConfig,
     builderDefinitions: builderDefinitions ?? this.builderDefinitions,
     buildPackages: buildPackages ?? this.buildPackages,

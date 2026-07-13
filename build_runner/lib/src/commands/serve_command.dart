@@ -32,7 +32,7 @@ class ServeCommand implements BuildRunnerCommand {
     required this.builderFactories,
     required this.buildOptions,
     required this.serveOptions,
-    this.testingOverrides = const TestingOverrides(),
+    this.testingOverrides = const .new(),
   });
 
   @override
@@ -92,7 +92,7 @@ class ServeCommand implements BuildRunnerCommand {
 
       // TODO(davidmorgan): reuse build packages.
       _ensureBuildWebCompilersDependency(
-        await BuildPackages.forPaths(buildOptions.buildPaths),
+        await .forPaths(buildOptions.buildPaths),
       );
 
       final completer = Completer<int>();

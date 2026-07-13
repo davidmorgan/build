@@ -44,7 +44,7 @@ class Depfile {
     if (!outputFile.existsSync() ||
         !depsFile.existsSync() ||
         !digestFile.existsSync()) {
-      return FreshnessResult(outputIsFresh: false);
+      return .new(outputIsFresh: false);
     }
 
     _depfilePaths ??= _readPaths();
@@ -60,21 +60,21 @@ class Depfile {
         startStampPath: stampPath,
         endStampPath: digestPath,
       )) {
-        return FreshnessResult(outputIsFresh: false);
+        return .new(outputIsFresh: false);
       }
     }
 
     final digests = digestFile.readAsStringSync();
 
     if (digestsAreFresh) {
-      return FreshnessResult(outputIsFresh: true, digest: digests);
+      return .new(outputIsFresh: true, digest: digests);
     }
 
     final expectedDigests = _digestPaths();
     if (digests == expectedDigests) {
-      return FreshnessResult(outputIsFresh: true, digest: digests);
+      return .new(outputIsFresh: true, digest: digests);
     } else {
-      return FreshnessResult(outputIsFresh: false);
+      return .new(outputIsFresh: false);
     }
   }
 

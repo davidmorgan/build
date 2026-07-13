@@ -27,10 +27,7 @@ class BuildRunnerTester {
   final Directory tempDirectory;
 
   BuildRunnerTester(Pubspecs pubspecs)
-    : this._(
-        pubspecs,
-        Directory.systemTemp.createTempSync('BuildRunnerTester-'),
-      );
+    : this._(pubspecs, .systemTemp.createTempSync('BuildRunnerTester-'));
 
   BuildRunnerTester._(this.pubspecs, this.tempDirectory) {
     addTearDown(() => tempDirectory.deleteSync(recursive: true));
@@ -50,7 +47,7 @@ class BuildRunnerTester {
   ///
   /// The package is written to the directory `$workspace/$name`.
   ///
-  /// A `pubspec.yaml` is also written, see [Pubspecs.pubspec].
+  /// A `pubspec.yaml` is also written, see [.pubspec].
   void writePackage({
     required String name,
     String? path,
@@ -149,9 +146,9 @@ class BuildRunnerTester {
   void delete(String path) {
     final absolutePath = p.join(tempDirectory.path, path);
     final type = FileSystemEntity.typeSync(absolutePath);
-    if (type == FileSystemEntityType.file) {
+    if (type == .file) {
       File(absolutePath).deleteSync(recursive: true);
-    } else if (type == FileSystemEntityType.directory) {
+    } else if (type == .directory) {
       Directory(absolutePath).deleteSync(recursive: true);
     } else {
       throw UnsupportedError('File type: $type');
@@ -251,12 +248,12 @@ ${result.stdout}${result.stderr}===
 class BuildRunnerProcess {
   final Process process;
   final StreamQueue<String> _outputs;
-  late final HttpClient _client = HttpClient();
+  late final HttpClient _client = .new();
   int? _port;
   Future<void>? _killResult;
 
   BuildRunnerProcess(this.process)
-    : _outputs = StreamQueue(
+    : _outputs = .new(
         StreamGroup.merge([
           process.stdout
               .transform(utf8.decoder)
@@ -293,7 +290,7 @@ class BuildRunnerProcess {
   /// Expects [pattern] to appear in the process's stdout or stderr.
   ///
   /// If [failOn] is encountered instead, the test fails immediately. It
-  /// defaults to [BuildLog.failurePattern] so that `expect` will stop if the
+  /// defaults to [.failurePattern] so that `expect` will stop if the
   /// process reports a build failure.
   ///
   /// If the process exits instead, the test fails immediately.
@@ -308,7 +305,7 @@ class BuildRunnerProcess {
   /// Expects [pattern] to appear in the process's stdout or stderr.
   ///
   /// If [failOn] is encountered instead, the test fails immediately. It
-  /// defaults to [BuildLog.failurePattern] so that `expect` will stop if the
+  /// defaults to [.failurePattern] so that `expect` will stop if the
   /// process reports a build failure.
   ///
   /// If the process exits instead, the test fails immediately.
@@ -326,7 +323,7 @@ class BuildRunnerProcess {
     while (true) {
       String? line;
       try {
-        line = await _outputs.next.timeout(const Duration(seconds: 30));
+        line = await _outputs.next.timeout(const .new(seconds: 30));
       } on TimeoutException catch (_) {
         throw fail('While expecting `$pattern`, timed out after 30s.');
       } catch (_) {
@@ -343,7 +340,7 @@ class BuildRunnerProcess {
   /// Expects [pattern] to appear in the process's stdout or stderr.
   ///
   /// If [failOn] is encountered instead, the test fails immediately. It
-  /// defaults to [BuildLog.failurePattern] so that `expect` will stop if the
+  /// defaults to [.failurePattern] so that `expect` will stop if the
   /// process reports a build failure.
   ///
   /// If the process exits instead, the test fails immediately.
@@ -362,7 +359,7 @@ class BuildRunnerProcess {
     while (true) {
       String? line;
       try {
-        line = await _outputs.next.timeout(const Duration(seconds: 30));
+        line = await _outputs.next.timeout(const .new(seconds: 30));
         lines.writeln(line);
       } on TimeoutException catch (_) {
         throw fail('While expecting `$pattern`, timed out after 30s.');
@@ -398,7 +395,7 @@ class BuildRunnerProcess {
     _outputs.rest.listen((line) => printOnFailure('Output after kill: $line'));
     await process.exitCode;
     // Wait a few seconds for child process cleanup.
-    await Future<void>.delayed(const Duration(seconds: 2));
+    await Future<void>.delayed(const .new(seconds: 2));
   }
 
   Future<int> get exitCode => process.exitCode;
@@ -497,7 +494,7 @@ class Pubspecs {
       _copyPackage(package.root.toFilePath(), destinationPath);
       final newRoot = Uri.directory(destinationPath);
       updatedPackages.add(
-        Package(
+        .new(
           package.name,
           newRoot,
           packageUriRoot: newRoot.resolve('lib/'),
@@ -506,9 +503,7 @@ class Pubspecs {
         ),
       );
     }
-    return Pubspecs(
-      PackageConfig(updatedPackages, extraData: config.extraData),
-    );
+    return .new(.new(updatedPackages, extraData: config.extraData));
   }
 
   static void _copyPackage(String source, String dest) {
@@ -560,7 +555,7 @@ class Pubspecs {
 name: $name
 ${inWorkspace ? 'resolution: workspace' : ''}
 environment:
-  sdk: '>=3.7.0 <4.0.0'
+  sdk: '>=3.11.0 <4.0.0'
 dependencies:
 ''');
 
@@ -599,7 +594,7 @@ dependencies:
   /// versions depended on by the test itself, except for packages in the
   /// workspace.
   String workspacePubspec({required List<String> packages, String? sdkBound}) {
-    sdkBound ??= '>=3.7.0 <4.0.0';
+    sdkBound ??= '>=3.11.0 <4.0.0';
     final result = StringBuffer('''
 name: workspace
 environment:

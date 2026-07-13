@@ -18,7 +18,7 @@ void main() {
       lines = [];
       BuildLog.resetForTests();
       buildLog.configuration = buildLog.configuration.rebuild((b) {
-        b.mode = BuildLogMode.build;
+        b.mode = .build;
         b.forceAnsiConsoleForTesting = false;
         b.onLog = (record) => lines.add(record.toString());
         b.throttleProgressUpdates = false;
@@ -26,7 +26,7 @@ void main() {
     });
 
     test('invalid URI on Windows', () {
-      buildLog.buildPackages = BuildPackages.compute(
+      buildLog.buildPackages = .compute(
         currentPackage: 'p',
         outputRoot: 'p',
         packages: {'p': BuildPackage.forTesting(name: 'p')}.build(),
@@ -50,7 +50,7 @@ void main() {
     test('compile progress', () {
       buildLog.logCompile(compileType: CompileType.jit, function: () async {});
       expect(lines, ['  0s compiling builders/jit']);
-      buildLog.logCompile(compileType: CompileType.aot, function: () async {});
+      buildLog.logCompile(compileType: .aot, function: () async {});
       expect(lines, [
         '  0s compiling builders/jit',
         '  0s compiling builders/aot',
@@ -62,7 +62,7 @@ void main() {
       buildLog.startPhases(phases);
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l0.dart'),
+        primaryInput: .new('pkg', 'lib/l0.dart'),
         lazy: false,
       );
       expect(lines, ['  0s builder1 on 10 inputs; pkg|lib/l0.dart']);
@@ -75,7 +75,7 @@ void main() {
       );
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l1.dart'),
+        primaryInput: .new('pkg', 'lib/l1.dart'),
         lazy: false,
       );
       expect(lines, [
@@ -91,7 +91,7 @@ void main() {
       );
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l2.dart'),
+        primaryInput: .new('pkg', 'lib/l2.dart'),
         lazy: false,
       );
       buildLog.finishStep(
@@ -108,13 +108,13 @@ void main() {
 
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l3.dart'),
+        primaryInput: .new('pkg', 'lib/l3.dart'),
         lazy: false,
       );
       buildLog.skipStep(phase: phases.keys.first, lazy: false);
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'test/other.dart'),
+        primaryInput: .new('pkg', 'test/other.dart'),
         lazy: true,
       );
       buildLog.finishStep(
@@ -134,14 +134,14 @@ void main() {
 
     test('phase progress with builder log output', () {
       buildLog.configuration = buildLog.configuration.rebuild((b) {
-        b.mode = BuildLogMode.build;
+        b.mode = .build;
       });
 
       final phases = _createPhases({'builder1': 10, 'builder2': 15});
       buildLog.startPhases(phases);
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l0.dart'),
+        primaryInput: .new('pkg', 'lib/l0.dart'),
         lazy: false,
       );
 
@@ -153,27 +153,27 @@ void main() {
       );
       buildLog.fromBuildLogLogger(
         'Some more info.',
-        severity: Severity.info,
+        severity: .info,
         phaseName: 'builder1',
         context: 'lib/l0.dart',
       );
 
       buildLog.fromBuildLogLogger(
         'A warning.',
-        severity: Severity.warning,
+        severity: .warning,
         phaseName: 'builder2',
         context: 'lib/l1.dart',
       );
 
       buildLog.fromBuildLogLogger(
         'An error.',
-        severity: Severity.error,
+        severity: .error,
         phaseName: 'builder2',
         context: 'lib/l1.dart',
       );
       buildLog.fromBuildLogLogger(
         'An error.',
-        severity: Severity.error,
+        severity: .error,
         phaseName: 'builder2',
         context: 'lib/l3.dart',
       );
@@ -194,7 +194,7 @@ void main() {
 
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l0.dart'),
+        primaryInput: .new('pkg', 'lib/l0.dart'),
         lazy: true,
       );
       buildLog.finishStep(
@@ -205,7 +205,7 @@ void main() {
       );
       buildLog.fromBuildLogLogger(
         'An error.',
-        severity: Severity.error,
+        severity: .error,
         phaseName: 'builder1 (lazy)',
         context: 'lib/l3.dart',
       );
@@ -230,18 +230,18 @@ void main() {
 
     test('complete build with builder log output', () {
       buildLog.configuration = buildLog.configuration.rebuild((b) {
-        b.mode = BuildLogMode.build;
+        b.mode = .build;
       });
       final phases = _createPhases({'builder1': 1, 'builder2': 1});
       buildLog.startPhases(phases);
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l0.dart'),
+        primaryInput: .new('pkg', 'lib/l0.dart'),
         lazy: false,
       );
       buildLog.fromBuildLogLogger(
         'Some info.',
-        severity: Severity.info,
+        severity: .info,
         phaseName: 'builder1',
         context: 'lib/l0.dart',
       );
@@ -253,18 +253,18 @@ void main() {
       );
       buildLog.startStep(
         phase: phases.keys.last,
-        primaryInput: AssetId('pkg', 'lib/l0.dart'),
+        primaryInput: .new('pkg', 'lib/l0.dart'),
         lazy: false,
       );
       buildLog.fromBuildLogLogger(
         'A warning.',
-        severity: Severity.warning,
+        severity: .warning,
         phaseName: 'builder2',
         context: 'lib/l0.dart',
       );
       buildLog.fromBuildLogLogger(
         'An error.',
-        severity: Severity.error,
+        severity: .error,
         phaseName: 'builder2',
         context: 'lib/l0.dart',
       );

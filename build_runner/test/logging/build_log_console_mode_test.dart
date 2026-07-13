@@ -56,7 +56,7 @@ E An error.'''),
         padLinesRight('''
 0s compiling builders/jit'''),
       );
-      buildLog.logCompile(compileType: CompileType.aot, function: () async {});
+      buildLog.logCompile(compileType: .aot, function: () async {});
       expect(
         render(),
         padLinesRight('''
@@ -70,7 +70,7 @@ E An error.'''),
       buildLog.startPhases(phases);
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l0.dart'),
+        primaryInput: .new('pkg', 'lib/l0.dart'),
         lazy: false,
       );
       expect(
@@ -95,7 +95,7 @@ E An error.'''),
 
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l1.dart'),
+        primaryInput: .new('pkg', 'lib/l1.dart'),
         lazy: false,
       );
       expect(
@@ -120,7 +120,7 @@ E An error.'''),
 
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l2.dart'),
+        primaryInput: .new('pkg', 'lib/l2.dart'),
         lazy: false,
       );
       buildLog.finishStep(
@@ -138,7 +138,7 @@ E An error.'''),
 
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l3.dart'),
+        primaryInput: .new('pkg', 'lib/l3.dart'),
         lazy: false,
       );
       buildLog.skipStep(phase: phases.keys.first, lazy: false);
@@ -151,7 +151,7 @@ E An error.'''),
 
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'test/other.dart'),
+        primaryInput: .new('pkg', 'test/other.dart'),
         lazy: true,
       );
       buildLog.finishStep(
@@ -174,7 +174,7 @@ E An error.'''),
       buildLog.startPhases(phases);
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l0.dart'),
+        primaryInput: .new('pkg', 'lib/l0.dart'),
         lazy: false,
       );
 
@@ -186,27 +186,27 @@ E An error.'''),
       );
       buildLog.fromBuildLogLogger(
         'Some more info.',
-        severity: Severity.info,
+        severity: .info,
         phaseName: 'builder1',
         context: 'lib/l0.dart',
       );
 
       buildLog.fromBuildLogLogger(
         'A warning.',
-        severity: Severity.warning,
+        severity: .warning,
         phaseName: 'builder2',
         context: 'lib/l1.dart',
       );
 
       buildLog.fromBuildLogLogger(
         'An error.',
-        severity: Severity.error,
+        severity: .error,
         phaseName: 'builder2',
         context: 'lib/l1.dart',
       );
       buildLog.fromBuildLogLogger(
         'An error.',
-        severity: Severity.error,
+        severity: .error,
         phaseName: 'builder2',
         context: 'lib/l3.dart',
       );
@@ -230,7 +230,7 @@ E An error.'''),
 
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l0.dart'),
+        primaryInput: .new('pkg', 'lib/l0.dart'),
         lazy: true,
       );
       buildLog.finishStep(
@@ -241,7 +241,7 @@ E An error.'''),
       );
       buildLog.fromBuildLogLogger(
         'An error.',
-        severity: Severity.error,
+        severity: .error,
         phaseName: 'builder1 (lazy)',
         context: 'lib/l3.dart',
       );
@@ -304,7 +304,7 @@ E An error.'''),
 
       buildLog.fromBuildLogLogger(
         'An error.',
-        severity: Severity.error,
+        severity: .error,
         phaseName: 'builder1',
         context: 'lib/src/logging/build_log.dart',
         contextId: assetId,
@@ -330,12 +330,12 @@ E An error.'''),
       buildLog.startPhases(phases);
       buildLog.startStep(
         phase: phases.keys.first,
-        primaryInput: AssetId('pkg', 'lib/l0.dart'),
+        primaryInput: .new('pkg', 'lib/l0.dart'),
         lazy: false,
       );
       buildLog.fromBuildLogLogger(
         'Some info.',
-        severity: Severity.info,
+        severity: .info,
         phaseName: 'builder1',
         context: 'lib/l0.dart',
       );
@@ -347,18 +347,18 @@ E An error.'''),
       );
       buildLog.startStep(
         phase: phases.keys.last,
-        primaryInput: AssetId('pkg', 'lib/l0.dart'),
+        primaryInput: .new('pkg', 'lib/l0.dart'),
         lazy: false,
       );
       buildLog.fromBuildLogLogger(
         'A warning.',
-        severity: Severity.warning,
+        severity: .warning,
         phaseName: 'builder2',
         context: 'lib/l0.dart',
       );
       buildLog.fromBuildLogLogger(
         'An error.',
-        severity: Severity.error,
+        severity: .error,
         phaseName: 'builder2',
         context: 'lib/l0.dart',
       );
@@ -417,10 +417,10 @@ class _TestPhase implements InBuildPhase {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-BuildPackages _testBuildPackages(String packageName) =>
-    BuildPackages.singlePackageBuild(packageName, [
-      BuildPackage.forTesting(name: packageName, isOutput: true),
-    ]);
+BuildPackages _testBuildPackages(String packageName) => .singlePackageBuild(
+  packageName,
+  [BuildPackage.forTesting(name: packageName, isOutput: true)],
+);
 
 Uri _packageFileUri(BuildPackages buildPackages, AssetId assetId) =>
-    Uri.file(buildPackages.pathFor(assetId, hide: false));
+    .file(buildPackages.pathFor(assetId, hide: false));

@@ -21,7 +21,7 @@ class AssetChange {
   /// Creates a new change record in [package] from an existing watcher [event].
   AssetChange.fromEvent(BuildPackage package, WatchEvent event)
     : this(
-        AssetId(package.name, _normalizeRelativePath(package, event)),
+        .new(package.name, _normalizeRelativePath(package, event)),
         event.type,
       );
 

@@ -24,7 +24,7 @@ class BuildStepResolver implements ReleasableResolver {
   // Ensures we only resolve one entrypoint at a time from the same build step,
   // otherwise there are race conditions with `_entryPoints` being updated
   // before it is actually ready, or resolving entrypoints more than once.
-  final Pool _perActionResolvePool = Pool(1);
+  final Pool _perActionResolvePool = .new(1);
 
   BuildStepResolver(this._buildResolver, this._buildStep);
 

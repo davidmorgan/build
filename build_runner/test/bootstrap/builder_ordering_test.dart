@@ -73,10 +73,10 @@ void main() {
           final orderedBuilders = findBuilderOrder(
             buildConfigs.values.expand((v) => v.builderDefinitions.values),
             {
-              'a:b': GlobalBuilderConfig.fromJson({
+              'a:b': .fromJson({
                 'runs_before': ['a:a'],
               }),
-              'a:a': GlobalBuilderConfig.fromJson({
+              'a:a': .fromJson({
                 'runs_before': ['a:c'],
               }),
             },
@@ -120,7 +120,7 @@ void main() {
           final orderedBuilders = findBuilderOrder(
             buildConfigs.values.expand((v) => v.builderDefinitions.values),
             {
-              'a:a': GlobalBuilderConfig.fromJson({
+              'a:a': .fromJson({
                 'runs_before': ['a:c'],
               }),
             },
@@ -226,5 +226,5 @@ Map<String, BuildConfig> parseBuildConfigs(
   Map<String, Map<String, dynamic>> configs,
 ) => {
   for (final packageName in configs.keys)
-    packageName: BuildConfig.fromMap(packageName, [], configs[packageName]!),
+    packageName: .fromMap(packageName, [], configs[packageName]!),
 };

@@ -56,9 +56,9 @@ class ResolversImpl implements Resolvers {
   factory ResolversImpl.custom({
     PackageConfig? packageConfig,
     AnalysisDriverModel? analysisDriverModel,
-  }) => ResolversImpl(
+  }) => .new(
     packageConfig: packageConfig,
-    analysisDriverModel: analysisDriverModel ?? AnalysisDriverModel(),
+    analysisDriverModel: analysisDriverModel ?? .new(),
   );
 
   ResolversImpl({
@@ -73,7 +73,7 @@ class ResolversImpl implements Resolvers {
       if (_buildResolver != null) return;
       _warnOnLanguageVersionMismatch();
       final loadedConfig = _packageConfig ??= await loadPackageConfigUri(
-        Uri.parse(buildProcessState.packageConfigUri),
+        .parse(buildProcessState.packageConfigUri),
       );
       final driver = analysisDriver(
         _analysisDriverModel,
@@ -86,10 +86,10 @@ class ResolversImpl implements Resolvers {
         loadedConfig,
       );
 
-      _buildResolver = BuildResolver(driver, _driverPool, _analysisDriverModel);
+      _buildResolver = .new(driver, _driverPool, _analysisDriverModel);
     });
 
-    return BuildStepResolver(_buildResolver!, buildStep as BuildStepImpl);
+    return .new(_buildResolver!, buildStep as BuildStepImpl);
   }
 
   /// Starts a build.
@@ -158,7 +158,7 @@ package in your `pubspec.yaml`, so you may have to add that. You can see your
 current version by running `pub deps`.
 ''');
   }
-  return FeatureSet.fromEnableFlags2(
+  return .fromEnableFlags2(
     sdkLanguageVersion: sdkLanguageVersion,
     flags: enableExperiments,
   );

@@ -35,7 +35,7 @@ class _$PhasedValueSerializer
       'values',
       serializers.serialize(
         object.values,
-        specifiedType: FullType(BuiltList, [
+        specifiedType: .new(BuiltList, [
           FullType(ExpiringValue, [parameterT]),
         ]),
       ),
@@ -71,7 +71,7 @@ class _$PhasedValueSerializer
           result.values.replace(
             serializers.deserialize(
                   value,
-                  specifiedType: FullType(BuiltList, [
+                  specifiedType: .new(BuiltList, [
                     FullType(ExpiringValue, [parameterT]),
                   ]),
                 )!

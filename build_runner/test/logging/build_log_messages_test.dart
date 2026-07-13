@@ -21,7 +21,7 @@ void main() {
         'hi',
         phaseName: 'phase',
         context: 'thing',
-        severity: Severity.error,
+        severity: .error,
       );
       expect(messages.hasWarnings, false);
 
@@ -29,7 +29,7 @@ void main() {
         'hi',
         phaseName: 'phase',
         context: 'thing',
-        severity: Severity.warning,
+        severity: .warning,
       );
       expect(messages.hasWarnings, true);
 
@@ -45,16 +45,11 @@ void main() {
         'hi',
         phaseName: 'unrelated_phase',
         context: 'thing',
-        severity: Severity.info,
+        severity: .info,
       );
       expect(messages.hasMessages(phaseName: 'phase'), false);
 
-      messages.add(
-        'hi',
-        phaseName: 'phase',
-        context: 'thing',
-        severity: Severity.info,
-      );
+      messages.add('hi', phaseName: 'phase', context: 'thing', severity: .info);
       expect(messages.hasMessages(phaseName: 'phase'), true);
 
       messages.clear();
@@ -63,37 +58,37 @@ void main() {
 
     test('render groups messages by phase and context', () {
       final messages = BuildLogMessages();
-      messages.add('message0', phaseName: null, severity: Severity.warning);
+      messages.add('message0', phaseName: null, severity: .warning);
       messages.add(
         'message1',
         phaseName: 'phase1',
         context: 'file1',
-        severity: Severity.error,
+        severity: .error,
       );
       messages.add(
         'message2',
         phaseName: 'phase2',
         context: 'file1',
-        severity: Severity.info,
+        severity: .info,
       );
       messages.add(
         'message3',
         phaseName: 'phase1',
         context: 'file1',
-        severity: Severity.warning,
+        severity: .warning,
       );
       messages.add(
         'message4',
         phaseName: 'phase1',
         context: 'file2',
-        severity: Severity.info,
+        severity: .info,
       );
-      messages.add('message5', phaseName: null, severity: Severity.info);
+      messages.add('message5', phaseName: null, severity: .info);
       messages.add(
         'message6',
         phaseName: 'phase2',
         context: 'file1',
-        severity: Severity.info,
+        severity: .info,
       );
       final rendered = messages.render();
       expect(rendered.nonFailureLines.map((l) => l.toString()).toList(), [

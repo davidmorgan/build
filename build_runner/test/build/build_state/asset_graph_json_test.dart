@@ -36,14 +36,14 @@ void main() {
 
     test('deserialize returns null on invalid json', () async {
       final validBytes = AssetGraphJson.serialize(
-        buildState: BuildState(),
-        buildPlanDigest: BuildSpecDigest.build((b) {
+        buildState: .new(),
+        buildPlanDigest: .build((b) {
           b.compileDigest = '';
           b.buildTriggersDigest = '';
           b.buildPhasesDigest = '';
           b.dartVersion = '';
         }),
-        phasedAssetDeps: PhasedAssetDeps(),
+        phasedAssetDeps: .new(),
       );
       final invalidBytes = validBytes.sublist(0, validBytes.length - 1);
       expect(AssetGraphJson.deserialize(invalidBytes), isNull);
