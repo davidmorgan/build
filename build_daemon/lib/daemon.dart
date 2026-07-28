@@ -106,14 +106,26 @@ class Daemon {
   Future<void> _cleanUp(int exitCode) async {
     await _server?.stop();
     await _sub?.cancel();
-    // We need to close the lock prior to deleting the file.
-    _lock?.closeSync();
+    
+    // Delete files individually while holding the lock
     final workspace = Directory(
       daemonWorkspace(_workingDirectory, daemonSharedPath: _daemonSharedPath),
     );
+    final lockPath = lockFilePath(
+      _workingDirectory,
+      daemonSharedPath: _daemonSharedPath,
+    );
     if (workspace.existsSync()) {
-      workspace.deleteSync(recursive: true);
+      for (var entity in workspace.listSync()) {
+        if (entity.path == lockPath) continue;
+        try {
+          entity.deleteSync(recursive: true);
+        } catch (_) {}
+      }
     }
+    
+    _lock?.closeSync();
+    
     if (!_doneCompleter.isCompleted) _doneCompleter.complete(exitCode);
   }
 
