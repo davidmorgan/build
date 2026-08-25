@@ -32,8 +32,7 @@ class FinishedBuildState {
       buildStepPlan = BuildStepPlan.empty();
 
   BuiltSet<AssetId> get sources => incremental.sources;
-  BuiltMap<AssetId, AssetContent> get sourceContents =>
-      incremental.sourceContents;
+  BuiltMap<AssetId, AssetData> get sourceContents => incremental.sourceContents;
   BuiltSet<AssetId> get missingSources => incremental.missingSources;
   BuiltMap<BuildStepId, BuildStepResult> get buildStepResults =>
       incremental.buildStepResults;
@@ -63,7 +62,11 @@ class FinishedBuildState {
 
   bool isSource(AssetId id) => sources.contains(id);
   bool isMissingSource(AssetId id) => missingSources.contains(id);
-  AssetContent? contentOfSource(AssetId id) => sourceContents[id];
+  AssetData? dataOfSource(AssetId id) => sourceContents[id];
+  AssetContent? contentOfSource(AssetId id) {
+    final data = dataOfSource(id);
+    return data == null ? null : AssetContent.fromData(data);
+  }
 
   BuildStepResult? stepResultOrNull(BuildStepId step) => buildStepResults[step];
   BuildStepResult stepResult(BuildStepId step) => stepResultOrNull(step)!;
@@ -102,8 +105,8 @@ class FinishedBuildState {
       buildStepPlan.isDeclaredOutput(id) ||
       isActualPostOutput(id);
 
-  AssetContent? contentOf(AssetId id) {
-    if (isSource(id)) return sourceContents[id];
+  AssetData? dataOf(AssetId id) {
+    if (isSource(id)) return dataOfSource(id);
     final step = buildStepPlan.stepForDeclaredOutputOrNull(id);
     if (step != null) {
       return stepResultOrNull(step)?.outputs[id];
@@ -113,5 +116,10 @@ class FinishedBuildState {
       return postProcessResults[postStep]?.outputs[id];
     }
     return null;
+  }
+
+  AssetContent? contentOf(AssetId id) {
+    final data = dataOf(id);
+    return data == null ? null : AssetContent.fromData(data);
   }
 }

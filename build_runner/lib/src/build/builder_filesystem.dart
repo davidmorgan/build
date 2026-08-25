@@ -69,7 +69,10 @@ class BuilderFilesystem {
     buildState.updateBuildStepResult(buildStepId, result);
 
     for (final entry in result.outputs.entries) {
-      _onUpdateContent?.call(entry.key, entry.value);
+      _onUpdateContent?.call(
+        entry.key,
+        AssetContent.fromDataOrNull(entry.value),
+      );
     }
 
     final declaredOutputsForStep =
@@ -138,7 +141,7 @@ class BuilderFilesystem {
   /// in memory.
   Future<AssetContent> contentOf(AssetId id) async {
     final maybeResult = buildState.contentOf(id);
-    if (maybeResult != null && maybeResult.hasContent) return maybeResult;
+    if (maybeResult != null) return maybeResult;
 
     if (!isFile(id)) {
       throw StateError('Cannot read $id, it is not a known source or output.');
@@ -153,9 +156,7 @@ class BuilderFilesystem {
     } on AssetNotFoundException {
       await ChildProcess.exitDueToAssetDeleted(id);
     }
-    final content = maybeResult != null
-        ? maybeResult.withBytes(bytes)
-        : AssetContent.bytes(bytes);
+    final content = AssetContent.bytes(bytes);
     updateContent(id: id, content: content);
     return content;
   }

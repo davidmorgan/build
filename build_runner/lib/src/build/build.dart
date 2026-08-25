@@ -937,7 +937,8 @@ class Build {
 
   /// Whether the post process build step [buildStepId] should run.
   ///
-  /// It should run if its builder options changed or its input changed.
+  /// It should run if its builder options changed, any of its previous outputs
+  /// were modified or deleted, or its input changed.
   Future<bool> _postProcessBuildStepShouldRun(
     PostProcessBuildStepId buildStepId,
   ) async {
@@ -948,6 +949,14 @@ class Build {
     }
 
     if (buildPlan.postBuildOptionsChanged(buildStepId.actionNumber)) {
+      return true;
+    }
+
+    final stepResult = previousBuildState?.postProcessBuildStepResultFor(
+      buildStepId,
+    );
+    if (stepResult != null &&
+        stepResult.outputs.keys.any(buildInputs.invalidOutputs.contains)) {
       return true;
     }
 

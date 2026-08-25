@@ -106,14 +106,14 @@ class BuildSeries {
         // change then just ignoring the event would be incorrect.
         if ((change.type == .ADD || change.type == .MODIFY) &&
             _buildPlan.buildStepPlan.isDeclaredOutput(id)) {
-          final expectedContent = previousState?.contentOf(id);
-          if (expectedContent != null) {
+          final expectedData = previousState?.dataOf(id);
+          if (expectedData != null) {
             try {
               final bytes = await _buildPlan.readerWriter.readAsBytes(
                 id,
                 hidden: _buildPlan.buildStepPlan.isHidden(id),
               );
-              if (md5.convert(bytes) == expectedContent.digest) {
+              if (md5.convert(bytes) == expectedData.digest) {
                 continue;
               }
             } catch (_) {}
@@ -151,7 +151,7 @@ class BuildSeries {
       // with no outputs.
       if (!_buildPlan.buildSpec.buildOptions.anyMergedOutputDirectory &&
           !(previousState?.isMissingSource(id) ?? false) &&
-          previousState?.contentOf(id) == null) {
+          previousState?.dataOf(id) == null) {
         rejected.add(change);
         continue;
       }

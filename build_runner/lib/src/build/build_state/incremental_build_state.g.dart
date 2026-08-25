@@ -38,7 +38,7 @@ class _$IncrementalBuildStateSerializer
         object.sourceContents,
         specifiedType: const FullType(BuiltMap, const [
           const FullType(AssetId),
-          const FullType(AssetContent),
+          const FullType(AssetData),
         ]),
       ),
       'missingSources',
@@ -108,7 +108,7 @@ class _$IncrementalBuildStateSerializer
               value,
               specifiedType: const FullType(BuiltMap, const [
                 const FullType(AssetId),
-                const FullType(AssetContent),
+                const FullType(AssetData),
               ]),
             )!,
           );
@@ -168,7 +168,7 @@ class _$IncrementalBuildState extends IncrementalBuildState {
   @override
   final BuiltSet<AssetId> sources;
   @override
-  final BuiltMap<AssetId, AssetContent> sourceContents;
+  final BuiltMap<AssetId, AssetData> sourceContents;
   @override
   final BuiltSet<AssetId> missingSources;
   @override
@@ -246,10 +246,10 @@ class IncrementalBuildStateBuilder
   SetBuilder<AssetId> get sources => _$this._sources ??= SetBuilder<AssetId>();
   set sources(SetBuilder<AssetId>? sources) => _$this._sources = sources;
 
-  MapBuilder<AssetId, AssetContent>? _sourceContents;
-  MapBuilder<AssetId, AssetContent> get sourceContents =>
-      _$this._sourceContents ??= MapBuilder<AssetId, AssetContent>();
-  set sourceContents(MapBuilder<AssetId, AssetContent>? sourceContents) =>
+  MapBuilder<AssetId, AssetData>? _sourceContents;
+  MapBuilder<AssetId, AssetData> get sourceContents =>
+      _$this._sourceContents ??= MapBuilder<AssetId, AssetData>();
+  set sourceContents(MapBuilder<AssetId, AssetData>? sourceContents) =>
       _$this._sourceContents = sourceContents;
 
   SetBuilder<AssetId>? _missingSources;

@@ -23,13 +23,13 @@ abstract class PostProcessBuildStepResult
 
   bool get deletedPrimaryInput;
 
-  BuiltMap<AssetId, AssetContent> get outputs;
+  BuiltMap<AssetId, AssetData> get outputs;
 
   BuiltList<String> get errors;
 
   factory PostProcessBuildStepResult({
     required bool hidden,
-    Map<AssetId, AssetContent> outputs = const {},
+    Map<AssetId, AssetData> outputs = const {},
     Iterable<String> errors = const [],
     bool deletedPrimaryInput = false,
   }) => _$PostProcessBuildStepResult._(

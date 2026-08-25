@@ -197,7 +197,7 @@ class BuildState {
         .rebuild((b) => b..outputs[id] = content);
   }
 
-  /// The content of [id].
+  /// The data of [id].
   ///
   /// If it is a source, returns `null` if it has not been read.
   ///
@@ -205,7 +205,7 @@ class BuildState {
   ///
   /// If it is a post process output, returns `null` if it has not been
   /// generated.
-  AssetContent? contentOf(AssetId id) {
+  AssetData? dataOf(AssetId id) {
     if (isSource(id)) return _sources.contentOfSource(id);
     final step = buildStepPlan.stepForDeclaredOutputOrNull(id);
     if (step != null) {
@@ -216,6 +216,16 @@ class BuildState {
       return postProcessBuildStepResultFor(postProcessStepId)?.outputs[id];
     }
     return null;
+  }
+
+  /// The content of [id].
+  ///
+  /// Returns `null` if it is an unread source or has not been generated.
+  ///
+  /// Throws [StateError] if data is present but has no content.
+  AssetContent? contentOf(AssetId id) {
+    final data = dataOf(id);
+    return data == null ? null : AssetContent.fromData(data);
   }
 
   IncrementalBuildState toIncrementalBuildState() {
@@ -254,6 +264,7 @@ class BuildState {
     return builder.build();
   }
 
+  /// Returns the finished build state.
   FinishedBuildState toFinishedBuildState() => FinishedBuildState(
     incremental: toIncrementalBuildState(),
     buildStepPlan: buildStepPlan,
@@ -286,6 +297,9 @@ class BuildState {
 
   /// Updates a build step result after the step runs.
   void updateBuildStepResult(BuildStepId buildStepId, BuildStepResult result) {
+    for (final data in result.outputs.values) {
+      AssetContent.fromData(data);
+    }
     _buildStepResultsByPrimaryInput.putIfAbsent(
       buildStepId.primaryInput,
       () => {},
@@ -308,6 +322,9 @@ class BuildState {
     PostProcessBuildStepId step,
     PostProcessBuildStepResult result,
   ) {
+    for (final data in result.outputs.values) {
+      AssetContent.fromData(data);
+    }
     final results = _postProcessResultsByInput.putIfAbsent(
       step.input,
       () => {},

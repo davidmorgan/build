@@ -42,9 +42,9 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltMap, const [
               const FullType(AssetId),
-              const FullType(AssetContent),
+              const FullType(AssetData),
             ]),
-            () => MapBuilder<AssetId, AssetContent>(),
+            () => MapBuilder<AssetId, AssetData>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
@@ -53,9 +53,9 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltMap, const [
               const FullType(AssetId),
-              const FullType(AssetContent),
+              const FullType(AssetData),
             ]),
-            () => MapBuilder<AssetId, AssetContent>(),
+            () => MapBuilder<AssetId, AssetData>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltSet, const [const FullType(AssetId)]),
@@ -91,9 +91,9 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltMap, const [
               const FullType(AssetId),
-              const FullType(AssetContent),
+              const FullType(AssetData),
             ]),
-            () => MapBuilder<AssetId, AssetContent>(),
+            () => MapBuilder<AssetId, AssetData>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltSet, const [const FullType(AssetId)]),

@@ -121,11 +121,17 @@ void main() {
       buildState
         ..addSourceForTest(
           notDeletedId,
-          digest: AssetContent.digest(computeDigest(notDeletedId, 'a')),
+          digest: AssetContent.string(
+            'a',
+            digest: computeDigest(notDeletedId, 'a'),
+          ),
         )
         ..addSourceForTest(
           deletedId,
-          digest: AssetContent.digest(computeDigest(deletedId, 'b')),
+          digest: AssetContent.string(
+            'b',
+            digest: computeDigest(deletedId, 'b'),
+          ),
         );
 
       readerWriter.testing.writeString(notDeletedId, '');
@@ -254,7 +260,10 @@ void main() {
           hidden: false,
           deletedPrimaryInput: false,
           outputs: {
-            postOutput: AssetContent.digest(computeDigest(postOutput, 'a')),
+            postOutput: AssetContent.string(
+              'a',
+              digest: computeDigest(postOutput, 'a'),
+            ),
           },
         ),
       );

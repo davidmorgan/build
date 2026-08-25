@@ -96,7 +96,7 @@ class AssetTracker {
     final originalGraphSources = buildState.sources.toSet();
     final preExistingSources = originalGraphSources.intersection(inputSources);
     for (final id in preExistingSources) {
-      final originalDigest = buildState.contentOfSource(id);
+      final originalDigest = buildState.dataOfSource(id);
       if (originalDigest == null) continue;
 
       final currentDigest = await _readerWriter.digest(id);
@@ -109,14 +109,14 @@ class AssetTracker {
       allSources,
     );
     for (final id in preExistingOutputs) {
-      final originalContent = buildState.contentOf(id);
-      if (originalContent == null) continue;
+      final originalData = buildState.dataOf(id);
+      if (originalData == null) continue;
 
       final currentDigest = await _readerWriter.digest(
         id,
         hidden: buildState.isHidden(id),
       );
-      if (currentDigest != originalContent.digest) {
+      if (currentDigest != originalData.digest) {
         updates[id] = ChangeType.MODIFY;
       }
     }

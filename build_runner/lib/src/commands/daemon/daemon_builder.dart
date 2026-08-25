@@ -246,8 +246,8 @@ class BuildRunnerDaemonBuilder implements DaemonBuilder {
   /// by a development server, require notifying targets even though no build
   /// steps need to run.
   ///
-  /// If there are no accepted changes and all targets have a cached result,
-  /// synthetic results are emitted immediately without rerunning the build.
+ /// If there are no accepted changes and all targets have a cached result,
+ /// synthetic results are emitted immediately without rerunning the build.
   ///
   /// Returns null if no build is required or if synthetic results were already
   /// emitted.
@@ -283,8 +283,8 @@ class BuildRunnerDaemonBuilder implements DaemonBuilder {
         return null;
       }
 
-      // If there are no accepted changes and all targets have a cached result,
-      // emit synthetic results.
+      // If there are no accepted changes and all targets have a cached
+      // result, emit synthetic results.
       if (filtered.accepted.isEmpty &&
           targets.every(_lastResultByTarget.containsKey)) {
         _emitSyntheticResults(targets, consumedRejected);

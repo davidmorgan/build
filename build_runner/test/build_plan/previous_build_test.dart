@@ -159,7 +159,10 @@ void main() {
         step,
         BuildStepResult((b) {
           b.isHidden = false;
-          b.outputs[outputId] = AssetContent.digest(Digest(<int>[]));
+          b.outputs[outputId] = AssetContent.string(
+            '// output',
+            digest: Digest(<int>[]),
+          );
         }),
       );
       await writeBuildStateAndPlan(

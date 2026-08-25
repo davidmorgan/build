@@ -24,7 +24,7 @@ abstract class IncrementalBuildState
       _$incrementalBuildStateSerializer;
 
   BuiltSet<AssetId> get sources;
-  BuiltMap<AssetId, AssetContent> get sourceContents;
+  BuiltMap<AssetId, AssetData> get sourceContents;
   BuiltSet<AssetId> get missingSources;
   BuiltMap<BuildStepId, BuildStepResult> get buildStepResults;
   BuiltMap<PostProcessBuildStepId, PostProcessBuildStepResult>

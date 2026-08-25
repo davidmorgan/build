@@ -65,9 +65,13 @@ void main() {
         buildStepPlan: buildStepPlan,
         sources: {aId: null},
       );
-      // Assign a digest so the source is recognized as having been used.
+      // Assign content so the source is recognized as having been used.
+      final bytes = await reader.readAsBytes(aId);
       final digest = await reader.digest(aId);
-      buildState.updateSourceContent(aId, AssetContent.digest(digest));
+      buildState.updateSourceContent(
+        aId,
+        AssetContent.bytes(bytes, digest: digest),
+      );
       finishedBuildState = buildState.toFinishedBuildState();
 
       final buildConfigs = await BuildConfigs.load(

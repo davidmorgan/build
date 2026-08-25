@@ -26,7 +26,7 @@ abstract class BuildStepResult
   bool get isHidden;
 
   /// Outputs written by the step.
-  BuiltMap<AssetId, AssetContent> get outputs;
+  BuiltMap<AssetId, AssetData> get outputs;
 
   /// Inputs and missing sources read.
   BuiltSet<AssetId> get inputs;

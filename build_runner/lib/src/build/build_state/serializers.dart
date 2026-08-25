@@ -45,7 +45,7 @@ final identityAssetIdSerializer = IdentitySerializer<AssetId>(
 final Serializers serializers =
     (_$serializers.toBuilder()
           ..add(identityAssetIdSerializer)
-          ..add(AssetContentSerializer())
+          ..add(AssetDataSerializer())
           ..add(DigestSerializer())
           ..addBuilderFactory(
             const FullType(BuiltSet, [FullType(AssetId)]),
@@ -85,15 +85,12 @@ final Serializers serializers =
             () => <AssetId>{},
           )
           ..addBuilderFactory(
-            const FullType(BuiltMap, [
-              FullType(AssetId),
-              FullType(AssetContent),
-            ]),
-            MapBuilder<AssetId, AssetContent>.new,
+            const FullType(BuiltMap, [FullType(AssetId), FullType(AssetData)]),
+            MapBuilder<AssetId, AssetData>.new,
           )
           ..addBuilderFactory(
-            const FullType(BuiltList, [FullType(AssetContent)]),
-            ListBuilder<AssetContent>.new,
+            const FullType(BuiltList, [FullType(AssetData)]),
+            ListBuilder<AssetData>.new,
           )
           ..addBuilderFactory(
             const FullType(PhasedValue, [FullType(AssetDeps)]),
