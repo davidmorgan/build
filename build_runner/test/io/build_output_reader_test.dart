@@ -82,7 +82,10 @@ void main() {
       'does not reread source part of the build when disk content changes',
       () async {
         final id = AssetId('a', 'web/a.txt');
-        buildState.addSourceForTest(id, digest: AssetContent.string('initial'));
+        buildState.addSourceForTest(
+          id,
+          content: AssetContent.string('initial'),
+        );
         readerWriter.testing.writeString(id, 'initial');
 
         final buildPlan = await BuildPlan.load(
@@ -121,11 +124,17 @@ void main() {
       buildState
         ..addSourceForTest(
           notDeletedId,
-          digest: AssetContent.digest(computeDigest(notDeletedId, 'a')),
+          content: AssetContent.string(
+            'a',
+            digest: computeDigest(notDeletedId, 'a'),
+          ),
         )
         ..addSourceForTest(
           deletedId,
-          digest: AssetContent.digest(computeDigest(deletedId, 'b')),
+          content: AssetContent.string(
+            'b',
+            digest: computeDigest(deletedId, 'b'),
+          ),
         );
 
       readerWriter.testing.writeString(notDeletedId, '');
@@ -253,9 +262,15 @@ void main() {
         PostProcessBuildStepResult(
           hidden: false,
           deletedPrimaryInput: false,
-          outputs: {
-            postOutput: AssetContent.digest(computeDigest(postOutput, 'a')),
-          },
+          outputs: [postOutput],
+        ),
+      );
+      buildState.updatePostProcessOutputContent(
+        step: postProcessId,
+        id: postOutput,
+        content: AssetContent.string(
+          'a',
+          digest: computeDigest(postOutput, 'a'),
         ),
       );
 
@@ -332,15 +347,20 @@ void main() {
         buildState.addSourceForTest(unusedSourceId);
         buildState.addSourceForTest(
           usedSourceId,
-          digest: AssetContent.string('used content'),
+          content: AssetContent.string('used content'),
         );
         buildState.addPostProcessBuildStepResult(
           postProcessId,
           PostProcessBuildStepResult(
             hidden: false,
             deletedPrimaryInput: false,
-            outputs: {generatedId: AssetContent.string('generated content')},
+            outputs: [generatedId],
           ),
+        );
+        buildState.updatePostProcessOutputContent(
+          step: postProcessId,
+          id: generatedId,
+          content: AssetContent.string('generated content'),
         );
 
         readerWriter.testing.writeString(unusedSourceId, 'unused content');

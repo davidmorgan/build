@@ -4,9 +4,13 @@
 
 import 'package:build/build.dart';
 import 'package:build_config/build_config.dart';
+import 'package:build_runner/src/build/asset_content.dart';
 import 'package:build_runner/src/build/build_state/build_state.dart';
 import 'package:build_runner/src/build/build_state/build_step_id.dart';
+import 'package:build_runner/src/build/build_state/build_step_result.dart';
 import 'package:build_runner/src/build/build_state/exceptions.dart';
+import 'package:build_runner/src/build/build_state/post_process_build_step_id.dart';
+import 'package:build_runner/src/build/build_state/post_process_build_step_result.dart';
 import 'package:build_runner/src/build_plan/build_phases.dart';
 import 'package:build_runner/src/build_plan/build_step_plan.dart';
 import 'package:build_runner/src/build_plan/phase.dart';
@@ -212,6 +216,106 @@ void main() {
               makeAssetId('foo|lib/1.txt.1'),
               makeAssetId('foo|lib/1.txt.1.2'),
             ]),
+          );
+        });
+
+        test('reuseBuildStepResult records step and contents', () {
+          final step = BuildStepId(
+            primaryInput: primaryInputId,
+            phaseNumber: 0,
+          );
+          final stepResult = BuildStepResult((b) {
+            b.isHidden = true;
+            b.outputs.add(primaryOutputId);
+          });
+          final content = AssetContent.string('reused content');
+
+          buildState.reuseBuildStepResult(
+            step: step,
+            result: stepResult,
+            contents: {primaryOutputId: content},
+          );
+
+          expect(buildState.stepResult(step), stepResult);
+          expect(buildState.contentOf(primaryOutputId), content);
+          expect(buildState.digestOf(primaryOutputId), content.digest);
+        });
+
+        test('reuseBuildStepResult throws on output mismatch', () {
+          final step = BuildStepId(
+            primaryInput: primaryInputId,
+            phaseNumber: 0,
+          );
+          final stepResult = BuildStepResult((b) {
+            b.isHidden = true;
+            b.outputs.add(primaryOutputId);
+          });
+
+          expect(
+            () => buildState.reuseBuildStepResult(
+              step: step,
+              result: stepResult,
+              contents: {},
+            ),
+            throwsArgumentError,
+          );
+
+          final wrongId = makeAssetId('foo|wrong.txt');
+          expect(
+            () => buildState.reuseBuildStepResult(
+              step: step,
+              result: stepResult,
+              contents: {wrongId: AssetContent.string('wrong')},
+            ),
+            throwsArgumentError,
+          );
+        });
+
+        test('reusePostProcessBuildStepResult records step and contents', () {
+          final step = PostProcessBuildStepId(
+            input: primaryInputId,
+            actionNumber: 0,
+          );
+          final postOutputId = makeAssetId('foo|file.txt.post');
+          final stepResult = PostProcessBuildStepResult(
+            hidden: true,
+            outputs: [postOutputId],
+            errors: const [],
+            deletedPrimaryInput: false,
+          );
+          final content = AssetContent.string('post content');
+
+          buildState.reusePostProcessBuildStepResult(
+            step: step,
+            result: stepResult,
+            contents: {postOutputId: content},
+          );
+
+          expect(buildState.postProcessBuildStepResultFor(step), stepResult);
+          expect(buildState.contentOf(postOutputId), content);
+          expect(buildState.digestOf(postOutputId), content.digest);
+        });
+
+        test('reusePostProcessBuildStepResult throws on output mismatch', () {
+          final step = PostProcessBuildStepId(
+            input: primaryInputId,
+            actionNumber: 0,
+          );
+          final postOutputId = makeAssetId('foo|file.txt.post');
+          final stepResult = PostProcessBuildStepResult(
+            hidden: true,
+            outputs: [postOutputId],
+            errors: const [],
+            deletedPrimaryInput: false,
+          );
+
+          expect(
+            () => buildState.reusePostProcessBuildStepResult(
+              step: step,
+              result: stepResult,
+              contents: {},
+            ),
+            throwsArgumentError,
           );
         });
       });

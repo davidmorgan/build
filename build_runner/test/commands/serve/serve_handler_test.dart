@@ -153,7 +153,10 @@ void main() {
     }
     buildState.addSourceForTest(
       parsedId,
-      digest: AssetContent.digest(computeDigest(parsedId, content)),
+      content: AssetContent.string(
+        content,
+        digest: computeDigest(parsedId, content),
+      ),
     );
     readerWriter.testing.writeString(parsedId, content);
     finalizedReader = BuildOutputReader(
