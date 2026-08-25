@@ -4,6 +4,7 @@
 
 import 'package:build/build.dart' hide Builder;
 import 'package:built_collection/built_collection.dart';
+import 'package:crypto/crypto.dart';
 
 import '../../build_plan/build_step_plan.dart';
 import '../asset_content.dart';
@@ -16,24 +17,33 @@ import 'post_process_build_step_id.dart';
 import 'post_process_build_step_result.dart';
 
 /// State of a finished build, pairing the [IncrementalBuildState] with the
-/// [BuildStepPlan].
+/// [BuildStepPlan], and providing guaranteed in-memory content when available.
 ///
 /// Offers functionality used after the build, for example in serving files,
 /// and in preparation for the next build.
 class FinishedBuildState {
   final IncrementalBuildState incremental;
   final BuildStepPlan buildStepPlan;
+  final BuiltMap<AssetId, AssetContent> sourceContents;
+  final BuiltMap<AssetId, AssetContent> outputContents;
 
-  FinishedBuildState({required this.incremental, required this.buildStepPlan});
+  FinishedBuildState({
+    required this.incremental,
+    required this.buildStepPlan,
+    required this.sourceContents,
+    required this.outputContents,
+  });
 
   /// An empty [FinishedBuildState] with no sources and an empty plan.
   FinishedBuildState.empty()
     : incremental = IncrementalBuildState(),
-      buildStepPlan = BuildStepPlan.empty();
+      buildStepPlan = BuildStepPlan.empty(),
+      sourceContents = BuiltMap<AssetId, AssetContent>(),
+      outputContents = BuiltMap<AssetId, AssetContent>();
 
   BuiltSet<AssetId> get sources => incremental.sources;
-  BuiltMap<AssetId, AssetContent> get sourceContents =>
-      incremental.sourceContents;
+  BuiltMap<AssetId, Digest> get sourceDigests => incremental.sourceDigests;
+  BuiltMap<AssetId, Digest> get outputDigests => incremental.outputDigests;
   BuiltSet<AssetId> get missingSources => incremental.missingSources;
   BuiltMap<BuildStepId, BuildStepResult> get buildStepResults =>
       incremental.buildStepResults;
@@ -54,7 +64,7 @@ class FinishedBuildState {
   late final BuiltMap<AssetId, PostProcessBuildStepId> postProcessOutputs = () {
     final builder = MapBuilder<AssetId, PostProcessBuildStepId>();
     for (final entry in postProcessResults.entries) {
-      for (final id in entry.value.outputs.keys) {
+      for (final id in entry.value.outputs) {
         builder[id] = entry.key;
       }
     }
@@ -63,6 +73,7 @@ class FinishedBuildState {
 
   bool isSource(AssetId id) => sources.contains(id);
   bool isMissingSource(AssetId id) => missingSources.contains(id);
+  Digest? digestOfSource(AssetId id) => sourceDigests[id];
   AssetContent? contentOfSource(AssetId id) => sourceContents[id];
 
   BuildStepResult? stepResultOrNull(BuildStepId step) => buildStepResults[step];
@@ -77,7 +88,7 @@ class FinishedBuildState {
       postProcessResults.values;
 
   Iterable<AssetId> get actualOutputs =>
-      buildStepResults.values.expand((r) => r.outputs.keys);
+      buildStepResults.values.expand((r) => r.outputs);
   Iterable<AssetId> get actualPostOutputs => postProcessOutputs.keys;
 
   bool isActualPostOutput(AssetId id) => postProcessOutputs.containsKey(id);
@@ -85,7 +96,7 @@ class FinishedBuildState {
   bool isActualOutput(AssetId id) {
     final step = buildStepPlan.stepForDeclaredOutputOrNull(id);
     if (step == null) return false;
-    return stepResultOrNull(step)?.outputs.containsKey(id) ?? false;
+    return stepResultOrNull(step)?.outputs.contains(id) ?? false;
   }
 
   bool isHiddenPostProcessOutput(AssetId id) {
@@ -102,16 +113,13 @@ class FinishedBuildState {
       buildStepPlan.isDeclaredOutput(id) ||
       isActualPostOutput(id);
 
+  Digest? digestOf(AssetId id) {
+    if (isSource(id)) return digestOfSource(id);
+    return outputDigests[id];
+  }
+
   AssetContent? contentOf(AssetId id) {
-    if (isSource(id)) return sourceContents[id];
-    final step = buildStepPlan.stepForDeclaredOutputOrNull(id);
-    if (step != null) {
-      return stepResultOrNull(step)?.outputs[id];
-    }
-    final postStep = postProcessOutputs[id];
-    if (postStep != null) {
-      return postProcessResults[postStep]?.outputs[id];
-    }
-    return null;
+    if (isSource(id)) return contentOfSource(id);
+    return outputContents[id];
   }
 }

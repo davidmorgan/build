@@ -60,7 +60,10 @@ void main() {
     }
     buildState.addSourceForTest(
       parsedId,
-      digest: AssetContent.digest(computeDigest(parsedId, 'a')),
+      digest: AssetContent.string(
+        content,
+        digest: computeDigest(parsedId, 'a'),
+      ),
     );
     readerWriter.testing.writeString(parsedId, content);
   }

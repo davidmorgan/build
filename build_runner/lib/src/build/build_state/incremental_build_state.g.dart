@@ -33,12 +33,20 @@ class _$IncrementalBuildStateSerializer
           const FullType(AssetId),
         ]),
       ),
-      'sourceContents',
+      'sourceDigests',
       serializers.serialize(
-        object.sourceContents,
+        object.sourceDigests,
         specifiedType: const FullType(BuiltMap, const [
           const FullType(AssetId),
-          const FullType(AssetContent),
+          const FullType(Digest),
+        ]),
+      ),
+      'outputDigests',
+      serializers.serialize(
+        object.outputDigests,
+        specifiedType: const FullType(BuiltMap, const [
+          const FullType(AssetId),
+          const FullType(Digest),
         ]),
       ),
       'missingSources',
@@ -102,13 +110,24 @@ class _$IncrementalBuildStateSerializer
                 as BuiltSet<Object?>,
           );
           break;
-        case 'sourceContents':
-          result.sourceContents.replace(
+        case 'sourceDigests':
+          result.sourceDigests.replace(
             serializers.deserialize(
               value,
               specifiedType: const FullType(BuiltMap, const [
                 const FullType(AssetId),
-                const FullType(AssetContent),
+                const FullType(Digest),
+              ]),
+            )!,
+          );
+          break;
+        case 'outputDigests':
+          result.outputDigests.replace(
+            serializers.deserialize(
+              value,
+              specifiedType: const FullType(BuiltMap, const [
+                const FullType(AssetId),
+                const FullType(Digest),
               ]),
             )!,
           );
@@ -168,7 +187,9 @@ class _$IncrementalBuildState extends IncrementalBuildState {
   @override
   final BuiltSet<AssetId> sources;
   @override
-  final BuiltMap<AssetId, AssetContent> sourceContents;
+  final BuiltMap<AssetId, Digest> sourceDigests;
+  @override
+  final BuiltMap<AssetId, Digest> outputDigests;
   @override
   final BuiltSet<AssetId> missingSources;
   @override
@@ -185,12 +206,50 @@ class _$IncrementalBuildState extends IncrementalBuildState {
 
   _$IncrementalBuildState._({
     required this.sources,
-    required this.sourceContents,
+    required this.sourceDigests,
+    required this.outputDigests,
     required this.missingSources,
     required this.buildStepResults,
     required this.postProcessResults,
     required this.globResults,
-  }) : super._();
+  }) : super._() {
+    BuiltValueNullFieldError.checkNotNull(
+      sources,
+      r'IncrementalBuildState',
+      'sources',
+    );
+    BuiltValueNullFieldError.checkNotNull(
+      sourceDigests,
+      r'IncrementalBuildState',
+      'sourceDigests',
+    );
+    BuiltValueNullFieldError.checkNotNull(
+      outputDigests,
+      r'IncrementalBuildState',
+      'outputDigests',
+    );
+    BuiltValueNullFieldError.checkNotNull(
+      missingSources,
+      r'IncrementalBuildState',
+      'missingSources',
+    );
+    BuiltValueNullFieldError.checkNotNull(
+      buildStepResults,
+      r'IncrementalBuildState',
+      'buildStepResults',
+    );
+    BuiltValueNullFieldError.checkNotNull(
+      postProcessResults,
+      r'IncrementalBuildState',
+      'postProcessResults',
+    );
+    BuiltValueNullFieldError.checkNotNull(
+      globResults,
+      r'IncrementalBuildState',
+      'globResults',
+    );
+  }
+
   @override
   IncrementalBuildState rebuild(
     void Function(IncrementalBuildStateBuilder) updates,
@@ -205,7 +264,8 @@ class _$IncrementalBuildState extends IncrementalBuildState {
     if (identical(other, this)) return true;
     return other is IncrementalBuildState &&
         sources == other.sources &&
-        sourceContents == other.sourceContents &&
+        sourceDigests == other.sourceDigests &&
+        outputDigests == other.outputDigests &&
         missingSources == other.missingSources &&
         buildStepResults == other.buildStepResults &&
         postProcessResults == other.postProcessResults &&
@@ -216,7 +276,8 @@ class _$IncrementalBuildState extends IncrementalBuildState {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, sources.hashCode);
-    _$hash = $jc(_$hash, sourceContents.hashCode);
+    _$hash = $jc(_$hash, sourceDigests.hashCode);
+    _$hash = $jc(_$hash, outputDigests.hashCode);
     _$hash = $jc(_$hash, missingSources.hashCode);
     _$hash = $jc(_$hash, buildStepResults.hashCode);
     _$hash = $jc(_$hash, postProcessResults.hashCode);
@@ -229,7 +290,8 @@ class _$IncrementalBuildState extends IncrementalBuildState {
   String toString() {
     return (newBuiltValueToStringHelper(r'IncrementalBuildState')
           ..add('sources', sources)
-          ..add('sourceContents', sourceContents)
+          ..add('sourceDigests', sourceDigests)
+          ..add('outputDigests', outputDigests)
           ..add('missingSources', missingSources)
           ..add('buildStepResults', buildStepResults)
           ..add('postProcessResults', postProcessResults)
@@ -246,11 +308,17 @@ class IncrementalBuildStateBuilder
   SetBuilder<AssetId> get sources => _$this._sources ??= SetBuilder<AssetId>();
   set sources(SetBuilder<AssetId>? sources) => _$this._sources = sources;
 
-  MapBuilder<AssetId, AssetContent>? _sourceContents;
-  MapBuilder<AssetId, AssetContent> get sourceContents =>
-      _$this._sourceContents ??= MapBuilder<AssetId, AssetContent>();
-  set sourceContents(MapBuilder<AssetId, AssetContent>? sourceContents) =>
-      _$this._sourceContents = sourceContents;
+  MapBuilder<AssetId, Digest>? _sourceDigests;
+  MapBuilder<AssetId, Digest> get sourceDigests =>
+      _$this._sourceDigests ??= MapBuilder<AssetId, Digest>();
+  set sourceDigests(MapBuilder<AssetId, Digest>? sourceDigests) =>
+      _$this._sourceDigests = sourceDigests;
+
+  MapBuilder<AssetId, Digest>? _outputDigests;
+  MapBuilder<AssetId, Digest> get outputDigests =>
+      _$this._outputDigests ??= MapBuilder<AssetId, Digest>();
+  set outputDigests(MapBuilder<AssetId, Digest>? outputDigests) =>
+      _$this._outputDigests = outputDigests;
 
   SetBuilder<AssetId>? _missingSources;
   SetBuilder<AssetId> get missingSources =>
@@ -287,7 +355,8 @@ class IncrementalBuildStateBuilder
     final $v = _$v;
     if ($v != null) {
       _sources = $v.sources.toBuilder();
-      _sourceContents = $v.sourceContents.toBuilder();
+      _sourceDigests = $v.sourceDigests.toBuilder();
+      _outputDigests = $v.outputDigests.toBuilder();
       _missingSources = $v.missingSources.toBuilder();
       _buildStepResults = $v.buildStepResults.toBuilder();
       _postProcessResults = $v.postProcessResults.toBuilder();
@@ -317,7 +386,8 @@ class IncrementalBuildStateBuilder
           _$v ??
           _$IncrementalBuildState._(
             sources: sources.build(),
-            sourceContents: sourceContents.build(),
+            sourceDigests: sourceDigests.build(),
+            outputDigests: outputDigests.build(),
             missingSources: missingSources.build(),
             buildStepResults: buildStepResults.build(),
             postProcessResults: postProcessResults.build(),
@@ -328,8 +398,10 @@ class IncrementalBuildStateBuilder
       try {
         _$failedField = 'sources';
         sources.build();
-        _$failedField = 'sourceContents';
-        sourceContents.build();
+        _$failedField = 'sourceDigests';
+        sourceDigests.build();
+        _$failedField = 'outputDigests';
+        outputDigests.build();
         _$failedField = 'missingSources';
         missingSources.build();
         _$failedField = 'buildStepResults';

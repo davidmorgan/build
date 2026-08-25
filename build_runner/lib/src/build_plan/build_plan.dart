@@ -71,8 +71,8 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
     final assetTrackerInputSources = await assetTracker.findInputSources();
     final cacheDirSources = await assetTracker.findCacheDirSources();
 
-    final previousBuildState = previousBuild.state;
-    if (previousBuildState == null) {
+    final hasCompatiblePreviousBuild = previousBuild.incrementalState != null;
+    if (!hasCompatiblePreviousBuild) {
       // If there is no compatible previous build, compute inputs with files
       // that look like old generation outputs removed.
 
@@ -107,11 +107,12 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
       final filesToCheck = {
         ...assetTrackerInputSources,
         ...cacheDirSources,
-        ...previousBuildState.sources,
-        ...previousBuildState.actualOutputs,
+        ...previousBuild.sources,
+        ...previousBuild.actualOutputs,
+        ...previousBuild.actualPostOutputs,
       };
 
-      final previousBuildStepPlan = previousBuildState.buildStepPlan;
+      final previousBuildStepPlan = previousBuild.buildStepPlan!;
 
       return _createIncremental(
         buildSpec: buildSpec,
@@ -141,8 +142,7 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
   );
 
   Future<BuildPlan> updateForFileChanges(Set<AssetId> filesToCheck) {
-    final previousBuildState = previousBuild.state;
-    if (previousBuildState == null) {
+    if (previousBuild.incrementalState == null) {
       return _createClean(
         buildSpec: buildSpec,
         previousBuild: previousBuild,
@@ -264,34 +264,40 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
     final readerWriter = buildSpec.readerWriter;
     final buildInputs = BuildInputsBuilder()..cleanBuild = false;
 
-    final previousBuildState = previousBuild.state!;
+    final incrementalBuilder = previousBuild.incrementalState!.toBuilder();
+    final previousSourceContents = previousBuild.sourceContents.toBuilder();
+    final previousOutputContents = previousBuild.outputContents.toBuilder();
     var buildStepPlan = previousBuildStepPlan;
 
-    buildInputs.sources.addAll(previousBuildState.sources);
-    for (final id in previousBuildState.sources) {
-      final content = previousBuildState.contentOfSource(id);
+    buildInputs.sources.addAll(previousBuild.sources);
+    for (final id in previousBuild.sources) {
+      final content = previousBuild.contentOfSource(id);
       if (content != null) {
         buildInputs.sourceContents[id] = content;
       }
     }
 
+    void updatePreviousBuildOutputContent(
+      AssetId id,
+      AssetContent verifiedContent,
+    ) {
+      previousOutputContents[id] = verifiedContent;
+    }
+
     for (final id in filesToCheck) {
-      final oldIsSource = previousBuildState.isSource(id);
-      final oldExisted = previousBuildState.isFile(id);
-      final oldContent = previousBuildState.contentOf(id);
+      final oldIsSource = previousBuild.isSource(id);
+      final oldExisted = previousBuild.isFile(id);
+      final oldDigest = previousBuild.digestOf(id);
       var exists = false;
       AssetContent? newContent;
 
-      if (await readerWriter.canRead(
-        id,
-        hidden: previousBuildState.isHidden(id),
-      )) {
+      if (await readerWriter.canRead(id, hidden: previousBuild.isHidden(id))) {
         exists = true;
-        if (oldContent != null) {
+        if (oldDigest != null) {
           try {
             final bytes = await readerWriter.readAsBytes(
               id,
-              hidden: previousBuildState.isHidden(id),
+              hidden: previousBuild.isHidden(id),
             );
             newContent = AssetContent.bytes(bytes);
           } catch (_) {
@@ -305,23 +311,43 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
           buildInputs.deletedSources.add(id);
           buildInputs.sources.remove(id);
           buildInputs.sourceContents.remove(id);
+          previousSourceContents.remove(id);
+          incrementalBuilder.sourceDigests.remove(id);
         } else {
           buildInputs.invalidOutputs.add(id);
+          previousOutputContents.remove(id);
+          incrementalBuilder.outputDigests.remove(id);
         }
       } else if (!oldExisted && exists) {
         buildInputs.updatedSources.add(id);
         buildInputs.sources.add(id);
       } else if (oldExisted &&
-          oldContent != null &&
+          oldDigest != null &&
           exists &&
-          oldContent.digest != newContent!.digest) {
+          oldDigest != newContent!.digest) {
         if (oldIsSource) {
           buildInputs.updatedSources.add(id);
           buildInputs.sourceContents[id] = newContent;
+          previousSourceContents[id] = newContent;
+          incrementalBuilder.sourceDigests[id] = newContent.digest;
         } else if (buildSpec.buildOptions.outputStrategy !=
             OutputStrategy.keep) {
           buildInputs.invalidOutputs.add(id);
+          previousOutputContents.remove(id);
+          incrementalBuilder.outputDigests.remove(id);
+        } else {
+          final existingContent = previousBuild.contentOf(id);
+          final updatedContent = existingContent != null
+              ? existingContent.withBytes(newContent.bytes)
+              : AssetContent.bytes(newContent.bytes, digest: oldDigest);
+          updatePreviousBuildOutputContent(id, updatedContent);
         }
+      } else if (oldIsSource && exists && newContent != null) {
+        buildInputs.sourceContents[id] = newContent;
+        previousSourceContents[id] = newContent;
+        incrementalBuilder.sourceDigests[id] = newContent.digest;
+      } else if (!oldIsSource && exists && newContent != null) {
+        updatePreviousBuildOutputContent(id, newContent);
       }
     }
 
@@ -339,7 +365,10 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
             id,
             hidden: buildStepPlan.isHidden(id),
           );
-          buildInputs.sourceContents[id] = AssetContent.bytes(bytes);
+          final content = AssetContent.bytes(bytes);
+          buildInputs.sourceContents[id] = content;
+          previousSourceContents[id] = content;
+          incrementalBuilder.sourceDigests[id] = content.digest;
         } catch (_) {}
       }
     }
@@ -349,9 +378,16 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
         .toSet();
     buildInputs.invalidOutputs.addAll(invalidOutputs);
 
+    final updatedPreviousBuild = previousBuild.rebuild(
+      (b) => b
+        ..incrementalState = incrementalBuilder.build()
+        ..sourceContents.replace(previousSourceContents.build())
+        ..outputContents.replace(previousOutputContents.build()),
+    );
+
     return BuildPlan((b) {
       b.buildSpec.replace(buildSpec);
-      b.previousBuild.replace(previousBuild);
+      b.previousBuild.replace(updatedPreviousBuild);
       b.buildStepPlan.replace(buildStepPlan);
       b.buildInputs = buildInputs;
       b.buildDirs.replace(buildDirs);

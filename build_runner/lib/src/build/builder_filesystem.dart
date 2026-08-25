@@ -68,15 +68,34 @@ class BuilderFilesystem {
   void updateBuildStepResult(BuildStepId buildStepId, BuildStepResult result) {
     buildState.updateBuildStepResult(buildStepId, result);
 
-    for (final entry in result.outputs.entries) {
-      _onUpdateContent?.call(entry.key, entry.value);
-    }
-
     final declaredOutputsForStep =
         buildStepPlan.declaredOutputsByStep[buildStepId];
     for (final declaredOutput in declaredOutputsForStep) {
-      if (!result.outputs.containsKey(declaredOutput)) {
+      if (!result.outputs.contains(declaredOutput)) {
         _onUpdateContent?.call(declaredOutput, null);
+      }
+    }
+  }
+
+  /// Reuses the result of [step] from a previous build with [contents] and
+  /// notifies update listener.
+  void reuseBuildStepResult({
+    required BuildStepId step,
+    required BuildStepResult result,
+    required Map<AssetId, AssetContent> contents,
+  }) {
+    buildState.reuseBuildStepResult(
+      step: step,
+      result: result,
+      contents: contents,
+    );
+
+    final declaredOutputsForStep = buildStepPlan.declaredOutputsByStep[step];
+    for (final declaredOutput in declaredOutputsForStep) {
+      if (!result.outputs.contains(declaredOutput)) {
+        _onUpdateContent?.call(declaredOutput, null);
+      } else {
+        _onUpdateContent?.call(declaredOutput, contents[declaredOutput]);
       }
     }
   }
@@ -138,7 +157,7 @@ class BuilderFilesystem {
   /// in memory.
   Future<AssetContent> contentOf(AssetId id) async {
     final maybeResult = buildState.contentOf(id);
-    if (maybeResult != null && maybeResult.hasContent) return maybeResult;
+    if (maybeResult != null) return maybeResult;
 
     if (!isFile(id)) {
       throw StateError('Cannot read $id, it is not a known source or output.');
@@ -153,9 +172,7 @@ class BuilderFilesystem {
     } on AssetNotFoundException {
       await ChildProcess.exitDueToAssetDeleted(id);
     }
-    final content = maybeResult != null
-        ? maybeResult.withBytes(bytes)
-        : AssetContent.bytes(bytes);
+    final content = AssetContent.bytes(bytes);
     updateContent(id: id, content: content);
     return content;
   }

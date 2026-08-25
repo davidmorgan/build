@@ -25,7 +25,6 @@ import 'package:build_runner/src/build_plan/testing_overrides.dart';
 import 'package:build_runner/src/io/build_output_reader.dart';
 import 'package:build_runner/src/io/create_merged_dir.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
@@ -117,20 +116,25 @@ void main() {
         ...buildPlan.buildStepPlan.declaredOutputs,
         ...buildState.actualPostOutputs,
       ]) {
+        final content =
+            sources[buildPlan.buildStepPlan
+                .stepForDeclaredOutput(id)
+                .primaryInput]!;
+        final step = buildPlan.buildStepPlan.stepForDeclaredOutput(id);
         final stepResult = BuildStepResult((b) {
           b.result = true;
           b.isHidden = false;
-          b.outputs[id] = AssetContent.digest(Digest([]));
+          b.outputs.add(id);
         });
-        buildState.updateBuildStepResult(
-          buildPlan.buildStepPlan.stepForDeclaredOutput(id),
-          stepResult,
+        buildState.updateBuildStepResult(step, stepResult);
+        buildState.updateDeclaredOutputContent(
+          step: step,
+          id: id,
+          content: AssetContent.string(content),
         );
         await readerWriter.writeAsString(
           id,
-          sources[buildPlan.buildStepPlan
-              .stepForDeclaredOutput(id)
-              .primaryInput]!,
+          content,
           hidden: buildState.isHidden(id),
         );
       }

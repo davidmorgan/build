@@ -10,7 +10,6 @@ import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
-import '../build/asset_content.dart';
 import '../build/build_state/finished_build_state.dart';
 import '../build/build_state/sources.dart';
 import '../build_plan/build_packages.dart';
@@ -87,7 +86,7 @@ class BuildOutputReader {
       if (stepResult.failed) {
         return UnreadableReason.failed;
       }
-      if (!stepResult.outputs.containsKey(id)) {
+      if (!stepResult.outputs.contains(id)) {
         return UnreadableReason.notOutput;
       }
 
@@ -123,7 +122,7 @@ class BuildOutputReader {
 
   Future<List<int>> readAsBytes(AssetId id) async {
     final cached = buildState.contentOf(id);
-    if (cached != null && cached.hasContent) {
+    if (cached != null) {
       _recordSourceConsumedOutsideBuild(id);
       return cached.bytes;
     }
@@ -142,7 +141,7 @@ class BuildOutputReader {
 
   Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) async {
     final cached = buildState.contentOf(id);
-    if (cached != null && cached.hasContent) {
+    if (cached != null) {
       _recordSourceConsumedOutsideBuild(id);
       return cached.stringValue(encoding: encoding);
     }
@@ -176,7 +175,7 @@ class BuildOutputReader {
     final content = buildState.contentOf(id);
     if (content != null) return content.digest;
     final bytes = await readAsBytes(id);
-    return AssetContent.bytes(bytes).digest;
+    return md5.convert(bytes);
   }
 
   /// A lazily computed view of all the assets available after a build.
@@ -221,7 +220,7 @@ class BuildOutputReader {
       final stepResult = buildState.stepResultOrNull(step);
       if (stepResult == null ||
           stepResult.failed ||
-          !stepResult.outputs.containsKey(id)) {
+          !stepResult.outputs.contains(id)) {
         return true;
       }
       return false;

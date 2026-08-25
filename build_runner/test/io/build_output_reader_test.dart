@@ -121,11 +121,17 @@ void main() {
       buildState
         ..addSourceForTest(
           notDeletedId,
-          digest: AssetContent.digest(computeDigest(notDeletedId, 'a')),
+          digest: AssetContent.string(
+            'a',
+            digest: computeDigest(notDeletedId, 'a'),
+          ),
         )
         ..addSourceForTest(
           deletedId,
-          digest: AssetContent.digest(computeDigest(deletedId, 'b')),
+          digest: AssetContent.string(
+            'b',
+            digest: computeDigest(deletedId, 'b'),
+          ),
         );
 
       readerWriter.testing.writeString(notDeletedId, '');
@@ -253,9 +259,15 @@ void main() {
         PostProcessBuildStepResult(
           hidden: false,
           deletedPrimaryInput: false,
-          outputs: {
-            postOutput: AssetContent.digest(computeDigest(postOutput, 'a')),
-          },
+          outputs: [postOutput],
+        ),
+      );
+      buildState.updatePostProcessOutputContent(
+        step: postProcessId,
+        id: postOutput,
+        content: AssetContent.string(
+          'a',
+          digest: computeDigest(postOutput, 'a'),
         ),
       );
 
@@ -339,8 +351,13 @@ void main() {
           PostProcessBuildStepResult(
             hidden: false,
             deletedPrimaryInput: false,
-            outputs: {generatedId: AssetContent.string('generated content')},
+            outputs: [generatedId],
           ),
+        );
+        buildState.updatePostProcessOutputContent(
+          step: postProcessId,
+          id: generatedId,
+          content: AssetContent.string('generated content'),
         );
 
         readerWriter.testing.writeString(unusedSourceId, 'unused content');
