@@ -26,7 +26,7 @@ class BuilderFilesystem {
   final BuildPackages buildPackages;
   final BuildConfigs buildConfigs;
   final BuildState buildState;
-  final BuildStepPlan buildStepPlan;
+  BuildStepPlan get buildStepPlan => buildState.buildStepPlan;
   final ReaderWriter readerWriter;
   final AssetBuilder assetBuilder;
   final GlobEvaluator globEvaluator;
@@ -35,7 +35,6 @@ class BuilderFilesystem {
     required this.buildPackages,
     required this.buildConfigs,
     required this.buildState,
-    required this.buildStepPlan,
     required this.readerWriter,
     required this.assetBuilder,
     required this.globEvaluator,

@@ -82,7 +82,10 @@ void main() {
       'does not reread source part of the build when disk content changes',
       () async {
         final id = AssetId('a', 'web/a.txt');
-        buildState.addSourceForTest(id, digest: AssetContent.string('initial'));
+        buildState.addSourceForTest(
+          id,
+          content: AssetContent.string('initial'),
+        );
         readerWriter.testing.writeString(id, 'initial');
 
         final buildPlan = await BuildPlan.load(
@@ -121,14 +124,14 @@ void main() {
       buildState
         ..addSourceForTest(
           notDeletedId,
-          digest: AssetContent.string(
+          content: AssetContent.string(
             'a',
             digest: computeDigest(notDeletedId, 'a'),
           ),
         )
         ..addSourceForTest(
           deletedId,
-          digest: AssetContent.string(
+          content: AssetContent.string(
             'b',
             digest: computeDigest(deletedId, 'b'),
           ),
@@ -344,7 +347,7 @@ void main() {
         buildState.addSourceForTest(unusedSourceId);
         buildState.addSourceForTest(
           usedSourceId,
-          digest: AssetContent.string('used content'),
+          content: AssetContent.string('used content'),
         );
         buildState.addPostProcessBuildStepResult(
           postProcessId,

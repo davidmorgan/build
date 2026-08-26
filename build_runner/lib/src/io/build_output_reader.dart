@@ -10,8 +10,8 @@ import 'package:crypto/crypto.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 
+import '../build/build_state/build_file_index.dart';
 import '../build/build_state/finished_build_state.dart';
-import '../build/build_state/sources.dart';
 import '../build_plan/build_packages.dart';
 import '../build_plan/build_step_plan.dart';
 import 'reader_writer.dart';
@@ -30,9 +30,9 @@ class BuildOutputReader {
 
   BuildStepPlan get buildStepPlan => buildState.buildStepPlan;
 
-  late final Sources _sources = Sources({
-    for (final s in buildState.sources) s: null,
-  });
+  late final BuildFileIndex _fileIndex = BuildFileIndex(
+    buildState.sources.followedBy(buildStepPlan.declaredOutputs),
+  );
 
   /// Sources that were read or digested but only outside the build, for example
   /// by an asset server.
@@ -151,17 +151,13 @@ class BuildOutputReader {
   }
 
   void _recordSourceConsumedOutsideBuild(AssetId id) {
-    if (buildState.isSource(id) && buildState.contentOfSource(id) == null) {
+    if (buildState.isSource(id) && buildState.contentOf(id) == null) {
       _sourcesConsumedOutsideBuild.add(id);
     }
   }
 
   Stream<AssetId> findAssets(Glob glob, {required String package}) async* {
-    for (final id in _sources.findFiles(
-      package,
-      buildStepPlan.declaredOutputs,
-      glob: glob,
-    )) {
+    for (final id in _fileIndex.findFiles(package, glob: glob)) {
       if (await canRead(id)) {
         yield id;
       }

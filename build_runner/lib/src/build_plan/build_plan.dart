@@ -265,13 +265,12 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
     final buildInputs = BuildInputsBuilder()..cleanBuild = false;
 
     final incrementalBuilder = previousBuild.incrementalState!.toBuilder();
-    final previousSourceContents = previousBuild.sourceContents.toBuilder();
-    final previousOutputContents = previousBuild.outputContents.toBuilder();
+    final previousContents = previousBuild.contents.toBuilder();
     var buildStepPlan = previousBuildStepPlan;
 
     buildInputs.sources.addAll(previousBuild.sources);
     for (final id in previousBuild.sources) {
-      final content = previousBuild.contentOfSource(id);
+      final content = previousBuild.contentOf(id);
       if (content != null) {
         buildInputs.sourceContents[id] = content;
       }
@@ -281,7 +280,7 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
       AssetId id,
       AssetContent verifiedContent,
     ) {
-      previousOutputContents[id] = verifiedContent;
+      previousContents[id] = verifiedContent;
     }
 
     for (final id in filesToCheck) {
@@ -311,12 +310,12 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
           buildInputs.deletedSources.add(id);
           buildInputs.sources.remove(id);
           buildInputs.sourceContents.remove(id);
-          previousSourceContents.remove(id);
-          incrementalBuilder.sourceDigests.remove(id);
+          previousContents.remove(id);
+          incrementalBuilder.digests.remove(id);
         } else {
           buildInputs.invalidOutputs.add(id);
-          previousOutputContents.remove(id);
-          incrementalBuilder.outputDigests.remove(id);
+          previousContents.remove(id);
+          incrementalBuilder.digests.remove(id);
         }
       } else if (!oldExisted && exists) {
         buildInputs.updatedSources.add(id);
@@ -328,13 +327,13 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
         if (oldIsSource) {
           buildInputs.updatedSources.add(id);
           buildInputs.sourceContents[id] = newContent;
-          previousSourceContents[id] = newContent;
-          incrementalBuilder.sourceDigests[id] = newContent.digest;
+          previousContents[id] = newContent;
+          incrementalBuilder.digests[id] = newContent.digest;
         } else if (buildSpec.buildOptions.outputStrategy !=
             OutputStrategy.keep) {
           buildInputs.invalidOutputs.add(id);
-          previousOutputContents.remove(id);
-          incrementalBuilder.outputDigests.remove(id);
+          previousContents.remove(id);
+          incrementalBuilder.digests.remove(id);
         } else {
           final existingContent = previousBuild.contentOf(id);
           final updatedContent = existingContent != null
@@ -344,8 +343,8 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
         }
       } else if (oldIsSource && exists && newContent != null) {
         buildInputs.sourceContents[id] = newContent;
-        previousSourceContents[id] = newContent;
-        incrementalBuilder.sourceDigests[id] = newContent.digest;
+        previousContents[id] = newContent;
+        incrementalBuilder.digests[id] = newContent.digest;
       } else if (!oldIsSource && exists && newContent != null) {
         updatePreviousBuildOutputContent(id, newContent);
       }
@@ -367,8 +366,8 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
           );
           final content = AssetContent.bytes(bytes);
           buildInputs.sourceContents[id] = content;
-          previousSourceContents[id] = content;
-          incrementalBuilder.sourceDigests[id] = content.digest;
+          previousContents[id] = content;
+          incrementalBuilder.digests[id] = content.digest;
         } catch (_) {}
       }
     }
@@ -381,8 +380,7 @@ abstract class BuildPlan implements Built<BuildPlan, BuildPlanBuilder> {
     final updatedPreviousBuild = previousBuild.rebuild(
       (b) => b
         ..incrementalState = incrementalBuilder.build()
-        ..sourceContents.replace(previousSourceContents.build())
-        ..outputContents.replace(previousOutputContents.build()),
+        ..contents.replace(previousContents.build()),
     );
 
     return BuildPlan((b) {

@@ -102,7 +102,7 @@ void main() {
       );
       for (final id in newSources) {
         if (finishedBuildState.isSource(id)) {
-          final digest = finishedBuildState.contentOfSource(id);
+          final digest = finishedBuildState.contentOf(id);
           if (digest != null) nextState.updateSourceContent(id, digest);
         }
       }

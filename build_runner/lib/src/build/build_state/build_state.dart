@@ -14,6 +14,7 @@ import '../../build_plan/build_step_plan.dart';
 import '../../build_plan/phase.dart';
 import '../asset_content.dart';
 
+import 'build_file_index.dart';
 import 'build_step_id.dart';
 import 'build_step_result.dart';
 import 'finished_build_state.dart';
@@ -22,7 +23,6 @@ import 'glob_result.dart';
 import 'incremental_build_state.dart';
 import 'post_process_build_step_id.dart';
 import 'post_process_build_step_result.dart';
-import 'sources.dart';
 
 /// Build state that is updated during the build then converted to
 /// [IncrementalBuildState] and [FinishedBuildState] for serialization and
@@ -36,11 +36,17 @@ class BuildState {
   /// The planned build steps for this build.
   final BuildStepPlan buildStepPlan;
 
-  /// Sources and missing sources.
-  final Sources _sources;
+  /// Sources.
+  final Set<AssetId> _sources;
 
-  /// Accumulated output as it's generated or copied from the previous build.
-  final Map<AssetId, AssetContent> _outputs;
+  /// Sources that were missing when a builder tried to access them.
+  final Set<AssetId> _missingSources;
+
+  /// Contents of sources and outputs populated during the build.
+  final Map<AssetId, AssetContent> _contents;
+
+  /// Index of sources and declared outputs by package.
+  late final BuildFileIndex _fileIndex;
 
   /// All standard build step execution results by [AssetId] then phase number.
   final Map<AssetId, Map<int, BuildStepResult>> _buildStepResultsByPrimaryInput;
@@ -58,19 +64,26 @@ class BuildState {
   BuildState({
     required this.buildStepPlan,
     required Map<AssetId, AssetContent?> sources,
-  }) : _sources = Sources(sources),
-       _outputs = {},
+  }) : _sources = sources.keys.toSet(),
+       _missingSources = {},
+       _contents = {
+         for (final entry in sources.entries)
+           if (entry.value != null) entry.key: entry.value!,
+       },
        _postProcessResultsByInput = {},
        _postProcessOutputs = {},
        _buildStepResultsByPrimaryInput = {},
        _globResults = {} {
-    for (final id in _sources.sourceIds) {
+    for (final id in _sources) {
       if (buildStepPlan.isDeclaredOutput(id)) {
         throw ArgumentError(
           'Source $id clashes with declared output in buildStepPlan.',
         );
       }
     }
+    _fileIndex = BuildFileIndex(
+      _sources.followedBy(buildStepPlan.declaredOutputs),
+    );
   }
 
   /// An empty [BuildState] with no sources and an empty plan.
@@ -98,19 +111,16 @@ class BuildState {
   ///
   /// Does not match post process outputs.
   Iterable<AssetId> findFiles({required String package, Glob? glob}) =>
-      _sources.findFiles(package, buildStepPlan.declaredOutputs, glob: glob);
+      _fileIndex.findFiles(package, glob: glob);
 
   /// Sources.
-  ///
-  /// Files that were on disk in all packages in the build when the build
-  /// started, excluding any that were matched as prior `build_runner` outputs.
-  Iterable<AssetId> get sources => _sources.sourceIds;
+  Iterable<AssetId> get sources => _sources;
 
   /// Whether [id] is a source file.
-  bool isSource(AssetId id) => _sources.isSource(id);
+  bool isSource(AssetId id) => _sources.contains(id);
 
   /// Whether [id] is a source file that was accessed but did not exist.
-  bool isMissingSource(AssetId id) => _sources.isMissingSource(id);
+  bool isMissingSource(AssetId id) => _missingSources.contains(id);
 
   /// Actual build step outputs.
   ///
@@ -162,7 +172,14 @@ class BuildState {
   ///
   /// Throws if not a source.
   void updateSourceContent(AssetId id, AssetContent? content) {
-    _sources.updateContent(id, content);
+    if (!isSource(id)) {
+      throw StateError('Tried to update content of non-source $id.');
+    }
+    if (content != null) {
+      _contents[id] = content;
+    } else {
+      _contents.remove(id);
+    }
   }
 
   /// Updates the declared output [id] to [content].
@@ -179,7 +196,7 @@ class BuildState {
         'Step $step does not have result with declared output $id.',
       );
     }
-    _outputs[id] = content;
+    _contents[id] = content;
   }
 
   /// Updates the post process output [id] to [content].
@@ -196,33 +213,25 @@ class BuildState {
         'Step $step does not have result with post process output $id.',
       );
     }
-    _outputs[id] = content;
+    _contents[id] = content;
   }
 
   /// The content of [id].
   ///
   /// Returns `null` if it is an unread source or has not been generated.
-  AssetContent? contentOf(AssetId id) {
-    if (isSource(id)) return _sources.contentOfSource(id);
-    return _outputs[id];
-  }
+  AssetContent? contentOf(AssetId id) => _contents[id];
 
   /// The digest of [id], or `null` if not known.
-  Digest? digestOf(AssetId id) {
-    if (isSource(id)) return _sources.contentOfSource(id)?.digest;
-    return _outputs[id]?.digest;
-  }
+  Digest? digestOf(AssetId id) => _contents[id]?.digest;
 
+  @visibleForTesting
   IncrementalBuildState toIncrementalBuildState() {
     final builder = IncrementalBuildStateBuilder()
-      ..sources.addAll(_sources.sourceIds)
-      ..missingSources.addAll(_sources.missingSources);
+      ..sources.addAll(_sources)
+      ..missingSources.addAll(_missingSources);
 
-    for (final id in _sources.sourceIds) {
-      final content = _sources.contentOfSource(id);
-      if (content != null) {
-        builder.sourceDigests[id] = content.digest;
-      }
+    for (final entry in _contents.entries) {
+      builder.digests[entry.key] = entry.value.digest;
     }
 
     for (final outer in _buildStepResultsByPrimaryInput.entries) {
@@ -244,35 +253,18 @@ class BuildState {
       }
     }
 
-    for (final entry in _outputs.entries) {
-      builder.outputDigests[entry.key] = entry.value.digest;
-    }
-
     builder.globResults.addAll(_globResults);
 
     return builder.build();
   }
 
   FinishedBuildState toFinishedBuildState() {
-    final sourceContentsBuilder = MapBuilder<AssetId, AssetContent>();
-    for (final id in _sources.sourceIds) {
-      final content = _sources.contentOfSource(id);
-      if (content != null) {
-        sourceContentsBuilder[id] = content;
-      }
-    }
     return FinishedBuildState(
       incremental: toIncrementalBuildState(),
       buildStepPlan: buildStepPlan,
-      sourceContents: sourceContentsBuilder.build(),
-      outputContents: _outputs.build(),
+      contents: _contents.build(),
     );
   }
-
-  /// The content of source [id], or `null` if it has not been read.
-  ///
-  /// Throws if it is not a source.
-  AssetContent? contentOfSource(AssetId id) => _sources.contentOfSource(id);
 
   // -- Missing sources.
 
@@ -280,7 +272,7 @@ class BuildState {
   ///
   /// The builder must check and find there is no declared output or
   /// source before calling this.
-  void addMissingSource(AssetId id) => _sources.addMissing(id);
+  void addMissingSource(AssetId id) => _missingSources.add(id);
 
   // -- Build steps.
 
@@ -319,7 +311,7 @@ class BuildState {
       );
     }
     updateBuildStepResult(step, result);
-    _outputs.addAll(contents);
+    _contents.addAll(contents);
   }
 
   // -- Globs.
@@ -368,7 +360,7 @@ class BuildState {
       );
     }
     addPostProcessBuildStepResult(step, result);
-    _outputs.addAll(contents);
+    _contents.addAll(contents);
   }
 
   PostProcessBuildStepResult? postProcessBuildStepResultFor(
@@ -378,7 +370,7 @@ class BuildState {
   PostProcessBuildStepId? postProcessStepFor(AssetId id) =>
       _postProcessOutputs[id];
 
-  bool isHiddenPostProcessOutput(AssetId id) {
+  bool _isHiddenPostProcessOutput(AssetId id) {
     final stepId = _postProcessOutputs[id];
     if (stepId == null) return false;
     final result = postProcessBuildStepResultFor(stepId);
@@ -386,7 +378,7 @@ class BuildState {
   }
 
   bool isHidden(AssetId id) =>
-      buildStepPlan.isHidden(id) || isHiddenPostProcessOutput(id);
+      buildStepPlan.isHidden(id) || _isHiddenPostProcessOutput(id);
 
   Iterable<BuildStepId> get failedSteps {
     final results = <BuildStepId>[];
@@ -416,23 +408,13 @@ class BuildState {
     return results;
   }
 
-  Set<AssetId> get assetsDeletedByPostProcess {
-    final result = <AssetId>{};
-    for (final outer in _postProcessResultsByInput.entries) {
-      final input = outer.key;
-      for (final inner in outer.value.values) {
-        if (inner.deletedPrimaryInput) {
-          result.add(input);
-          break;
-        }
-      }
-    }
-    return result;
-  }
-
   // -- Testing.
 
   @visibleForTesting
-  void addSourceForTest(AssetId id, {AssetContent? digest}) =>
-      _sources.add(id, digest: digest);
+  void addSourceForTest(AssetId id, {AssetContent? content}) {
+    _sources.add(id);
+    if (content != null) {
+      _contents[id] = content;
+    }
+  }
 }

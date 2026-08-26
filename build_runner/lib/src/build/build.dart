@@ -29,6 +29,7 @@ import '../io/build_output_reader.dart';
 import '../logging/build_log.dart';
 import '../logging/build_log_logger.dart';
 import '../logging/timed_activities.dart';
+import 'asset_content.dart';
 import 'build_dirs.dart';
 import 'build_result.dart';
 import 'build_state/build_state.dart';
@@ -82,7 +83,6 @@ class Build {
   late final BuilderFilesystem _builderFilesystem = BuilderFilesystem(
     buildPackages: buildPackages,
     buildConfigs: buildConfigs,
-    buildStepPlan: buildStepPlan,
     buildState: buildState,
     readerWriter: buildPlan.readerWriter,
     assetBuilder: _buildOutput,
@@ -426,9 +426,8 @@ class Build {
         await _markStepFailed(buildStepId, builderOutputs);
       } else if (stepAction == StepAction.skipReuse) {
         final stepResult = previousBuild.stepResult(buildStepId);
-        final contents = {
-          for (final id in stepResult.outputs)
-            id: previousBuild.outputContents[id]!,
+        final contents = <AssetId, AssetContent>{
+          for (final id in stepResult.outputs) id: previousBuild.contents[id]!,
         };
         _builderFilesystem.reuseBuildStepResult(
           step: buildStepId,
@@ -630,9 +629,8 @@ class Build {
         postProcessBuildStepId,
       );
       if (oldResult != null) {
-        final contents = {
-          for (final id in oldResult.outputs)
-            id: previousBuild.outputContents[id]!,
+        final contents = <AssetId, AssetContent>{
+          for (final id in oldResult.outputs) id: previousBuild.contents[id]!,
         };
         buildState.reusePostProcessBuildStepResult(
           step: postProcessBuildStepId,

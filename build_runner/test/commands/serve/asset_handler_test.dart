@@ -60,7 +60,7 @@ void main() {
     }
     buildState.addSourceForTest(
       parsedId,
-      digest: AssetContent.string(
+      content: AssetContent.string(
         content,
         digest: computeDigest(parsedId, 'a'),
       ),

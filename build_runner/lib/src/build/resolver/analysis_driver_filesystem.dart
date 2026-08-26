@@ -106,7 +106,7 @@ class AnalysisDriverFilesystem
     }
     for (final id in buildInputs.updatedSources) {
       if (!id.isDart) continue;
-      _updateContent(id, builderFilesystem.buildState.contentOfSource(id));
+      _updateContent(id, builderFilesystem.buildState.contentOf(id));
     }
     _changedPathsThisBuild.clear();
   }

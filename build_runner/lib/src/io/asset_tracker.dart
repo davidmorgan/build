@@ -96,7 +96,7 @@ class AssetTracker {
     final originalGraphSources = previousBuild.sources.toSet();
     final preExistingSources = originalGraphSources.intersection(inputSources);
     for (final id in preExistingSources) {
-      final originalDigest = previousBuild.digestOfSource(id);
+      final originalDigest = previousBuild.digestOf(id);
       if (originalDigest == null) continue;
 
       final currentDigest = await _readerWriter.digest(id);

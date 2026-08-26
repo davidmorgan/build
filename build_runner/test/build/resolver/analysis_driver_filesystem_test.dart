@@ -54,7 +54,6 @@ void main() {
       buildPackages: buildPackages,
       buildConfigs: buildConfigs,
       buildState: BuildState(buildStepPlan: buildStepPlan, sources: sources),
-      buildStepPlan: buildStepPlan,
       readerWriter: readerWriter,
       assetBuilder: (_) async {},
       globEvaluator: (_) async {},

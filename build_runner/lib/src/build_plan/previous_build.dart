@@ -9,6 +9,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 
 import 'package:crypto/crypto.dart';
+import 'package:meta/meta.dart';
 
 import '../build/asset_content.dart';
 import '../build/build_state/asset_graph_json.dart';
@@ -37,14 +38,7 @@ abstract class PreviousBuild
   factory PreviousBuild([void Function(PreviousBuildBuilder) updates]) =
       _$PreviousBuild;
 
-  factory PreviousBuild.empty() => PreviousBuild(
-    (b) => b
-      ..triggersChanged = false
-      ..phaseOptionsChangedList = ListBuilder()
-      ..postBuildOptionsChangedList = ListBuilder()
-      ..incompatibleBuildOutputsToDelete = ListBuilder(),
-  );
-
+  @visibleForTesting
   factory PreviousBuild.fromFinishedBuildState(
     FinishedBuildState finishedBuildState, {
     PhasedAssetDeps? phasedAssetDeps,
@@ -52,8 +46,7 @@ abstract class PreviousBuild
     b.triggersChanged = false;
     b.incrementalState = finishedBuildState.incremental;
     b.buildStepPlan.replace(finishedBuildState.buildStepPlan);
-    b.sourceContents.replace(finishedBuildState.sourceContents);
-    b.outputContents.replace(finishedBuildState.outputContents);
+    b.contents.replace(finishedBuildState.contents);
     if (phasedAssetDeps != null) {
       b.phasedAssetDeps.replace(phasedAssetDeps);
     }
@@ -66,11 +59,8 @@ abstract class PreviousBuild
   /// The build step plan from the previous build, or null.
   BuildStepPlan? get buildStepPlan;
 
-  /// Partially or fully loaded source contents from the previous build.
-  BuiltMap<AssetId, AssetContent> get sourceContents;
-
-  /// Partially or fully loaded output contents from the previous build.
-  BuiltMap<AssetId, AssetContent> get outputContents;
+  /// Partially or fully loaded contents from the previous build.
+  BuiltMap<AssetId, AssetContent> get contents;
 
   /// Phased asset dependencies from the previous run, or null.
   PhasedAssetDeps? get phasedAssetDeps;
@@ -88,10 +78,8 @@ abstract class PreviousBuild
 
   BuiltSet<AssetId> get sources =>
       incrementalState?.sources ?? BuiltSet<AssetId>();
-  BuiltMap<AssetId, Digest> get sourceDigests =>
-      incrementalState?.sourceDigests ?? BuiltMap<AssetId, Digest>();
-  BuiltMap<AssetId, Digest> get outputDigests =>
-      incrementalState?.outputDigests ?? BuiltMap<AssetId, Digest>();
+  BuiltMap<AssetId, Digest> get digests =>
+      incrementalState?.digests ?? BuiltMap<AssetId, Digest>();
   BuiltSet<AssetId> get missingSources =>
       incrementalState?.missingSources ?? BuiltSet<AssetId>();
   BuiltMap<BuildStepId, BuildStepResult> get buildStepResults =>
@@ -104,17 +92,8 @@ abstract class PreviousBuild
   BuiltMap<GlobId, GlobResult> get globResults =>
       incrementalState?.globResults ?? BuiltMap<GlobId, GlobResult>();
 
-  late final BuiltSet<AssetId> assetsDeletedByPostProcess = () {
-    final builder = SetBuilder<AssetId>();
-    for (final entry in postProcessResults.entries) {
-      if (entry.value.deletedPrimaryInput) {
-        builder.add(entry.key.input);
-      }
-    }
-    return builder.build();
-  }();
-
-  late final BuiltMap<AssetId, PostProcessBuildStepId> postProcessOutputs = () {
+  @memoized
+  BuiltMap<AssetId, PostProcessBuildStepId> get _postProcessOutputs {
     final builder = MapBuilder<AssetId, PostProcessBuildStepId>();
     for (final entry in postProcessResults.entries) {
       for (final id in entry.value.outputs) {
@@ -122,13 +101,10 @@ abstract class PreviousBuild
       }
     }
     return builder.build();
-  }();
+  }
 
   bool isSource(AssetId id) => sources.contains(id);
   bool isMissingSource(AssetId id) => missingSources.contains(id);
-  Digest? digestOfSource(AssetId id) => sourceDigests[id];
-  AssetContent? contentOfSource(AssetId id) => sourceContents[id];
-  AssetContent? contentOfOutput(AssetId id) => outputContents[id];
 
   BuildStepResult? stepResultOrNull(BuildStepId step) => buildStepResults[step];
   BuildStepResult stepResult(BuildStepId step) => stepResultOrNull(step)!;
@@ -143,39 +119,27 @@ abstract class PreviousBuild
 
   Iterable<AssetId> get actualOutputs =>
       buildStepResults.values.expand((r) => r.outputs);
-  Iterable<AssetId> get actualPostOutputs => postProcessOutputs.keys;
+  Iterable<AssetId> get actualPostOutputs => _postProcessOutputs.keys;
 
-  bool isActualPostOutput(AssetId id) => postProcessOutputs.containsKey(id);
+  bool _isActualPostOutput(AssetId id) => _postProcessOutputs.containsKey(id);
 
-  bool isActualOutput(AssetId id) {
-    final step = buildStepPlan?.stepForDeclaredOutputOrNull(id);
-    if (step == null) return false;
-    return stepResultOrNull(step)?.outputs.contains(id) ?? false;
-  }
-
-  bool isHiddenPostProcessOutput(AssetId id) {
-    final step = postProcessOutputs[id];
+  bool _isHiddenPostProcessOutput(AssetId id) {
+    final step = _postProcessOutputs[id];
     if (step == null) return false;
     return postProcessResults[step]?.hidden ?? false;
   }
 
   bool isHidden(AssetId id) =>
-      (buildStepPlan?.isHidden(id) ?? false) || isHiddenPostProcessOutput(id);
+      (buildStepPlan?.isHidden(id) ?? false) || _isHiddenPostProcessOutput(id);
 
   bool isFile(AssetId id) =>
       isSource(id) ||
       (buildStepPlan?.isDeclaredOutput(id) ?? false) ||
-      isActualPostOutput(id);
+      _isActualPostOutput(id);
 
-  Digest? digestOf(AssetId id) {
-    if (isSource(id)) return digestOfSource(id);
-    return outputDigests[id];
-  }
+  Digest? digestOf(AssetId id) => digests[id];
 
-  AssetContent? contentOf(AssetId id) {
-    if (isSource(id)) return contentOfSource(id);
-    return outputContents[id];
-  }
+  AssetContent? contentOf(AssetId id) => contents[id];
 
   /// Deserializes information about the previous build and compares it to
   /// [buildSpec] to determine whether an incremental build is possible.
@@ -274,8 +238,7 @@ abstract class PreviousBuild
     b.triggersChanged = false;
     b.incrementalState = finishedBuildState.incremental;
     b.buildStepPlan.replace(finishedBuildState.buildStepPlan);
-    b.sourceContents.replace(finishedBuildState.sourceContents);
-    b.outputContents.replace(finishedBuildState.outputContents);
+    b.contents.replace(finishedBuildState.contents);
     b.phasedAssetDeps = previousPhasedAssetDeps.toBuilder();
     b.phaseOptionsChangedList.replace(
       List.filled(phaseOptionsChangedList.length, false),
