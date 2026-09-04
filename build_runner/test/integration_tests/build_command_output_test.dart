@@ -28,7 +28,7 @@ void main() async {
       'root_pkg',
       'dart run build_runner build --force-jit --output build',
     );
-    expect(tester.read('root_pkg/build/web/a.txt.copy'), 'a');
+    expect(tester.read('root_pkg/build/web/a.txt.copy'), 'break-ci');
     expect(tester.read('root_pkg/build/web/b.txt.copy'), 'b');
 
     // No rebuild if nothing changed.
