@@ -11,6 +11,7 @@
 - Bug fix: preserve analyzer dependency information on unhandled build failures,
   preventing subsequent incremental builds from missing changes to transitively
   imported files.
+- Bug fix: handle deletions of unread sources during watch and serve mode.
 
 ## 2.16.1
 

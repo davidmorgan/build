@@ -112,6 +112,24 @@ void main() {
         expect(filtered.rejected, [change]);
       });
 
+      test('accepts deletion of unread source', () async {
+        final unreadSourceId = AssetId('a', 'lib/no_outputs.txt');
+        await readerWriter.writeAsString(unreadSourceId, '// no outputs');
+        final buildState = BuildState(
+          buildStepPlan: buildPlan.buildStepPlan,
+          sources: {assetId: null, unreadSourceId: null},
+        );
+        await writeBuildStateAndPlan(buildState, buildPlan);
+        final loadedPlan = await loadPlan();
+        final buildSeries = BuildSeries(loadedPlan);
+
+        final change = AssetChange(unreadSourceId, ChangeType.REMOVE);
+        final filtered = await buildSeries.filterChanges([change]);
+
+        expect(filtered.accepted, [change]);
+        expect(filtered.rejected, isEmpty);
+      });
+
       test('accepts change to read source', () async {
         final buildState = BuildState(
           buildStepPlan: buildPlan.buildStepPlan,

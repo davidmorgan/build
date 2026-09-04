@@ -20,7 +20,7 @@ void main() async {
       name: 'root_pkg',
       dependencies: ['build_runner'],
       pathDependencies: ['builder_pkg', 'other_pkg'],
-      files: {'web/a.txt': 'a'},
+      files: {'web/a.txt': 'a', 'web/unread.md': 'unread'},
     );
     tester.writePackage(
       name: 'other_pkg',
@@ -69,6 +69,10 @@ void main() async {
     tester.delete('root_pkg/web/b.txt');
     await watch.expect(BuildLog.successPattern);
     expect(tester.read('root_pkg/web/b.txt.copy'), null);
+
+    // Deleted unread file.
+    tester.delete('root_pkg/web/unread.md');
+    await watch.expect(BuildLog.successPattern);
 
     // Deleted output.
     tester.delete('root_pkg/web/a.txt.copy');

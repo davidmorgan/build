@@ -155,8 +155,9 @@ class BuildSeries {
       // Changes to files that are part of the build.
 
       // If not copying to a merged output directory, ignore changes to sources
-      // with no outputs.
+      // with no outputs, except removals.
       if (!_buildPlan.buildSpec.buildOptions.anyMergedOutputDirectory &&
+          change.type != ChangeType.REMOVE &&
           previousBuild.isSource(id) &&
           previousBuild.digestOf(id) == null) {
         rejected.add(change);
