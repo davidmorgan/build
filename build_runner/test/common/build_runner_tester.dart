@@ -33,20 +33,7 @@ class BuildRunnerTester {
       );
 
   BuildRunnerTester._(this.pubspecs, this.tempDirectory) {
-    addTearDown(() async {
-      // Temp cleanup can fail on Windows if some process is slow to close,
-      // retry for 5s.
-      var tries = 0;
-      while (true) {
-        try {
-          tempDirectory.deleteSync(recursive: true);
-          return;
-        } on PathAccessException {
-          if (++tries == 10) rethrow;
-          await Future<void>.delayed(const Duration(milliseconds: 500));
-        }
-      }
-    });
+    addTearDown(() => TempDirectories.delete(tempDirectory));
   }
 
   /// Copies the entire workspace, returns a new `BuildRunnerTester` using
@@ -481,7 +468,10 @@ class BuildRunnerProcess {
 class Pubspecs {
   final PackageConfig packageConfig;
 
-  Pubspecs(this.packageConfig);
+  /// Where packages outside the pub cache were copied to.
+  final Directory copiedPackagesDirectory;
+
+  Pubspecs(this.packageConfig, this.copiedPackagesDirectory);
 
   static Future<Pubspecs>? _loadFuture;
 
@@ -489,13 +479,25 @@ class Pubspecs {
   ///
   /// Packages not in the pub cache are copied to a temporary directory so that
   /// they are safe from concurrent modifications during tests.
-  static Future<Pubspecs> load() => _loadFuture ??= _load();
+  ///
+  /// The copy is shared by everything in the running test and is deleted when
+  /// that test ends; a later test that calls [load] gets a new copy.
+  static Future<Pubspecs> load() {
+    final loadFuture = _loadFuture;
+    if (loadFuture != null) return loadFuture;
 
-  static Future<Pubspecs> _load() async {
-    final config = await loadPackageConfigUri((await Isolate.packageConfig)!);
-    final copiedPackagesDir = Directory.systemTemp.createTempSync(
+    final copiedPackagesDirectory = Directory.systemTemp.createTempSync(
       'BuildRunnerTester-packages-',
     );
+    addTearDown(() async {
+      _loadFuture = null;
+      await TempDirectories.delete(copiedPackagesDirectory);
+    });
+    return _loadFuture = _load(copiedPackagesDirectory);
+  }
+
+  static Future<Pubspecs> _load(Directory copiedPackagesDirectory) async {
+    final config = await loadPackageConfigUri((await Isolate.packageConfig)!);
 
     final updatedPackages = <Package>[];
     for (final package in config.packages) {
@@ -506,7 +508,10 @@ class Pubspecs {
         updatedPackages.add(package);
         continue;
       }
-      final destinationPath = p.join(copiedPackagesDir.path, package.name);
+      final destinationPath = p.join(
+        copiedPackagesDirectory.path,
+        package.name,
+      );
       _copyPackage(package.root.toFilePath(), destinationPath);
       final newRoot = Uri.directory(destinationPath);
       updatedPackages.add(
@@ -521,6 +526,7 @@ class Pubspecs {
     }
     return Pubspecs(
       PackageConfig(updatedPackages, extraData: config.extraData),
+      copiedPackagesDirectory,
     );
   }
 
@@ -658,5 +664,25 @@ workspace: [${packages.join(', ')}]
         ..writeln('    path: ../$package');
     }
     return result.toString();
+  }
+}
+
+/// Temporary directories used by tests.
+class TempDirectories {
+  /// Deletes [directory] and its contents.
+  ///
+  /// Deletion can fail on Windows if some process is slow to close, so it is
+  /// retried for 5s.
+  static Future<void> delete(Directory directory) async {
+    var tries = 0;
+    while (true) {
+      try {
+        directory.deleteSync(recursive: true);
+        return;
+      } on PathAccessException {
+        if (++tries == 10) rethrow;
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+      }
+    }
   }
 }
