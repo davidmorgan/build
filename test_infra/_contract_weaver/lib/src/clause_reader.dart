@@ -6,6 +6,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:built_collection/built_collection.dart';
 
 import 'member_contract.dart';
+import 'old_values.dart';
 import 'throw_clauses.dart';
 
 /// Reads contract clauses from annotations.
@@ -28,16 +29,28 @@ class ClauseReader {
   final String source;
 
   /// The clauses on a function, method or constructor.
-  MemberContract read(NodeList<Annotation> metadata) => MemberContract(
-    (b) => b
-      ..preconditions.replace(_clauses(metadata, 'Requires'))
-      ..postconditions.replace(_clauses(metadata, 'Ensures'))
-      ..throwClauses.replace(throwClauses(metadata)),
-  );
+  ///
+  /// Throws [FormatException] if a precondition calls `old`: there is no
+  /// earlier state for it to read.
+  MemberContract read(NodeList<Annotation> metadata) {
+    final preconditions = _clauses(metadata, 'Requires');
+    OldValues.reject(preconditions, '@Requires');
+    return MemberContract(
+      (b) => b
+        ..preconditions.replace(preconditions)
+        ..postconditions.replace(_clauses(metadata, 'Ensures'))
+        ..throwClauses.replace(throwClauses(metadata)),
+    );
+  }
 
   /// The `@Invariant` clauses on a class.
-  BuiltList<String> invariants(NodeList<Annotation> metadata) =>
-      _clauses(metadata, 'Invariant').toBuiltList();
+  ///
+  /// Throws [FormatException] if an invariant calls `old`.
+  BuiltList<String> invariants(NodeList<Annotation> metadata) {
+    final invariants = _clauses(metadata, 'Invariant');
+    OldValues.reject(invariants, '@Invariant');
+    return invariants.toBuiltList();
+  }
 
   /// The URIs of the `@ContractImport` annotations in [metadata]: libraries
   /// that clauses use but the annotated library does not import.

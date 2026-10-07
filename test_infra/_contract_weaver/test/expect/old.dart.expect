@@ -1,0 +1,110 @@
+// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'contracts.dart';
+
+@Invariant('count >= 0')
+class Counter {
+  int count = 0;
+
+  @Ensures('count == old(count) + delta')
+  @ThrowEnsures(StateError, 'count == old(count)')
+  void add(int delta) {
+    final $old0 = OldValue.capture(() => count);
+    this._enterInvariantScope();
+    Object? $inFlight;
+    try {
+      if (delta < 0) throw StateError('negative');
+      count += delta;
+
+      if (!Contracts.checking) {
+        Contracts.checking = true;
+        try {
+          if (!(count == $old0.value + delta))
+            throw ContractViolation(
+              'Postcondition failed: count == old(count) + delta',
+            );
+        } finally {
+          Contracts.checking = false;
+        }
+      }
+    } on StateError catch (signal) {
+      $inFlight = signal;
+      if (!Contracts.checking) {
+        Contracts.checking = true;
+        try {
+          if (!(count == $old0.value))
+            throw ContractViolation(
+              'Exceptional postcondition failed: count == old(count)',
+            );
+        } finally {
+          Contracts.checking = false;
+        }
+      }
+      rethrow;
+    } catch ($thrown) {
+      $inFlight = $thrown;
+      rethrow;
+    } finally {
+      this._exitInvariantScope(during: $inFlight);
+    }
+  }
+
+  @Ensures('result == old(count)')
+  int reset() {
+    final $old0 = OldValue.capture(() => count);
+    this._enterInvariantScope();
+    Object? $inFlight;
+    try {
+      final before = count;
+      count = 0;
+      return ((int result) {
+        if (!Contracts.checking) {
+          Contracts.checking = true;
+          try {
+            if (!(result == $old0.value))
+              throw ContractViolation(
+                'Postcondition failed: result == old(count)',
+              );
+          } finally {
+            Contracts.checking = false;
+          }
+        }
+        return result;
+      })(before);
+    } catch ($thrown) {
+      $inFlight = $thrown;
+      rethrow;
+    } finally {
+      this._exitInvariantScope(during: $inFlight);
+    }
+  }
+}
+
+extension _ContractsOn$Counter on Counter {
+  void _enterInvariantScope({bool check = true}) {
+    final open = Contracts.openScopes[this] ?? 0;
+    if (check && open == 0) _checkInvariants();
+    Contracts.openScopes[this] = open + 1;
+  }
+
+  void _exitInvariantScope({Object? during}) {
+    final open = Contracts.openScopes[this]! - 1;
+    Contracts.openScopes[this] = open == 0 ? null : open;
+    if (open == 0) _checkInvariants(during: during);
+  }
+
+  void _checkInvariants({Object? during}) {
+    final inFlight = during == null ? '' : ', thrown while handling $during';
+    if (!Contracts.checking) {
+      Contracts.checking = true;
+      try {
+        if (!(count >= 0))
+          throw ContractViolation('Invariant failed: count >= 0$inFlight');
+      } finally {
+        Contracts.checking = false;
+      }
+    }
+  }
+}

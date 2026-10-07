@@ -36,6 +36,32 @@ class Contracts {
   static final Expando<int> openScopes = Expando<int>();
 }
 
+class OldValue<T> {
+  final T? _value;
+  final Object? _error;
+  final StackTrace? _stackTrace;
+  OldValue._(this._value, this._error, this._stackTrace);
+  static OldValue<T> capture<T>(T Function() expression) {
+    final wasChecking = Contracts.checking;
+    Contracts.checking = true;
+    try {
+      return OldValue._(expression(), null, null);
+    } catch (e, s) {
+      return OldValue._(null, e, s);
+    } finally {
+      Contracts.checking = wasChecking;
+    }
+  }
+
+  T get value {
+    final error = _error;
+    if (error != null) {
+      Error.throwWithStackTrace(error, _stackTrace!);
+    }
+    return _value as T;
+  }
+}
+
 class ContractViolation implements Exception {
   final String message;
   ContractViolation(this.message);

@@ -10,6 +10,7 @@ import 'body_weaver.dart';
 import 'clause_emitter.dart';
 import 'clause_reader.dart';
 import 'constructor_weaver.dart';
+import 'old_values.dart';
 import 'reserved_name_checker.dart';
 import 'source_edits.dart';
 
@@ -113,10 +114,12 @@ class ContractCollector extends RecursiveAstVisitor<void> {
     if (contract.isEmpty) return;
     final returnType = node.returnType?.toSource();
     final isVoid = returnType == 'void';
+    final old = OldValues.of(contract);
     ReservedNameChecker.check(
       node.functionExpression.parameters,
       bindsResult: contract.postconditions.isNotEmpty && !isVoid,
       bindsSignal: contract.throwClauses.isNotEmpty,
+      bindsOld: !old.isEmpty,
     );
 
     _bodyWeaver.weave(
@@ -126,6 +129,7 @@ class ContractCollector extends RecursiveAstVisitor<void> {
       preconditions: contract.preconditions,
       postconditions: contract.postconditions,
       guard: BodyGuard.of(throwClauses: contract.throwClauses),
+      old: old,
     );
   }
 
@@ -146,10 +150,12 @@ class ContractCollector extends RecursiveAstVisitor<void> {
 
     final returnType = node.returnType?.toSource();
     final isVoid = node.isSetter || returnType == 'void';
+    final old = OldValues.of(contract);
     ReservedNameChecker.check(
       node.parameters,
       bindsResult: contract.postconditions.isNotEmpty && !isVoid,
       bindsSignal: contract.throwClauses.isNotEmpty,
+      bindsOld: !old.isEmpty,
     );
     final checkInvariant = checksInvariant && _isInvariantScope(node);
     if (contract.isEmpty && !checkInvariant) return;
@@ -164,6 +170,7 @@ class ContractCollector extends RecursiveAstVisitor<void> {
         checksInvariant: checkInvariant,
         throwClauses: contract.throwClauses,
       ),
+      old: old,
     );
   }
 

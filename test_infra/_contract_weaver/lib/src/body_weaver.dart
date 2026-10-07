@@ -7,6 +7,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'body_guard.dart';
 import 'clause_emitter.dart';
 import 'exit_rewriter.dart';
+import 'old_values.dart';
 import 'return_statement_collector.dart';
 import 'source_edits.dart';
 
@@ -17,6 +18,8 @@ class BodyWeaver {
   final SourceEdits edits;
 
   /// Weaves [preconditions], [postconditions] and [guard] into [body].
+  ///
+  /// [old] holds the captures that postconditions read.
   void weave(
     FunctionBody body, {
     required String? returnType,
@@ -24,12 +27,13 @@ class BodyWeaver {
     required Iterable<String> preconditions,
     required Iterable<String> postconditions,
     required BodyGuard guard,
+    OldValues old = OldValues.none,
   }) {
     final exitRewriter = ExitRewriter(
       returnType: returnType,
       isAsync: body.isAsynchronous,
     );
-    final entry = _entry(preconditions, guard);
+    final entry = _entry(preconditions, guard, old);
     if (body is ExpressionFunctionBody) {
       _weaveExpressionBody(
         body,
@@ -39,8 +43,10 @@ class BodyWeaver {
           isVoid: isVoid,
           postconditions: postconditions,
           exitRewriter: exitRewriter,
+          old: old,
         ),
         guard: guard,
+        old: old,
       );
     } else if (body is BlockFunctionBody) {
       _weaveBlockBody(
@@ -50,6 +56,7 @@ class BodyWeaver {
         postconditions: postconditions,
         exitRewriter: exitRewriter,
         guard: guard,
+        old: old,
       );
     } else {
       throw const FormatException(
@@ -62,12 +69,18 @@ class BodyWeaver {
   /// The code that runs before the original body.
   ///
   /// Nothing may throw between entering the invariant scope and opening the
-  /// guard that leaves it, so preconditions come first.
-  String _entry(Iterable<String> preconditions, BodyGuard guard) {
+  /// guard that leaves it, so preconditions and the captures of [old] come
+  /// first.
+  String _entry(
+    Iterable<String> preconditions,
+    BodyGuard guard,
+    OldValues old,
+  ) {
     final buffer = StringBuffer();
     if (preconditions.isNotEmpty) {
       buffer.write(ClauseEmitter.preconditions(preconditions));
     }
+    buffer.write(old.declarations);
     if (guard.checksInvariant) {
       buffer.write(ClauseEmitter.invariantEntry);
     }
@@ -82,10 +95,11 @@ class BodyWeaver {
     required bool isVoid,
     required Iterable<String> postconditions,
     required ExitRewriter exitRewriter,
+    required OldValues old,
   }) {
     final checks = postconditions.isEmpty
         ? ''
-        : ClauseEmitter.postconditions(postconditions);
+        : ClauseEmitter.postconditions(postconditions, old: old);
     if (isVoid) return '$exprSource;\n$checks';
     if (postconditions.isEmpty) return 'return $exprSource;\n';
     return '${exitRewriter.returnValue(exprSource, checks)}\n';
@@ -97,12 +111,13 @@ class BodyWeaver {
     required String entry,
     required String result,
     required BodyGuard guard,
+    required OldValues old,
   }) {
     final startOffset = body.functionDefinition.offset;
     edits.replace(
       startOffset,
       body.end - startOffset,
-      '{\n$entry$result${ClauseEmitter.guardClose(guard)}}',
+      '{\n$entry$result${ClauseEmitter.guardClose(guard, old: old)}}',
     );
   }
 
@@ -115,6 +130,7 @@ class BodyWeaver {
     required Iterable<String> postconditions,
     required ExitRewriter exitRewriter,
     required BodyGuard guard,
+    required OldValues old,
   }) {
     final block = body.block;
     if (entry.isNotEmpty) {
@@ -122,16 +138,16 @@ class BodyWeaver {
     }
 
     if (postconditions.isNotEmpty) {
-      _weaveReturns(block, postconditions, exitRewriter);
+      _weaveReturns(block, postconditions, exitRewriter, old);
     }
 
     final closing = StringBuffer();
     final fallsOffEnd =
         block.statements.isEmpty || block.statements.last is! ReturnStatement;
     if (isVoid && fallsOffEnd && postconditions.isNotEmpty) {
-      closing.write(ClauseEmitter.postconditions(postconditions));
+      closing.write(ClauseEmitter.postconditions(postconditions, old: old));
     }
-    closing.write(ClauseEmitter.guardClose(guard));
+    closing.write(ClauseEmitter.guardClose(guard, old: old));
     if (closing.isNotEmpty) {
       edits.insert(block.rightBracket.offset, '\n$closing');
     }
@@ -142,7 +158,9 @@ class BodyWeaver {
     Block block,
     Iterable<String> postconditions,
     ExitRewriter exitRewriter,
+    OldValues old,
   ) {
+    final checks = ClauseEmitter.postconditions(postconditions, old: old);
     for (final statement in ReturnStatementCollector.collect(block)) {
       final expr = statement.expression;
       if (expr != null) {
@@ -150,14 +168,11 @@ class BodyWeaver {
         edits.replace(
           statement.offset,
           statement.length,
-          exitRewriter.returnValue(
-            exprSource,
-            ClauseEmitter.postconditions(postconditions),
-          ),
+          exitRewriter.returnValue(exprSource, checks),
         );
       } else {
         final buffer = StringBuffer('{\n')
-          ..write(ClauseEmitter.postconditions(postconditions))
+          ..write(checks)
           ..writeln('return;')
           ..write('}');
         edits.replace(statement.offset, statement.length, buffer.toString());

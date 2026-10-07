@@ -5,6 +5,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
 
 import 'body_guard.dart';
+import 'old_values.dart';
 import 'reentrancy_guard.dart';
 import 'throw_clauses.dart';
 
@@ -22,6 +23,31 @@ class ClauseEmitter {
         'class Contracts {\n'
         '  static bool checking = false;\n'
         '  static final Expando<int> openScopes = Expando<int>();\n'
+        '}\n'
+        '\n'
+        'class OldValue<T> {\n'
+        '  final T? _value;\n'
+        '  final Object? _error;\n'
+        '  final StackTrace? _stackTrace;\n'
+        '  OldValue._(this._value, this._error, this._stackTrace);\n'
+        '  static OldValue<T> capture<T>(T Function() expression) {\n'
+        '    final wasChecking = Contracts.checking;\n'
+        '    Contracts.checking = true;\n'
+        '    try {\n'
+        '      return OldValue._(expression(), null, null);\n'
+        '    } catch (e, s) {\n'
+        '      return OldValue._(null, e, s);\n'
+        '    } finally {\n'
+        '      Contracts.checking = wasChecking;\n'
+        '    }\n'
+        '  }\n'
+        '  T get value {\n'
+        '    final error = _error;\n'
+        '    if (error != null) {\n'
+        '      Error.throwWithStackTrace(error, _stackTrace!);\n'
+        '    }\n'
+        '    return _value as T;\n'
+        '  }\n'
         '}\n',
       );
     }
@@ -41,8 +67,11 @@ class ClauseEmitter {
   static String preconditions(Iterable<String> clauses) =>
       ReentrancyGuard.wrap(_throwIfFalse('Precondition', clauses));
 
-  static String postconditions(Iterable<String> clauses) =>
-      ReentrancyGuard.wrap(_throwIfFalse('Postcondition', clauses));
+  /// Checks of [clauses], reading captures from [old].
+  static String postconditions(
+    Iterable<String> clauses, {
+    OldValues old = OldValues.none,
+  }) => ReentrancyGuard.wrap(_throwIfFalse('Postcondition', clauses, old: old));
 
   /// A `catch` clause that checks [throwClauses] and rethrows.
   ///
@@ -50,9 +79,14 @@ class ClauseEmitter {
   static String exceptionalPostconditions(
     ThrowClauses throwClauses, {
     String beforeChecks = '',
+    OldValues old = OldValues.none,
   }) {
     final checks = ReentrancyGuard.wrap(
-      _throwIfFalse('Exceptional postcondition', throwClauses.clauses),
+      _throwIfFalse(
+        'Exceptional postcondition',
+        throwClauses.clauses,
+        old: old,
+      ),
     );
     return 'on ${throwClauses.type} catch (signal) {\n'
         '$beforeChecks'
@@ -86,7 +120,9 @@ class ClauseEmitter {
 
   /// Closes the region that [guardOpen] opens, running the checks of [guard]
   /// however the body exits.
-  static String guardClose(BodyGuard guard) {
+  ///
+  /// Exceptional postconditions read captures from [old].
+  static String guardClose(BodyGuard guard, {OldValues old = OldValues.none}) {
     if (guard.isEmpty) return '';
     final checksInvariant = guard.checksInvariant;
     final buffer = StringBuffer();
@@ -95,6 +131,7 @@ class ClauseEmitter {
         exceptionalPostconditions(
           clauses,
           beforeChecks: checksInvariant ? '\$inFlight = signal;\n' : '',
+          old: old,
         ),
       );
     }
@@ -168,16 +205,18 @@ class ClauseEmitter {
   /// Checks that throw if any of [clauses] is false.
   ///
   /// [during] is appended to the message, for a check that runs while an
-  /// exception is unwinding.
+  /// exception is unwinding. Calls to `old` read captures from [old]; the
+  /// message shows the clause as written.
   static String _throwIfFalse(
     String kind,
     Iterable<String> clauses, {
     String during = '',
+    OldValues old = OldValues.none,
   }) {
     final buffer = StringBuffer();
     for (final clause in clauses) {
       buffer.writeln(
-        'if (!($clause)) throw ContractViolation('
+        'if (!(${old.rewrite(clause)})) throw ContractViolation('
         "'$kind failed: ${_escape(clause)}$during');",
       );
     }

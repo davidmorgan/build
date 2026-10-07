@@ -6,12 +6,13 @@ import 'package:analyzer/dart/ast/ast.dart';
 
 /// Rejects parameters that collide with names the weaver binds for clauses.
 class ReservedNameChecker {
-  /// Throws if [parameters] declares `result` and [bindsResult], or declares
-  /// `signal` and [bindsSignal].
+  /// Throws if [parameters] declares `result` and [bindsResult], declares
+  /// `signal` and [bindsSignal], or declares `old` and [bindsOld].
   static void check(
     FormalParameterList? parameters, {
     required bool bindsResult,
     required bool bindsSignal,
+    bool bindsOld = false,
   }) {
     if (parameters == null) return;
     for (final parameter in parameters.parameters) {
@@ -26,6 +27,12 @@ class ReservedNameChecker {
         throw const FormatException(
           '@ThrowEnsures cannot be used on a function with a parameter named '
           '"signal".',
+        );
+      }
+      if (bindsOld && name == 'old') {
+        throw const FormatException(
+          'old(...) cannot be used on a function with a parameter named '
+          '"old".',
         );
       }
     }

@@ -9,6 +9,7 @@ import 'body_weaver.dart';
 import 'clause_emitter.dart';
 import 'clause_reader.dart';
 import 'member_contract.dart';
+import 'old_values.dart';
 import 'reserved_name_checker.dart';
 import 'return_statement_collector.dart';
 import 'source_edits.dart';
@@ -44,6 +45,7 @@ class ConstructorWeaver {
       );
     }
     final contract = reader.read(node.metadata);
+    OldValues.reject(contract.postconditions, 'a constructor postcondition');
 
     final unweavable = _unweavableKind(node);
     if (unweavable != null) {

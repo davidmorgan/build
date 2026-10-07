@@ -23,6 +23,17 @@ A clause is a Dart expression. It sees everything the annotated member sees,
 plus `result` in `@Ensures` and `signal`, the thrown exception, in
 `@ThrowEnsures`.
 
+In `@Ensures` and `@ThrowEnsures`, `old(e)` is the value `e` had on entry, as
+in Cofoja: `@Ensures('count == old(count) + 1')`. Each distinct `e` is evaluated
+once per call, after the preconditions, whether or not a clause reads it. The
+value is a reference, so `old(items)` is the same list as `items`; write
+`old(items.length)` or `old(items.toList())`. If evaluating `e` throws, the
+exception is kept and thrown only if a clause reads the value. `old` cannot be
+nested, cannot read `result` or `signal`, and is an error in `@Requires`,
+`@Invariant` and constructor postconditions. A member named `old` is reachable
+as `this.old`. A variable declared inside `old(...)`, such as a closure
+parameter, cannot be named `result` or `signal`.
+
 Each annotation holds exactly one clause; repeat the annotation for more. Passing
 more than one clause to an annotation is an error. Clauses on one member are
 checked in order, and all must hold.
@@ -34,8 +45,8 @@ no result to talk about.
 
 `@ThrowEnsures` only says what holds _if_ the method throws; it does not require
 a throw. The converse, such as "if the list is empty, it throws", is a normal
-postcondition about the state on entry. In Cofoja that is written with
-`old(...)`, which is not supported yet.
+postcondition about the state on entry, written with `old`:
+`@Ensures('!old(items.isEmpty)')`.
 
 `@Invariant` clauses are checked, as in Cofoja, on entry to and exit from public
 instance methods and setters, and on exit from generative constructors, but only
@@ -170,12 +181,12 @@ code that nobody reads.
 - Clauses are strings, so the analyzer does not see them until they are woven
   in. A clause naming a renamed parameter fails only during a contracts run.
   See the CI gate above.
-- No `old()`, so postconditions can state shape but not transition.
 - No `@ThrowEnsures` on constructors. Using it there is an error, not a silent
   omission.
 - `@Ensures` cannot be used on a value-returning function with a parameter
   named `result`, and `@ThrowEnsures` cannot be used on a function with a
-  parameter named `signal`. Both throw an error rather than shadowing the
+  parameter named `signal`, and a member that uses `old` cannot have a
+  parameter named `old`. All throw an error rather than shadowing the
   parameter. An instance member of the same name can still be referenced as
   `this.result` or `this.signal`.
 - No contract inheritance. Cofoja weakens inherited preconditions and
