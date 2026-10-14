@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../enums.dart';
 
-part of 'enums.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:br_part contribution.
 const TestEnum _$yes = const TestEnum._('yes');
 const TestEnum _$no = const TestEnum._('no');
 const TestEnum _$maybe = const TestEnum._('maybe');
@@ -46,12 +42,9 @@ SecondTestEnum _$vlOf(String name) {
   }
 }
 
-final BuiltSet<SecondTestEnum> _$vls =
-    BuiltSet<SecondTestEnum>(const <SecondTestEnum>[
-  _$ys,
-  _$n,
-  _$definitely,
-]);
+final BuiltSet<SecondTestEnum> _$vls = BuiltSet<SecondTestEnum>(
+  const <SecondTestEnum>[_$ys, _$n, _$definitely],
+);
 
 const WireNameEnum _$wireYes = const WireNameEnum._('yes');
 const WireNameEnum _$wireNo = const WireNameEnum._('no');
@@ -70,12 +63,9 @@ WireNameEnum _$wireValueOf(String name) {
   }
 }
 
-final BuiltSet<WireNameEnum> _$wireValues =
-    BuiltSet<WireNameEnum>(const <WireNameEnum>[
-  _$wireYes,
-  _$wireNo,
-  _$wireDefinitely,
-]);
+final BuiltSet<WireNameEnum> _$wireValues = BuiltSet<WireNameEnum>(
+  const <WireNameEnum>[_$wireYes, _$wireNo, _$wireDefinitely],
+);
 
 Serializer<TestEnum> _$testEnumSerializer = _$TestEnumSerializer();
 Serializer<WireNameEnum> _$wireNameEnumSerializer = _$WireNameEnumSerializer();
@@ -87,14 +77,18 @@ class _$TestEnumSerializer implements PrimitiveSerializer<TestEnum> {
   final String wireName = 'TestEnum';
 
   @override
-  Object serialize(Serializers serializers, TestEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      object.name;
+  Object serialize(
+    Serializers serializers,
+    TestEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => object.name;
 
   @override
-  TestEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      TestEnum.valueOf(serialized as String);
+  TestEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => TestEnum.valueOf(serialized as String);
 }
 
 class _$WireNameEnumSerializer implements PrimitiveSerializer<WireNameEnum> {
@@ -115,15 +109,21 @@ class _$WireNameEnumSerializer implements PrimitiveSerializer<WireNameEnum> {
   final String wireName = 'E';
 
   @override
-  Object serialize(Serializers serializers, WireNameEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
+  Object serialize(
+    Serializers serializers,
+    WireNameEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
 
   @override
-  WireNameEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      WireNameEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+  WireNameEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => WireNameEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

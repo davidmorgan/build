@@ -13,6 +13,7 @@ import '../contracts.dart';
 part 'build_inputs.g.dart';
 
 /// The state of the file system before a build begins.
+@ContractImport('package:build_runner/src/build/br_outputs.dart')
 @Invariant('!cleanBuild || retainedOutputContents.isEmpty')
 @Invariant('!cleanBuild || updatedSources.isEmpty')
 @Invariant('!cleanBuild || deletedSources.isEmpty')
@@ -26,7 +27,10 @@ part 'build_inputs.g.dart';
   'invalidOutputs.every((id) => !retainedOutputContents.containsKey(id))',
 )
 @Invariant('sources.every((id) => id.package.isNotEmpty && id.path.isNotEmpty)')
-@Invariant('sources.every((id) => !id.isBrOutput)')
+@Invariant(
+  'sources.every((id) => '
+  '!id.isBrOutput || !sharedParts.containsKey(id.sharedPartLibraryId ?? id))',
+)
 @Invariant(
   'sharedParts.keys.every((id) => id.package.isNotEmpty && id.path.isNotEmpty)',
 )

@@ -1,4 +1,4 @@
-## 4.8.12-wip
+## 4.8.12
 
 - Start the persistent Frontend Server and its reaper process in the scratch
   space instead of the package directory, so they do not block deleting it on
@@ -7,6 +7,8 @@
   space.
 - Call DDC with an AOT snapshot via `dart compile js-dev` instead of JIT
   snapshot.
+- Fix `DdcFrontendServerBuilder` to support the same custom sdk build options
+  as `DevCompilerBuilder`.
 
 ## 4.8.11
 
@@ -782,7 +784,7 @@ global_options:
 [analyzer]: https://pub.dev/packages/analyzer
 [front_end]: https://pub.dev/packages/front_end
 [issue tracker]: https://github.com/dart-lang/build/issues/new
-[TestOn]: https://pub.dev/documentation/test/latest/#restricting-tests-to-certain-platforms
+[TestOn]: https://pub.dev/packages/test#restricting-tests-to-certain-platforms
 
 ## 1.2.2
 
