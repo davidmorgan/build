@@ -1528,6 +1528,46 @@ void f(int x) {}
 ''';
         expect(ContractWeaver().weave(input), contains('Precondition failed'));
       });
+
+      test('allow a line break between tokens', () {
+        const input = '''
+@Requires('x > 0 &&\\n    x < 9')
+void f(int x) {}
+''';
+        expect(
+          ContractWeaver().weave(input),
+          contains(r"'Precondition failed: x > 0 &&\n    x < 9'"),
+        );
+      });
+
+      test('throw FormatException for a clause with a comment', () {
+        const input = '''
+@Requires('x > 0 // positive\\n && x < 9')
+void f(int x) {}
+''';
+        expect(
+          () => ContractWeaver().weave(input),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains('comment'),
+            ),
+          ),
+        );
+      });
+    });
+
+    test('returns the generic class type from a factory', () {
+      const input = '''
+class Box<T> {
+  Box._();
+
+  @Ensures('result != null')
+  factory Box() => Box._();
+}
+''';
+      expect(ContractWeaver().weave(input), contains('Box<T> result'));
     });
 
     test('throws FormatException for contracts on a local function', () {
