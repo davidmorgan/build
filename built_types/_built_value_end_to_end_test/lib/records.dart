@@ -25,6 +25,20 @@ abstract class SimpleRecordValue
 
 int swappedGetterCount = 0;
 
+abstract class RecordInterface<T> {
+  (T, int)? get pair;
+}
+
+abstract class InheritedRecordValue
+    implements
+        RecordInterface<String>,
+        Built<InheritedRecordValue, InheritedRecordValueBuilder> {
+  factory InheritedRecordValue([
+    void Function(InheritedRecordValueBuilder) updates,
+  ]) = _$InheritedRecordValue;
+  InheritedRecordValue._();
+}
+
 abstract class ComplexRecordValue
     implements Built<ComplexRecordValue, ComplexRecordValueBuilder> {
   // These don't work yet: https://github.com/dart-lang/dart_style/issues/1224

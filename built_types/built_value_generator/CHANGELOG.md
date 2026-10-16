@@ -11,6 +11,8 @@
 - Fix analysis issues and remove the lint suppressions that hid them.
 - Bug fix: a nullable `@memoized` getter returning a record generated code
   that didn't parse.
+- Bug fix: a record field inherited from a generic interface, such as
+  `(T, int) get pair`, generated code that used `T` without substituting it.
 
 ## 8.13.0
 

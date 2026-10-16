@@ -52,6 +52,15 @@ void main() {
     });
   });
 
+  group(InheritedRecordValue, () {
+    test('has inherited record field with type argument', () {
+      final value = InheritedRecordValue((b) => b..pair = ('a', 1));
+      expect(value.pair, ('a', 1));
+      // `length` compiles only if `pair` has type `(String, int)?`.
+      expect(value.pair!.$1.length, 1);
+    });
+  });
+
   group(ComplexRecordValue, () {
     final value1 = ComplexRecordValue(
       (b) => b

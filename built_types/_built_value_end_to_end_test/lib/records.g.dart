@@ -193,6 +193,85 @@ class SimpleRecordValueBuilder
   }
 }
 
+class _$InheritedRecordValue extends InheritedRecordValue {
+  @override
+  final (String, int)? pair;
+
+  factory _$InheritedRecordValue([
+    void Function(InheritedRecordValueBuilder)? updates,
+  ]) => (InheritedRecordValueBuilder()..update(updates))._build();
+
+  _$InheritedRecordValue._({this.pair}) : super._();
+  @override
+  InheritedRecordValue rebuild(
+    void Function(InheritedRecordValueBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
+
+  @override
+  InheritedRecordValueBuilder toBuilder() =>
+      InheritedRecordValueBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is InheritedRecordValue && pair == other.pair;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, pair.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(
+      r'InheritedRecordValue',
+    )..add('pair', pair)).toString();
+  }
+}
+
+class InheritedRecordValueBuilder
+    implements Builder<InheritedRecordValue, InheritedRecordValueBuilder> {
+  _$InheritedRecordValue? _$v;
+
+  (String, int)? _pair;
+  (String, int)? get pair => _$this._pair;
+  set pair((String, int)? pair) => _$this._pair = pair;
+
+  InheritedRecordValueBuilder();
+
+  InheritedRecordValueBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      _pair = $v.pair;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(InheritedRecordValue other) {
+    _$v = other as _$InheritedRecordValue;
+  }
+
+  @override
+  void update(void Function(InheritedRecordValueBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  InheritedRecordValue build() => _build();
+
+  _$InheritedRecordValue _build() {
+    final _$result = _$v ?? _$InheritedRecordValue._(pair: pair);
+    replace(_$result);
+    return _$result;
+  }
+}
+
 class _$ComplexRecordValue extends ComplexRecordValue {
   @override
   final (int, int) record2;

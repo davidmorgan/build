@@ -79,8 +79,13 @@ abstract class ValueSourceField
     final typeFromElement = type;
 
     // If the type is a function, we can't use the element result; it is
-    // formatted incorrectly.
-    if (isFunctionType) return typeFromAst;
+    // formatted incorrectly. The exception is a record type inherited from a
+    // generic supertype: the element result is formatted correctly and has the
+    // type arguments substituted, which the AST result lacks.
+    final getter = element.getter!;
+    final isSubstitutedRecord = getter.returnType is RecordType &&
+        getter.returnType != getter.baseElement.returnType;
+    if (isFunctionType && !isSubstitutedRecord) return typeFromAst;
 
     // If the type does not have an import prefix, prefer the element result.
     // It handles inherited generics correctly.
