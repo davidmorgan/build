@@ -112,7 +112,7 @@ class ClauseReader {
   }
 
   /// Throws if [clause], from an annotation called [name], is not a single
-  /// Dart expression.
+  /// Dart expression, or has a comment.
   ///
   /// The clause is the value of a string literal, so escapes in it have
   /// already been processed: `'\\n'` in the annotation is a backslash and an
@@ -124,6 +124,17 @@ class ClauseReader {
     );
     if (clause.trim().isEmpty || parsed.errors.isNotEmpty) {
       throw FormatException('@$name clause is not a Dart expression: $clause');
+    }
+    // Woven code puts each clause on one line, where a line comment would
+    // hide the rest of the check.
+    for (
+      var token = parsed.unit.beginToken;
+      !token.isEof;
+      token = token.next!
+    ) {
+      if (token.precedingComments != null) {
+        throw FormatException('@$name clause has a comment: $clause');
+      }
     }
   }
 

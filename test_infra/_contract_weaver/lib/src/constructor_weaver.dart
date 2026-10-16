@@ -25,7 +25,8 @@ class ConstructorWeaver {
   final ClauseReader reader;
   final BodyWeaver bodyWeaver;
 
-  /// Weaves the contract of [node], a constructor of [className], into it.
+  /// Weaves the contract of [node], a constructor of the class whose type in
+  /// its own body is [classType], such as `Box<T>`, into it.
   ///
   /// If [classHasInvariant], generative constructors also check the invariant
   /// on exit. Const and redirecting constructors have no body to weave into:
@@ -33,7 +34,7 @@ class ConstructorWeaver {
   /// invariant.
   void weave(
     ConstructorDeclaration node, {
-    required String className,
+    required String classType,
     required bool classHasInvariant,
   }) {
     // There is no place to put a catch clause. Silently ignoring the
@@ -54,7 +55,7 @@ class ConstructorWeaver {
     }
 
     if (node.factoryKeyword != null) {
-      _weaveFactory(node, className: className, contract: contract);
+      _weaveFactory(node, classType: classType, contract: contract);
     } else {
       _weaveGenerative(
         node,
@@ -74,11 +75,11 @@ class ConstructorWeaver {
     return null;
   }
 
-  /// A factory body is woven like a method body that returns [className], with
+  /// A factory body is woven like a method body that returns [classType], with
   /// no invariant scope and no catch clause.
   void _weaveFactory(
     ConstructorDeclaration node, {
-    required String className,
+    required String classType,
     required MemberContract contract,
   }) {
     final preconditions = contract.preconditions;
@@ -91,7 +92,7 @@ class ConstructorWeaver {
     );
     bodyWeaver.weave(
       node.body,
-      returnType: className,
+      returnType: classType,
       isVoid: false,
       preconditions: preconditions,
       postconditions: postconditions,

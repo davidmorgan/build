@@ -71,7 +71,8 @@ class ContractCollector extends RecursiveAstVisitor<void> {
       if (member is ConstructorDeclaration) {
         _constructorWeaver.weave(
           member,
-          className: className,
+          classType:
+              '$className${_typeArguments(node.namePart.typeParameters)}',
           classHasInvariant: hasInvariant,
         );
       } else if (member is MethodDeclaration) {
@@ -142,6 +143,17 @@ class ContractCollector extends RecursiveAstVisitor<void> {
     if (body.isGenerator && contract.postconditions.isNotEmpty) {
       throw FormatException('@Ensures is not supported on a generator: $name.');
     }
+  }
+
+  /// The type arguments that name the type parameters of a class in its own
+  /// body, such as `<K, V>`, or nothing if it has none.
+  static String _typeArguments(TypeParameterList? typeParameters) {
+    if (typeParameters == null) return '';
+    final names = [
+      for (final parameter in typeParameters.typeParameters)
+        parameter.name.lexeme,
+    ];
+    return '<${names.join(', ')}>';
   }
 
   /// Whether [node] declares that its instances are immutable: it is a
