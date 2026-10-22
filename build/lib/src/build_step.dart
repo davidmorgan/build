@@ -163,6 +163,22 @@ abstract class BuildStep implements AssetReader, AssetWriter {
   /// Experimental, may change following feedback and discussion at
   /// https://github.com/dart-lang/build/discussions.
   Future<LibrarySourceSink?> get librarySourceSink;
+
+  /// Fails this step with the error [message] and a fix for it: replace
+  /// [length] characters at [offset] in the primary input with
+  /// [replacement].
+  ///
+  /// The step must have read the primary input. Depending on how it is run,
+  /// `build_runner` applies the fix and builds again, or reports it.
+  ///
+  /// Experimental, may change following feedback and discussion at
+  /// https://github.com/dart-lang/build/discussions.
+  void reportErrorWithFix(
+    String message, {
+    required int offset,
+    required int length,
+    required String replacement,
+  });
 }
 
 /// The "write" part of the [BuildStep] API.

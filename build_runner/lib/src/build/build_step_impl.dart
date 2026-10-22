@@ -17,10 +17,12 @@ import 'package:package_config/package_config_types.dart';
 import '../contracts.dart';
 import 'asset_content.dart';
 import 'builder_filesystem.dart';
+import 'error_fix.dart';
 import 'input_tracker.dart';
 import 'library_source_sink_impl.dart';
 import 'resolver/asset_ids.dart';
 import 'resolver/delegating_resolver.dart';
+import 'source_edit.dart';
 
 /// A single step in the build processes.
 ///
@@ -63,6 +65,9 @@ class BuildStepImpl implements BuildStep {
   BuiltList<String> get partImports =>
       _librarySourceSink?.imports ?? BuiltList<String>();
   String? get languageVersion => _librarySourceSink?.languageVersion;
+
+  /// The errors with fixes reported by [reportErrorWithFix].
+  final List<ErrorFix> errorFixes = [];
 
   @override
   Future<LibrarySourceSink?> get librarySourceSink async {
@@ -311,6 +316,33 @@ class BuildStepImpl implements BuildStep {
   @override
   void reportUnusedAssets(Iterable<AssetId> assets) {
     _reportUnusedAssets?.call(assets);
+  }
+
+  @override
+  void reportErrorWithFix(
+    String message, {
+    required int offset,
+    required int length,
+    required String replacement,
+  }) {
+    if (_isComplete) throw BuildStepCompletedException();
+    if (!inputTracker.inputs.contains(inputId)) {
+      throw StateError(
+        'reportErrorWithFix needs the primary input `$inputId` to have been '
+        'read.',
+      );
+    }
+    errorFixes.add(
+      ErrorFix.of(
+        message: message,
+        edit: SourceEdit.of(
+          offset: offset,
+          length: length,
+          replacement: replacement,
+        ),
+      ),
+    );
+    log.severe(message);
   }
 }
 

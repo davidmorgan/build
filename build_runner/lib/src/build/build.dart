@@ -43,6 +43,7 @@ import 'build_state/post_process_build_step_id.dart';
 import 'build_state/post_process_build_step_result.dart';
 import 'build_step_impl.dart';
 import 'builder_filesystem.dart';
+import 'error_fix.dart';
 import 'input_tracker.dart';
 import 'library_cycle_graph/asset_deps_loader.dart';
 import 'library_cycle_graph/library_cycle_graph.dart';
@@ -54,6 +55,7 @@ import 'post_process_build_step_impl.dart';
 import 'resolver/analysis_driver_model.dart';
 import 'resolver/resolvers_impl.dart';
 import 'shared_part_accumulator.dart';
+import 'source_error_fixes.dart';
 
 final ResolversImpl _defaultResolvers = ResolversImpl(
   analysisDriverModel: AnalysisDriverModel(),
@@ -83,6 +85,9 @@ class Build {
 
   /// Cached accumulators for previous shared parts, keyed by library ID.
   final _previousPartAccumulators = <AssetId, SharedPartAccumulator>{};
+
+  /// Errors with fixes reported by build steps, by primary input.
+  final _errorFixes = <AssetId, List<ErrorFix>>{};
 
   SharedPartAccumulator? _previousPartAccumulator(AssetId libraryId) {
     var accumulator = _previousPartAccumulators[libraryId];
@@ -227,6 +232,20 @@ class Build {
     // A failed build might be why a shared part was not written, so unused
     // `part` directives are only looked for if the build succeeded.
     final buildFailed = result.status == BuildStatus.failure;
+    if (_errorFixes.isNotEmpty) {
+      final errorFixes = <AssetId, SourceErrorFixes>{};
+      for (final MapEntry(key: id, value: fixes) in _errorFixes.entries) {
+        final content = await _builderFilesystem.contentOf(id);
+        errorFixes[id] = SourceErrorFixes(
+          md5.convert(content.bytes),
+          fixes.toBuiltList(),
+        );
+      }
+      result = result.copyWith(
+        status: BuildStatus.failure,
+        errorFixes: errorFixes.build(),
+      );
+    }
     final librariesMissingPartDirective = await PartDirectives.findMissing(
       buildState,
       _builderFilesystem,
@@ -1229,6 +1248,9 @@ class Build {
       ..resolverEntrypoints.replace(inputTracker.resolverEntrypoints)
       ..errors.replace(errors)
       ..wrotePartContribution = step.wrotePartContribution;
+    if (step.errorFixes.isNotEmpty) {
+      (_errorFixes[input] ??= []).addAll(step.errorFixes);
+    }
     if (step.wrotePartContribution) {
       buildState.addPartContribution(
         libraryId: input,

@@ -10,6 +10,7 @@ import '../contracts.dart';
 import '../io/build_output_reader.dart';
 import 'build_state/finished_build_state.dart';
 import 'library_cycle_graph/phased_asset_deps.dart';
+import 'source_error_fixes.dart';
 
 /// The result of an individual build, this may be an incremental build or
 /// a full build.
@@ -61,6 +62,9 @@ class BuildResult {
   /// Values are the md5 digests of the library content that was checked.
   final BuiltMap<AssetId, Digest> librariesWithUnusedPartDirective;
 
+  /// Errors with fixes reported by builders, by source.
+  final BuiltMap<AssetId, SourceErrorFixes> errorFixes;
+
   BuildResult({
     required this.status,
     BuiltList<String>? errors,
@@ -71,6 +75,7 @@ class BuildResult {
     FailureType? failureType,
     BuiltMap<AssetId, Digest>? librariesMissingPartDirective,
     BuiltMap<AssetId, Digest>? librariesWithUnusedPartDirective,
+    BuiltMap<AssetId, SourceErrorFixes>? errorFixes,
   }) : failureType = failureType == null && status == BuildStatus.failure
            ? FailureType.general
            : failureType,
@@ -80,7 +85,8 @@ class BuildResult {
        librariesMissingPartDirective =
            librariesMissingPartDirective ?? BuiltMap(),
        librariesWithUnusedPartDirective =
-           librariesWithUnusedPartDirective ?? BuiltMap();
+           librariesWithUnusedPartDirective ?? BuiltMap(),
+       errorFixes = errorFixes ?? BuiltMap();
 
   BuildResult copyWith({
     BuildStatus? status,
@@ -92,6 +98,7 @@ class BuildResult {
     FinishedBuildState? buildState,
     BuiltMap<AssetId, Digest>? librariesMissingPartDirective,
     BuiltMap<AssetId, Digest>? librariesWithUnusedPartDirective,
+    BuiltMap<AssetId, SourceErrorFixes>? errorFixes,
   }) => BuildResult(
     status: status ?? this.status,
     failureType: failureType ?? this.failureType,
@@ -105,6 +112,7 @@ class BuildResult {
     librariesWithUnusedPartDirective:
         librariesWithUnusedPartDirective ??
         this.librariesWithUnusedPartDirective,
+    errorFixes: errorFixes ?? this.errorFixes,
   );
 
   @override
