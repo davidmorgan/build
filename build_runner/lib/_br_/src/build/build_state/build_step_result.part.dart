@@ -57,6 +57,13 @@ class _$BuildStepResultSerializer
           const FullType(String),
         ]),
       ),
+      'requiredEdits',
+      serializers.serialize(
+        object.requiredEdits,
+        specifiedType: const FullType(BuiltList, const [
+          const FullType(RequiredEditResult),
+        ]),
+      ),
     ];
     Object? value;
     value = object.result;
@@ -167,6 +174,17 @@ class _$BuildStepResultSerializer
                 as BuiltList<Object?>,
           );
           break;
+        case 'requiredEdits':
+          result.requiredEdits.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType(RequiredEditResult),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
+          break;
       }
     }
 
@@ -191,6 +209,8 @@ class _$BuildStepResult extends BuildStepResult {
   final BuiltSet<AssetId> resolverEntrypoints;
   @override
   final BuiltList<String> errors;
+  @override
+  final BuiltList<RequiredEditResult> requiredEdits;
 
   factory _$BuildStepResult([void Function(BuildStepResultBuilder)? updates]) =>
       (BuildStepResultBuilder()..update(updates))._build();
@@ -204,6 +224,7 @@ class _$BuildStepResult extends BuildStepResult {
     required this.globsEvaluated,
     required this.resolverEntrypoints,
     required this.errors,
+    required this.requiredEdits,
   }) : super._();
   @override
   BuildStepResult rebuild(void Function(BuildStepResultBuilder) updates) =>
@@ -223,7 +244,8 @@ class _$BuildStepResult extends BuildStepResult {
         inputs == other.inputs &&
         globsEvaluated == other.globsEvaluated &&
         resolverEntrypoints == other.resolverEntrypoints &&
-        errors == other.errors;
+        errors == other.errors &&
+        requiredEdits == other.requiredEdits;
   }
 
   @override
@@ -237,6 +259,7 @@ class _$BuildStepResult extends BuildStepResult {
     _$hash = $jc(_$hash, globsEvaluated.hashCode);
     _$hash = $jc(_$hash, resolverEntrypoints.hashCode);
     _$hash = $jc(_$hash, errors.hashCode);
+    _$hash = $jc(_$hash, requiredEdits.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -251,7 +274,8 @@ class _$BuildStepResult extends BuildStepResult {
           ..add('inputs', inputs)
           ..add('globsEvaluated', globsEvaluated)
           ..add('resolverEntrypoints', resolverEntrypoints)
-          ..add('errors', errors))
+          ..add('errors', errors)
+          ..add('requiredEdits', requiredEdits))
         .toString();
   }
 }
@@ -298,6 +322,12 @@ class BuildStepResultBuilder
   ListBuilder<String> get errors => _$this._errors ??= ListBuilder<String>();
   set errors(ListBuilder<String>? errors) => _$this._errors = errors;
 
+  ListBuilder<RequiredEditResult>? _requiredEdits;
+  ListBuilder<RequiredEditResult> get requiredEdits =>
+      _$this._requiredEdits ??= ListBuilder<RequiredEditResult>();
+  set requiredEdits(ListBuilder<RequiredEditResult>? requiredEdits) =>
+      _$this._requiredEdits = requiredEdits;
+
   BuildStepResultBuilder();
 
   BuildStepResultBuilder get _$this {
@@ -311,6 +341,7 @@ class BuildStepResultBuilder
       _globsEvaluated = $v.globsEvaluated.toBuilder();
       _resolverEntrypoints = $v.resolverEntrypoints.toBuilder();
       _errors = $v.errors.toBuilder();
+      _requiredEdits = $v.requiredEdits.toBuilder();
       _$v = null;
     }
     return this;
@@ -347,6 +378,7 @@ class BuildStepResultBuilder
             globsEvaluated: globsEvaluated.build(),
             resolverEntrypoints: resolverEntrypoints.build(),
             errors: errors.build(),
+            requiredEdits: requiredEdits.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -362,6 +394,8 @@ class BuildStepResultBuilder
         resolverEntrypoints.build();
         _$failedField = 'errors';
         errors.build();
+        _$failedField = 'requiredEdits';
+        requiredEdits.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'BuildStepResult',

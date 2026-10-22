@@ -9,12 +9,14 @@ import 'package:built_value/serializer.dart';
 
 import '../../contracts.dart';
 import 'glob_id.dart';
+import 'required_edit_result.dart';
 
 part '../../../_br_/src/build/build_state/build_step_result.part.dart';
 
 /// Execution results and dependency tracking for a build step.
 @Invariant('hasRun || (outputs.isEmpty && errors.isEmpty)')
 @Invariant('!succeeded || errors.isEmpty')
+@Invariant('!succeeded || requiredEdits.isEmpty')
 @Invariant('outputs.every((id) => id.package.isNotEmpty && id.path.isNotEmpty)')
 @Invariant('inputs.every((id) => id.package.isNotEmpty && id.path.isNotEmpty)')
 @Invariant(
@@ -50,6 +52,9 @@ abstract class BuildStepResult
 
   /// Errors logged.
   BuiltList<String> get errors;
+
+  /// Edits to the primary input required to fix errors.
+  BuiltList<RequiredEditResult> get requiredEdits;
 
   factory BuildStepResult([void Function(BuildStepResultBuilder)? updates]) =
       _$BuildStepResult;

@@ -16,7 +16,7 @@ dependencies:
   analyzer: '>=14.3.0 <15.0.0'
   args: ^2.5.0
   async: ^2.5.0
-  build: '>=5.0.0 <5.1.0'
+  build: '>=5.1.0-wip <5.2.0'
   build_config: ^1.4.0
   build_daemon: ^4.0.0
   built_collection: '>=5.1.1 <7.0.0'

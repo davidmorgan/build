@@ -1,5 +1,10 @@
 ## 2.17.2-wip
 
+- Support `BuildStep.addRequiredEdit` and `BuildStep.failRequiringEdit`, new
+  and experimental in `build` 5.1.0. A required edit fails the build; by
+  default `build_runner` applies it to the source and builds again.
+- Require `build` 5.1.0.
+
 ## 2.17.1
 
 - Require `build` 5.0.0, which is the retracted `build` 4.1.0 republished as a

@@ -27,6 +27,7 @@ import 'build.dart';
 import 'build_result.dart';
 import 'build_state/asset_graph_json.dart';
 import 'part_directives.dart';
+import 'source_required_edits.dart';
 
 /// A series of builds with the same configuration.
 ///
@@ -377,6 +378,13 @@ class BuildSeries {
     if (result.librariesWithUnusedPartDirective.isNotEmpty) {
       await PartDirectives.removeUnused(
         result.librariesWithUnusedPartDirective,
+        _buildPlan.readerWriter,
+        onlyCheck: _outputStrategy == .verify,
+      );
+    }
+    if (result.requiredEdits.isNotEmpty) {
+      await SourceRequiredEdits.apply(
+        result.requiredEdits,
         _buildPlan.readerWriter,
         onlyCheck: _outputStrategy == .verify,
       );

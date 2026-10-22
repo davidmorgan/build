@@ -1,5 +1,11 @@
-## 5.0.1-wip
+## 5.1.0-wip
 
+- Add `RequiredEdit`, `BuildStep.addRequiredEdit` and
+  `BuildStep.failRequiringEdit`, new and experimental: a builder reports an
+  error with an edit to its primary input that fixes it. The new `BuildStep`
+  members are a breaking change for packages that implement `BuildStep`, so
+  this is a minor version: `build_runner` allows only one minor version of
+  `build`.
 - Document that `build_runner` builder factories may be placed in
   `lib/src/builder.dart` to keep them out of the public API.
 

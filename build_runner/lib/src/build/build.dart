@@ -41,6 +41,8 @@ import 'build_state/glob_id.dart';
 import 'build_state/glob_result.dart';
 import 'build_state/post_process_build_step_id.dart';
 import 'build_state/post_process_build_step_result.dart';
+import 'build_state/required_edit_result.dart';
+import 'build_step_failed_exception.dart';
 import 'build_step_impl.dart';
 import 'builder_filesystem.dart';
 import 'input_tracker.dart';
@@ -54,6 +56,7 @@ import 'post_process_build_step_impl.dart';
 import 'resolver/analysis_driver_model.dart';
 import 'resolver/resolvers_impl.dart';
 import 'shared_part_accumulator.dart';
+import 'source_required_edits.dart';
 
 final ResolversImpl _defaultResolvers = ResolversImpl(
   analysisDriverModel: AnalysisDriverModel(),
@@ -83,6 +86,9 @@ class Build {
 
   /// Cached accumulators for previous shared parts, keyed by library ID.
   final _previousPartAccumulators = <AssetId, SharedPartAccumulator>{};
+
+  /// Required edits reported by build steps, by primary input.
+  final _requiredEdits = <AssetId, List<RequiredEdit>>{};
 
   SharedPartAccumulator? _previousPartAccumulator(AssetId libraryId) {
     var accumulator = _previousPartAccumulators[libraryId];
@@ -227,6 +233,20 @@ class Build {
     // A failed build might be why a shared part was not written, so unused
     // `part` directives are only looked for if the build succeeded.
     final buildFailed = result.status == BuildStatus.failure;
+    if (_requiredEdits.isNotEmpty) {
+      final requiredEdits = <AssetId, SourceRequiredEdits>{};
+      for (final MapEntry(key: id, value: edits) in _requiredEdits.entries) {
+        final content = await _builderFilesystem.contentOf(id);
+        requiredEdits[id] = SourceRequiredEdits(
+          md5.convert(content.bytes),
+          edits.toBuiltList(),
+        );
+      }
+      result = result.copyWith(
+        status: BuildStatus.failure,
+        requiredEdits: requiredEdits.build(),
+      );
+    }
     final librariesMissingPartDirective = await PartDirectives.findMissing(
       buildState,
       _builderFilesystem,
@@ -532,6 +552,17 @@ class Build {
         await _markStepFailed(buildStepId, builderOutputs);
       } else if (stepAction == StepAction.skipReuse) {
         final stepResult = previousBuild.stepResult(buildStepId);
+        if (stepResult.requiredEdits.isNotEmpty) {
+          (_requiredEdits[buildStepId.primaryInput] ??= []).addAll([
+            for (final edit in stepResult.requiredEdits)
+              RequiredEdit(
+                message: edit.message,
+                offset: edit.offset,
+                length: edit.length,
+                replacement: edit.replacement,
+              ),
+          ]);
+        }
         buildState.copyPartContribution(
           fromPart: buildInputs.sharedParts[buildStepId.primaryInput],
           libraryId: buildStepId.primaryInput,
@@ -574,6 +605,8 @@ class Build {
           await BuildLogLogger.scopeLogAsync(() async {
             try {
               await builder.build(step);
+            } on BuildStepFailedException {
+              // The step already logged why it failed.
             } finally {
               await step.complete();
             }
@@ -1228,7 +1261,19 @@ class Build {
       ..globsEvaluated.replace(inputTracker.globsEvaluated)
       ..resolverEntrypoints.replace(inputTracker.resolverEntrypoints)
       ..errors.replace(errors)
+      ..requiredEdits.replace([
+        for (final edit in step.requiredEdits)
+          RequiredEditResult(
+            message: edit.message,
+            offset: edit.offset,
+            length: edit.length,
+            replacement: edit.replacement,
+          ),
+      ])
       ..wrotePartContribution = step.wrotePartContribution;
+    if (step.requiredEdits.isNotEmpty) {
+      (_requiredEdits[input] ??= []).addAll(step.requiredEdits);
+    }
     if (step.wrotePartContribution) {
       buildState.addPartContribution(
         libraryId: input,

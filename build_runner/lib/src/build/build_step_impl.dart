@@ -16,6 +16,7 @@ import 'package:package_config/package_config_types.dart';
 
 import '../contracts.dart';
 import 'asset_content.dart';
+import 'build_step_failed_exception.dart';
 import 'builder_filesystem.dart';
 import 'input_tracker.dart';
 import 'library_source_sink_impl.dart';
@@ -63,6 +64,9 @@ class BuildStepImpl implements BuildStep {
   BuiltList<String> get partImports =>
       _librarySourceSink?.imports ?? BuiltList<String>();
   String? get languageVersion => _librarySourceSink?.languageVersion;
+
+  /// The edits reported by [addRequiredEdit] and [failRequiringEdit].
+  final List<RequiredEdit> requiredEdits = [];
 
   @override
   Future<LibrarySourceSink?> get librarySourceSink async {
@@ -311,6 +315,25 @@ class BuildStepImpl implements BuildStep {
   @override
   void reportUnusedAssets(Iterable<AssetId> assets) {
     _reportUnusedAssets?.call(assets);
+  }
+
+  @override
+  void addRequiredEdit(RequiredEdit edit) {
+    if (_isComplete) throw BuildStepCompletedException();
+    if (!inputTracker.inputs.contains(inputId)) {
+      throw StateError(
+        'A required edit needs the primary input `$inputId` to have been '
+        'read.',
+      );
+    }
+    requiredEdits.add(edit);
+    log.severe(edit.message);
+  }
+
+  @override
+  Never failRequiringEdit(RequiredEdit edit) {
+    addRequiredEdit(edit);
+    throw const BuildStepFailedException();
   }
 }
 
