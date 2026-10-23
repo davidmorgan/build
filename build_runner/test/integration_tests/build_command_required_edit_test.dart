@@ -160,8 +160,6 @@ class EditBuilder implements Builder {
       'class A { int newName = 0; int newName2 = 0; }\n',
     );
     expect(tester.read('root_pkg/lib/a.txt'), 'ok');
-    expect(json.decode(tester.read('root_pkg/$sourceEditsPath')!), {
-      'edits': <Object?>[],
-    });
+    expect(tester.read('root_pkg/$sourceEditsPath'), isNull);
   });
 }

@@ -8,6 +8,7 @@ import 'package:build/build.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:crypto/crypto.dart';
 
+import '../build_plan/asset_file.dart';
 import '../constants.dart';
 import '../io/reader_writer.dart';
 import '../logging/build_log.dart';
@@ -94,7 +95,7 @@ class SourceRequiredEdits {
   }
 
   /// Writes [requiredEdits] to [sourceEditsPath] in [outputRoot] as JSON, for
-  /// tools to read.
+  /// tools to read, or deletes that file if there are none.
   static Future<void> write(
     Map<AssetId, Iterable<RequiredEdit>> requiredEdits,
     ReaderWriter readerWriter, {
@@ -117,8 +118,15 @@ class SourceRequiredEdits {
         });
       }
     }
+    final fileId = AssetId(outputRoot, sourceEditsPath);
+    if (edits.isEmpty) {
+      if (await readerWriter.canRead(fileId)) {
+        await readerWriter.delete(AssetFile.atPackagePath(fileId));
+      }
+      return;
+    }
     await readerWriter.writeAsString(
-      AssetId(outputRoot, sourceEditsPath),
+      fileId,
       const JsonEncoder.withIndent('  ').convert({'edits': edits}),
     );
   }
