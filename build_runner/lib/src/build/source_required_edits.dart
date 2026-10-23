@@ -51,18 +51,10 @@ class SourceRequiredEdits {
         changedDuringBuildIds.add(id);
         continue;
       }
-      var source = utf8.decode(bytes);
-      final edits = requiredEdits[id]!.edits.toList()
-        ..sort((a, b) => b.offset.compareTo(a.offset));
-      int? lowestOffset;
-      for (final edit in edits) {
-        final end = edit.offset + edit.length;
-        if (end > source.length) continue;
-        if (lowestOffset != null && end > lowestOffset) continue;
-        source = source.replaceRange(edit.offset, end, edit.replacement);
-        lowestOffset = edit.offset;
-      }
-      await readerWriter.writeAsString(id, source);
+      await readerWriter.writeAsString(
+        id,
+        applyTo(utf8.decode(bytes), requiredEdits[id]!.edits),
+      );
       editedIds.add(id);
     }
     if (editedIds.isNotEmpty) {
@@ -74,6 +66,31 @@ class SourceRequiredEdits {
         '${changedDuringBuildIds.map(buildLog.renderId).join('\n')}',
       );
     }
+  }
+
+  /// Returns [source] with [edits] applied.
+  ///
+  /// Edits past the end of [source], and edits that overlap one at a higher
+  /// offset, are skipped.
+  static String applyTo(String source, Iterable<RequiredEdit> edits) {
+    // From the end backwards, so offsets stay valid; at one offset, from the
+    // last reported, so insertions there end up in the order reported.
+    final reported = edits.toList(growable: false);
+    final order = List.generate(reported.length, (i) => i, growable: false)
+      ..sort((a, b) {
+        final byOffset = reported[b].offset.compareTo(reported[a].offset);
+        return byOffset != 0 ? byOffset : b.compareTo(a);
+      });
+    int? lowestOffset;
+    for (final index in order) {
+      final edit = reported[index];
+      final end = edit.offset + edit.length;
+      if (end > source.length) continue;
+      if (lowestOffset != null && end > lowestOffset) continue;
+      source = source.replaceRange(edit.offset, end, edit.replacement);
+      lowestOffset = edit.offset;
+    }
+    return source;
   }
 
   /// Writes [requiredEdits] to [sourceEditsPath] in [outputRoot] as JSON, for
