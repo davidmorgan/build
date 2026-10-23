@@ -394,6 +394,13 @@ class BuildSeries {
         onlyCheck: !_editSources,
       );
     }
+    if (_outputStrategy != .verify) {
+      await SourceRequiredEdits.write(
+        _editSources ? BuiltMap() : result.requiredEdits,
+        _buildPlan.readerWriter,
+        outputRoot: _buildPlan.buildSpec.buildPackages.outputRoot,
+      );
+    }
     result = await _createMergedOutputDirectories(result);
 
     _buildPlan = build.buildPlan.withCompatiblePreviousBuild(

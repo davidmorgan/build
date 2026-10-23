@@ -8,6 +8,7 @@ import 'package:build/build.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:crypto/crypto.dart';
 
+import '../constants.dart';
 import '../io/reader_writer.dart';
 import '../logging/build_log.dart';
 
@@ -73,5 +74,35 @@ class SourceRequiredEdits {
         '${changedDuringBuildIds.map(buildLog.renderId).join('\n')}',
       );
     }
+  }
+
+  /// Writes [requiredEdits] to [sourceEditsPath] in [outputRoot] as JSON, for
+  /// tools to read.
+  static Future<void> write(
+    BuiltMap<AssetId, SourceRequiredEdits> requiredEdits,
+    ReaderWriter readerWriter, {
+    required String outputRoot,
+  }) async {
+    final ids = requiredEdits.keys.toList()
+      ..sort((a, b) => '$a'.compareTo('$b'));
+    final edits = <Map<String, Object?>>[];
+    for (final id in ids) {
+      final sorted = requiredEdits[id]!.edits.toList()
+        ..sort((a, b) => a.offset.compareTo(b.offset));
+      for (final edit in sorted) {
+        edits.add({
+          'package': id.package,
+          'path': id.path,
+          'message': edit.message,
+          'offset': edit.offset,
+          'length': edit.length,
+          'replacement': edit.replacement,
+        });
+      }
+    }
+    await readerWriter.writeAsString(
+      AssetId(outputRoot, sourceEditsPath),
+      const JsonEncoder.withIndent('  ').convert({'edits': edits}),
+    );
   }
 }

@@ -5,6 +5,9 @@
 @Tags(['integration4'])
 library;
 
+import 'dart:convert';
+
+import 'package:build_runner/src/constants.dart';
 import 'package:build_runner/src/logging/build_log.dart';
 import 'package:test/test.dart';
 
@@ -121,6 +124,27 @@ class EditBuilder implements Builder {
     );
     expect(tester.read('root_pkg/lib/a.txt'), isNull);
     expect(tester.read('root_pkg/lib/b.txt'), 'ok');
+    // The edits not applied are written for tools to read.
+    expect(json.decode(tester.read('root_pkg/$sourceEditsPath')!), {
+      'edits': [
+        {
+          'package': 'root_pkg',
+          'path': 'lib/a.dart',
+          'message': 'Rename oldName at 14 to newName.',
+          'offset': 14,
+          'length': 7,
+          'replacement': 'newName',
+        },
+        {
+          'package': 'root_pkg',
+          'path': 'lib/a.dart',
+          'message': 'Rename oldName at 31 to newName.',
+          'offset': 31,
+          'length': 7,
+          'replacement': 'newName',
+        },
+      ],
+    });
 
     // Otherwise the edits are applied and the build reruns.
     output = await tester.run(
@@ -136,5 +160,8 @@ class EditBuilder implements Builder {
       'class A { int newName = 0; int newName2 = 0; }\n',
     );
     expect(tester.read('root_pkg/lib/a.txt'), 'ok');
+    expect(json.decode(tester.read('root_pkg/$sourceEditsPath')!), {
+      'edits': <Object?>[],
+    });
   });
 }
