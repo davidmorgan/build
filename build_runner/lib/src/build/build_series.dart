@@ -84,6 +84,11 @@ class BuildSeries {
   OutputStrategy get _outputStrategy =>
       _buildPlan.buildSpec.buildOptions.outputStrategy;
 
+  /// Whether edits to sources are applied; otherwise they are only reported.
+  bool get _editSources =>
+      _outputStrategy != .verify &&
+      _buildPlan.buildSpec.buildOptions.editSources;
+
   /// Filters [changes], separating them into [FilteredChanges.accepted] which
   /// trigger a build and [FilteredChanges.rejected] which do not.
   Future<FilteredChanges> filterChanges(List<AssetChange> changes) async {
@@ -372,21 +377,21 @@ class BuildSeries {
       await PartDirectives.addMissing(
         result.librariesMissingPartDirective,
         _buildPlan.readerWriter,
-        onlyCheck: _outputStrategy == .verify,
+        onlyCheck: !_editSources,
       );
     }
     if (result.librariesWithUnusedPartDirective.isNotEmpty) {
       await PartDirectives.removeUnused(
         result.librariesWithUnusedPartDirective,
         _buildPlan.readerWriter,
-        onlyCheck: _outputStrategy == .verify,
+        onlyCheck: !_editSources,
       );
     }
     if (result.requiredEdits.isNotEmpty) {
       await SourceRequiredEdits.apply(
         result.requiredEdits,
         _buildPlan.readerWriter,
-        onlyCheck: _outputStrategy == .verify,
+        onlyCheck: !_editSources,
       );
     }
     result = await _createMergedOutputDirectories(result);

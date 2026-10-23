@@ -38,6 +38,10 @@ class BuildOptions {
   final String? configKey;
   final BuiltList<String> enableExperiments;
   final bool dartAotPerf;
+
+  /// Whether to apply edits to sources that the build requires, or only
+  /// report them.
+  final bool editSources;
   final bool isReleaseBuild;
   final bool outputSymlinksOnly;
   final OutputStrategy outputStrategy;
@@ -56,6 +60,7 @@ class BuildOptions {
     required this.compileStrategy,
     required this.configKey,
     required this.dartAotPerf,
+    required this.editSources,
     required this.enableExperiments,
     required this.isReleaseBuild,
     required this.outputSymlinksOnly,
@@ -77,6 +82,7 @@ class BuildOptions {
     CompileStrategy? compileStrategy,
     String? configKey,
     bool? dartAotPerf,
+    bool? editSources,
     BuiltList<String>? enableExperiments,
     bool? isReleaseBuild,
     bool? outputSymlinksOnly,
@@ -92,6 +98,7 @@ class BuildOptions {
     compileStrategy: compileStrategy ?? CompileStrategy.tryAot,
     configKey: configKey,
     dartAotPerf: dartAotPerf ?? false,
+    editSources: editSources ?? true,
     enableExperiments: enableExperiments ?? BuiltList(),
     isReleaseBuild: isReleaseBuild ?? false,
     outputSymlinksOnly: outputSymlinksOnly ?? false,
@@ -148,6 +155,7 @@ class BuildOptions {
       configKey: commandLine.config,
       // Only available on Linux.
       dartAotPerf: commandLine.dartAotPerf ?? false,
+      editSources: commandLine.editSources ?? true,
       enableExperiments: commandLine.enableExperiments!,
       isReleaseBuild: commandLine.release!,
       outputSymlinksOnly: commandLine.symlink!,
@@ -170,6 +178,7 @@ class BuildOptions {
     buildFilters: buildFilters ?? this.buildFilters,
     configKey: configKey,
     dartAotPerf: dartAotPerf,
+    editSources: editSources,
     enableExperiments: enableExperiments,
     isReleaseBuild: isReleaseBuild,
     outputSymlinksOnly: outputSymlinksOnly,
