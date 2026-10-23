@@ -79,7 +79,7 @@ class SourceRequiredEdits {
   /// Writes [requiredEdits] to [sourceEditsPath] in [outputRoot] as JSON, for
   /// tools to read.
   static Future<void> write(
-    BuiltMap<AssetId, SourceRequiredEdits> requiredEdits,
+    Map<AssetId, Iterable<RequiredEdit>> requiredEdits,
     ReaderWriter readerWriter, {
     required String outputRoot,
   }) async {
@@ -87,7 +87,7 @@ class SourceRequiredEdits {
       ..sort((a, b) => '$a'.compareTo('$b'));
     final edits = <Map<String, Object?>>[];
     for (final id in ids) {
-      final sorted = requiredEdits[id]!.edits.toList()
+      final sorted = requiredEdits[id]!.toList()
         ..sort((a, b) => a.offset.compareTo(b.offset));
       for (final edit in sorted) {
         edits.add({

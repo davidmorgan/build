@@ -395,8 +395,22 @@ class BuildSeries {
       );
     }
     if (_outputStrategy != .verify) {
+      final unappliedEdits = <AssetId, List<RequiredEdit>>{};
+      if (!_editSources) {
+        unappliedEdits.addAll(
+          await PartDirectives.requiredEdits(
+            missing: result.librariesMissingPartDirective,
+            unused: result.librariesWithUnusedPartDirective,
+            readerWriter: _buildPlan.readerWriter,
+          ),
+        );
+        for (final MapEntry(key: id, value: edits)
+            in result.requiredEdits.entries) {
+          (unappliedEdits[id] ??= []).addAll(edits.edits);
+        }
+      }
       await SourceRequiredEdits.write(
-        _editSources ? BuiltMap() : result.requiredEdits,
+        unappliedEdits,
         _buildPlan.readerWriter,
         outputRoot: _buildPlan.buildSpec.buildPackages.outputRoot,
       );
