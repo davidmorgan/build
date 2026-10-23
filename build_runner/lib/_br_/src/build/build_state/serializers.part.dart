@@ -16,9 +16,16 @@ Serializers _$serializers =
           ..add(PhasedValue.serializer)
           ..add(PostProcessBuildStepId.serializer)
           ..add(PostProcessBuildStepResult.serializer)
+          ..add(RequiredEditResult.serializer)
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
             () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(RequiredEditResult),
+            ]),
+            () => ListBuilder<RequiredEditResult>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltMap, const [

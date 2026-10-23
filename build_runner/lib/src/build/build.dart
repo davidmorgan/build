@@ -41,6 +41,7 @@ import 'build_state/glob_id.dart';
 import 'build_state/glob_result.dart';
 import 'build_state/post_process_build_step_id.dart';
 import 'build_state/post_process_build_step_result.dart';
+import 'build_state/required_edit_result.dart';
 import 'build_step_failed_exception.dart';
 import 'build_step_impl.dart';
 import 'builder_filesystem.dart';
@@ -551,6 +552,17 @@ class Build {
         await _markStepFailed(buildStepId, builderOutputs);
       } else if (stepAction == StepAction.skipReuse) {
         final stepResult = previousBuild.stepResult(buildStepId);
+        if (stepResult.requiredEdits.isNotEmpty) {
+          (_requiredEdits[buildStepId.primaryInput] ??= []).addAll([
+            for (final edit in stepResult.requiredEdits)
+              RequiredEdit(
+                message: edit.message,
+                offset: edit.offset,
+                length: edit.length,
+                replacement: edit.replacement,
+              ),
+          ]);
+        }
         buildState.copyPartContribution(
           fromPart: buildInputs.sharedParts[buildStepId.primaryInput],
           libraryId: buildStepId.primaryInput,
@@ -1249,6 +1261,15 @@ class Build {
       ..globsEvaluated.replace(inputTracker.globsEvaluated)
       ..resolverEntrypoints.replace(inputTracker.resolverEntrypoints)
       ..errors.replace(errors)
+      ..requiredEdits.replace([
+        for (final edit in step.requiredEdits)
+          RequiredEditResult(
+            message: edit.message,
+            offset: edit.offset,
+            length: edit.length,
+            replacement: edit.replacement,
+          ),
+      ])
       ..wrotePartContribution = step.wrotePartContribution;
     if (step.requiredEdits.isNotEmpty) {
       (_requiredEdits[input] ??= []).addAll(step.requiredEdits);
