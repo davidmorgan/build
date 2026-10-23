@@ -69,7 +69,7 @@ class BuildCommand implements BuildRunnerCommand {
     final editedLibraries = {
       ...result.librariesMissingPartDirective.keys,
       ...result.librariesWithUnusedPartDirective.keys,
-      ...result.errorFixes.keys,
+      ...result.requiredEdits.keys,
     };
     if (editedLibraries.isNotEmpty && buildOptions.outputStrategy != .verify) {
       result = await buildSeries.run(

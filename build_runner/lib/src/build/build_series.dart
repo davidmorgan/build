@@ -27,7 +27,7 @@ import 'build.dart';
 import 'build_result.dart';
 import 'build_state/asset_graph_json.dart';
 import 'part_directives.dart';
-import 'source_error_fixes.dart';
+import 'source_required_edits.dart';
 
 /// A series of builds with the same configuration.
 ///
@@ -382,9 +382,9 @@ class BuildSeries {
         onlyCheck: _outputStrategy == .verify,
       );
     }
-    if (result.errorFixes.isNotEmpty) {
-      await SourceErrorFixes.apply(
-        result.errorFixes,
+    if (result.requiredEdits.isNotEmpty) {
+      await SourceRequiredEdits.apply(
+        result.requiredEdits,
         _buildPlan.readerWriter,
         onlyCheck: _outputStrategy == .verify,
       );

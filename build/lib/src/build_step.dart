@@ -12,6 +12,7 @@ import 'package:package_config/package_config_types.dart';
 
 import 'asset_id.dart';
 import 'library_source_sink.dart';
+import 'required_edit.dart';
 import 'resolver.dart';
 import 'resource.dart';
 
@@ -164,21 +165,21 @@ abstract class BuildStep implements AssetReader, AssetWriter {
   /// https://github.com/dart-lang/build/discussions.
   Future<LibrarySourceSink?> get librarySourceSink;
 
-  /// Fails this step with the error [message] and a fix for it: replace
-  /// [length] characters at [offset] in the primary input with
-  /// [replacement].
+  /// Marks this step failed until [edit] is applied to the primary input, logs
+  /// the edit's message as an error, and returns so the step can continue.
   ///
   /// The step must have read the primary input. Depending on how it is run,
-  /// `build_runner` applies the fix and builds again, or reports it.
+  /// `build_runner` applies the edit and builds again, or reports it.
   ///
   /// Experimental, may change following feedback and discussion at
   /// https://github.com/dart-lang/build/discussions.
-  void reportErrorWithFix(
-    String message, {
-    required int offset,
-    required int length,
-    required String replacement,
-  });
+  void addRequiredEdit(RequiredEdit edit);
+
+  /// As [addRequiredEdit], then ends this step.
+  ///
+  /// Experimental, may change following feedback and discussion at
+  /// https://github.com/dart-lang/build/discussions.
+  Never failRequiringEdit(RequiredEdit edit);
 }
 
 /// The "write" part of the [BuildStep] API.

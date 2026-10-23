@@ -16,13 +16,12 @@ import 'package:package_config/package_config_types.dart';
 
 import '../contracts.dart';
 import 'asset_content.dart';
+import 'build_step_failed_exception.dart';
 import 'builder_filesystem.dart';
-import 'error_fix.dart';
 import 'input_tracker.dart';
 import 'library_source_sink_impl.dart';
 import 'resolver/asset_ids.dart';
 import 'resolver/delegating_resolver.dart';
-import 'source_edit.dart';
 
 /// A single step in the build processes.
 ///
@@ -66,8 +65,8 @@ class BuildStepImpl implements BuildStep {
       _librarySourceSink?.imports ?? BuiltList<String>();
   String? get languageVersion => _librarySourceSink?.languageVersion;
 
-  /// The errors with fixes reported by [reportErrorWithFix].
-  final List<ErrorFix> errorFixes = [];
+  /// The edits reported by [addRequiredEdit] and [failRequiringEdit].
+  final List<RequiredEdit> requiredEdits = [];
 
   @override
   Future<LibrarySourceSink?> get librarySourceSink async {
@@ -319,30 +318,22 @@ class BuildStepImpl implements BuildStep {
   }
 
   @override
-  void reportErrorWithFix(
-    String message, {
-    required int offset,
-    required int length,
-    required String replacement,
-  }) {
+  void addRequiredEdit(RequiredEdit edit) {
     if (_isComplete) throw BuildStepCompletedException();
     if (!inputTracker.inputs.contains(inputId)) {
       throw StateError(
-        'reportErrorWithFix needs the primary input `$inputId` to have been '
+        'A required edit needs the primary input `$inputId` to have been '
         'read.',
       );
     }
-    errorFixes.add(
-      ErrorFix.of(
-        message: message,
-        edit: SourceEdit.of(
-          offset: offset,
-          length: length,
-          replacement: replacement,
-        ),
-      ),
-    );
-    log.severe(message);
+    requiredEdits.add(edit);
+    log.severe(edit.message);
+  }
+
+  @override
+  Never failRequiringEdit(RequiredEdit edit) {
+    addRequiredEdit(edit);
+    throw const BuildStepFailedException();
   }
 }
 

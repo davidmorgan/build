@@ -10,48 +10,48 @@ import 'package:crypto/crypto.dart';
 
 import '../io/reader_writer.dart';
 import '../logging/build_log.dart';
-import 'error_fix.dart';
 
-/// The errors with fixes builders reported for one source, and the md5
-/// [digest] of the source content they were reported for.
-class SourceErrorFixes {
+/// The required edits builders reported for one source, and the md5 [digest]
+/// of the source content they were reported for.
+class SourceRequiredEdits {
   final Digest digest;
-  final BuiltList<ErrorFix> fixes;
+  final BuiltList<RequiredEdit> edits;
 
-  SourceErrorFixes(this.digest, this.fixes);
+  SourceRequiredEdits(this.digest, this.edits);
 
-  /// Applies [fixes] to their sources and reports them, or with [onlyCheck]
-  /// only reports them.
+  /// Applies [requiredEdits] to their sources and reports them, or with
+  /// [onlyCheck] only reports them.
   ///
   /// As for `part` directives, a source that changed since the build read it
-  /// is not edited, and the next build decides again. Fixes that overlap an
-  /// earlier one in the same source are left for the next build.
+  /// is not edited, and the next build decides again. Edits that overlap a
+  /// later one in the same source are left for the next build.
   static Future<void> apply(
-    BuiltMap<AssetId, SourceErrorFixes> fixes,
+    BuiltMap<AssetId, SourceRequiredEdits> requiredEdits,
     ReaderWriter readerWriter, {
     required bool onlyCheck,
   }) async {
     String lines(Iterable<AssetId> ids) => [
       for (final id in ids)
-        for (final fix in fixes[id]!.fixes)
-          '${buildLog.renderId(id)}: ${fix.message}',
+        for (final edit in requiredEdits[id]!.edits)
+          '${buildLog.renderId(id)}: ${edit.message}',
     ].join('\n');
 
-    final ids = fixes.keys.toList()..sort((a, b) => '$a'.compareTo('$b'));
+    final ids = requiredEdits.keys.toList()
+      ..sort((a, b) => '$a'.compareTo('$b'));
     if (onlyCheck) {
       buildLog.error('Fix errors in sources:\n\n${lines(ids)}');
       return;
     }
-    final fixedIds = <AssetId>[];
+    final editedIds = <AssetId>[];
     final changedDuringBuildIds = <AssetId>[];
     for (final id in ids) {
       final bytes = await readerWriter.readAsBytes(id);
-      if (md5.convert(bytes) != fixes[id]!.digest) {
+      if (md5.convert(bytes) != requiredEdits[id]!.digest) {
         changedDuringBuildIds.add(id);
         continue;
       }
       var source = utf8.decode(bytes);
-      final edits = [for (final fix in fixes[id]!.fixes) fix.edit]
+      final edits = requiredEdits[id]!.edits.toList()
         ..sort((a, b) => b.offset.compareTo(a.offset));
       int? lowestOffset;
       for (final edit in edits) {
@@ -62,10 +62,10 @@ class SourceErrorFixes {
         lowestOffset = edit.offset;
       }
       await readerWriter.writeAsString(id, source);
-      fixedIds.add(id);
+      editedIds.add(id);
     }
-    if (fixedIds.isNotEmpty) {
-      buildLog.error('Fixed errors in sources:\n\n${lines(fixedIds)}');
+    if (editedIds.isNotEmpty) {
+      buildLog.error('Fixed errors in sources:\n\n${lines(editedIds)}');
     }
     if (changedDuringBuildIds.isNotEmpty) {
       buildLog.error(
