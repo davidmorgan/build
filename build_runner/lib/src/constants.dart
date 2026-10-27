@@ -16,6 +16,10 @@ const entrypointScriptPath = '$entrypointDirectoryPath/build.dart';
 /// Relative path to `asset_graph.json` from the output root.
 const assetGraphJsonPath = '$hiddenBuildDirectoryPath/asset_graph.json';
 
+/// Relative path from the output root to the edits to sources that the last
+/// build needed and did not apply.
+const sourceEditsPath = '$hiddenBuildDirectoryPath/source_edits.json';
+
 /// Relative path to the artifact tree from the output root.
 ///
 /// The artifact tree is an alternative output location for assets that should

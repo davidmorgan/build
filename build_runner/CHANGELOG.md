@@ -3,6 +3,10 @@
 - Support `BuildStep.addRequiredEdit` and `BuildStep.failRequiringEdit`, new
   and experimental in `build` 5.1.0. A required edit fails the build; by
   default `build_runner` applies it to the source and builds again.
+- Add `--no-edit-sources`: outputs are written, but edits to sources, both
+  required edits and `part` directives to add or remove, are only reported,
+  and the build fails. They are also written to
+  `.dart_tool/build/source_edits.json` for tools such as IDEs.
 - Require `build` 5.1.0.
 
 ## 2.17.1

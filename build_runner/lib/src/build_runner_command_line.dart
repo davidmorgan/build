@@ -47,6 +47,7 @@ class BuildRunnerCommandLine {
   final String? buildMode;
   final String? config;
   final bool? dartAotPerf;
+  final bool? editSources;
   final BuiltList<String>? defines;
   final BuiltList<String>? enableExperiments;
   final bool? forceAot;
@@ -101,6 +102,7 @@ class BuildRunnerCommandLine {
       config = argResults.stringNamed(configOption),
       dartAotPerf = argResults.boolNamed(dartAotPerfOption),
       defines = argResults.listNamed(defineOption),
+      editSources = argResults.boolNamed(editSourcesOption),
       enableExperiments = argResults.listNamed(enableExperimentOption),
       forceAot = argResults.boolNamed(forceAotOption),
       forceJit = argResults.boolNamed(forceJitOption),
@@ -183,6 +185,7 @@ const verboseOption = 'verbose';
 const workspaceOption = 'workspace';
 const keepModifiedOutputsOption = 'keep-modified-outputs';
 const onlyCheckOption = 'only-check';
+const editSourcesOption = 'edit-sources';
 
 // Removed options, kept to not break old command lines.
 const deleteFilesByDefaultOption = 'delete-conflicting-outputs';
@@ -305,6 +308,15 @@ class _Build extends _Command<BuildRunnerCommandLine> {
         defaultsTo: false,
         negatable: false,
         help: 'Keeps manual modifications to output files.',
+      )
+      ..addFlag(
+        editSourcesOption,
+        defaultsTo: true,
+        negatable: true,
+        help:
+            'Edits sources when the build requires it, for example to add '
+            '`part` directives, then builds again. With --no-edit-sources, '
+            'reports the edits and fails the build instead.',
       )
       ..addFlag(
         onlyCheckOption,

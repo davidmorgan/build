@@ -5,6 +5,9 @@
 @Tags(['integration4'])
 library;
 
+import 'dart:convert';
+
+import 'package:build_runner/src/constants.dart';
 import 'package:build_runner/src/logging/build_log.dart';
 import 'package:test/test.dart';
 
@@ -364,6 +367,31 @@ targets:
     expect(output, contains("lib/a.dart: part '_br_/a.part.dart';"));
     expect(tester.read('root_pkg/lib/a.dart'), 'class A {}');
     expect(output, isNot(contains('Starting build #2.')));
+
+    // With `--no-edit-sources`, it also fails, and the edit is written for
+    // tools to read.
+    output = await tester.run(
+      'root_pkg',
+      'dart run build_runner build --force-jit --no-edit-sources',
+      expectExitCode: 1,
+    );
+    expect(
+      output,
+      contains('Add missing `part` directives for generated code:'),
+    );
+    expect(tester.read('root_pkg/lib/a.dart'), 'class A {}');
+    expect(json.decode(tester.read('root_pkg/$sourceEditsPath')!), {
+      'edits': [
+        {
+          'package': 'root_pkg',
+          'path': 'lib/a.dart',
+          'message': 'Add missing `part` directive for generated code.',
+          'offset': 0,
+          'length': 0,
+          'replacement': "part '_br_/a.part.dart';\n\n",
+        },
+      ],
+    });
 
     // Otherwise the directive is added and the build reruns.
     output = await tester.run(

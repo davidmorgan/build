@@ -84,6 +84,11 @@ class BuildSeries {
   OutputStrategy get _outputStrategy =>
       _buildPlan.buildSpec.buildOptions.outputStrategy;
 
+  /// Whether edits to sources are applied; otherwise they are only reported.
+  bool get _editSources =>
+      _outputStrategy != .verify &&
+      _buildPlan.buildSpec.buildOptions.editSources;
+
   /// Filters [changes], separating them into [FilteredChanges.accepted] which
   /// trigger a build and [FilteredChanges.rejected] which do not.
   Future<FilteredChanges> filterChanges(List<AssetChange> changes) async {
@@ -372,21 +377,42 @@ class BuildSeries {
       await PartDirectives.addMissing(
         result.librariesMissingPartDirective,
         _buildPlan.readerWriter,
-        onlyCheck: _outputStrategy == .verify,
+        onlyCheck: !_editSources,
       );
     }
     if (result.librariesWithUnusedPartDirective.isNotEmpty) {
       await PartDirectives.removeUnused(
         result.librariesWithUnusedPartDirective,
         _buildPlan.readerWriter,
-        onlyCheck: _outputStrategy == .verify,
+        onlyCheck: !_editSources,
       );
     }
     if (result.requiredEdits.isNotEmpty) {
       await SourceRequiredEdits.apply(
         result.requiredEdits,
         _buildPlan.readerWriter,
-        onlyCheck: _outputStrategy == .verify,
+        onlyCheck: !_editSources,
+      );
+    }
+    if (_outputStrategy != .verify) {
+      final unappliedEdits = <AssetId, List<RequiredEdit>>{};
+      if (!_editSources) {
+        unappliedEdits.addAll(
+          await PartDirectives.requiredEdits(
+            missing: result.librariesMissingPartDirective,
+            unused: result.librariesWithUnusedPartDirective,
+            readerWriter: _buildPlan.readerWriter,
+          ),
+        );
+        for (final MapEntry(key: id, value: edits)
+            in result.requiredEdits.entries) {
+          (unappliedEdits[id] ??= []).addAll(edits.edits);
+        }
+      }
+      await SourceRequiredEdits.write(
+        unappliedEdits,
+        _buildPlan.readerWriter,
+        outputRoot: _buildPlan.buildSpec.buildPackages.outputRoot,
       );
     }
     result = await _createMergedOutputDirectories(result);

@@ -132,6 +132,50 @@ abstract final class PartDirectives {
         'during the build:',
   );
 
+  /// The edits that add [missing] and remove [unused] `part` directives, by
+  /// library.
+  ///
+  /// As for [addMissing] and [removeUnused], a library that changed since it
+  /// was checked gets no edit.
+  static Future<Map<AssetId, List<RequiredEdit>>> requiredEdits({
+    required BuiltMap<AssetId, Digest> missing,
+    required BuiltMap<AssetId, Digest> unused,
+    required ReaderWriter readerWriter,
+  }) async {
+    final result = <AssetId, List<RequiredEdit>>{};
+    Future<void> add(
+      BuiltMap<AssetId, Digest> libraries,
+      SourceEdit? Function(String source, String partUri) edit,
+      String message,
+    ) async {
+      for (final MapEntry(key: id, value: digest) in libraries.entries) {
+        final bytes = await readerWriter.readAsBytes(id);
+        if (md5.convert(bytes) != digest) continue;
+        final sourceEdit = edit(utf8.decode(bytes), id.sharedPartUri!)!;
+        (result[id] ??= []).add(
+          RequiredEdit(
+            message: message,
+            offset: sourceEdit.offset,
+            length: sourceEdit.length,
+            replacement: sourceEdit.replacement,
+          ),
+        );
+      }
+    }
+
+    await add(
+      missing,
+      addEdit,
+      'Add missing `part` directive for generated code.',
+    );
+    await add(
+      unused,
+      removeEdit,
+      'Remove unused `part` directive for generated code.',
+    );
+    return result;
+  }
+
   /// Applies [edit] to [libraries] and reports it, or with [onlyCheck] only
   /// reports what to do.
   ///

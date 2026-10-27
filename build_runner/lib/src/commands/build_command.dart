@@ -71,7 +71,9 @@ class BuildCommand implements BuildRunnerCommand {
       ...result.librariesWithUnusedPartDirective.keys,
       ...result.requiredEdits.keys,
     };
-    if (editedLibraries.isNotEmpty && buildOptions.outputStrategy != .verify) {
+    if (editedLibraries.isNotEmpty &&
+        buildOptions.outputStrategy != .verify &&
+        buildOptions.editSources) {
       result = await buildSeries.run(
         editedLibraries,
         recentlyBootstrapped: false,

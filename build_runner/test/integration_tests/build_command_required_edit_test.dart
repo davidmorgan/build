@@ -5,6 +5,9 @@
 @Tags(['integration4'])
 library;
 
+import 'dart:convert';
+
+import 'package:build_runner/src/constants.dart';
 import 'package:build_runner/src/logging/build_log.dart';
 import 'package:test/test.dart';
 
@@ -77,7 +80,10 @@ class EditBuilder implements Builder {
       name: 'root_pkg',
       dependencies: ['build_runner'],
       pathDependencies: ['edit_pkg'],
-      files: {'lib/a.dart': 'class A { int oldName = 0; int oldName2 = 0; }\n'},
+      files: {
+        'lib/a.dart': 'class A { int oldName = 0; int oldName2 = 0; }\n',
+        'lib/b.dart': 'class B {}\n',
+      },
     );
 
     // With `--only-check`, the required edits are reported and nothing is
@@ -99,6 +105,46 @@ class EditBuilder implements Builder {
       'class A { int oldName = 0; int oldName2 = 0; }\n',
     );
     expect(tester.read('root_pkg/lib/a.txt'), isNull);
+    expect(tester.read('root_pkg/lib/b.txt'), isNull);
+
+    // With `--no-edit-sources`, outputs are written but the required edits
+    // are only reported, and the build fails.
+    output = await tester.run(
+      'root_pkg',
+      'dart run build_runner build --force-jit --no-edit-sources',
+      expectExitCode: 1,
+    );
+    expect(output, contains(BuildLog.failurePattern));
+    expect(output, contains('Fix errors in sources:'));
+    expect(output, contains('lib/a.dart: Rename oldName at 14 to newName.'));
+    expect(output, contains('lib/a.dart: Rename oldName at 31 to newName.'));
+    expect(
+      tester.read('root_pkg/lib/a.dart'),
+      'class A { int oldName = 0; int oldName2 = 0; }\n',
+    );
+    expect(tester.read('root_pkg/lib/a.txt'), isNull);
+    expect(tester.read('root_pkg/lib/b.txt'), 'ok');
+    // The edits not applied are written for tools to read.
+    expect(json.decode(tester.read('root_pkg/$sourceEditsPath')!), {
+      'edits': [
+        {
+          'package': 'root_pkg',
+          'path': 'lib/a.dart',
+          'message': 'Rename oldName at 14 to newName.',
+          'offset': 14,
+          'length': 7,
+          'replacement': 'newName',
+        },
+        {
+          'package': 'root_pkg',
+          'path': 'lib/a.dart',
+          'message': 'Rename oldName at 31 to newName.',
+          'offset': 31,
+          'length': 7,
+          'replacement': 'newName',
+        },
+      ],
+    });
 
     // Otherwise the edits are applied and the build reruns.
     output = await tester.run(
@@ -114,5 +160,6 @@ class EditBuilder implements Builder {
       'class A { int newName = 0; int newName2 = 0; }\n',
     );
     expect(tester.read('root_pkg/lib/a.txt'), 'ok');
+    expect(tester.read('root_pkg/$sourceEditsPath'), isNull);
   });
 }
