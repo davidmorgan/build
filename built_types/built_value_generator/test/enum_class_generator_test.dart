@@ -641,19 +641,20 @@ Future<String> generate(String source) async {
         source.startsWith('// @dart') ? source : '// @dart=2.19\n$source',
   };
 
-  // Capture any error from generation; if there is one, return that instead of
-  // the generated output.
-  String? error;
+  // Capture errors from generation; if there are any, return them instead of
+  // the generated output. Errors with fixes are each reported separately, as
+  // required edits.
+  final errors = <String>[];
   void captureError(LogRecord logRecord) {
     if (logRecord.level != Level.SEVERE) return;
-    if (error != null) throw StateError('Expected at most one error.');
-    error = logRecord.message;
+    errors.add(logRecord.message);
   }
 
   final result = await testBuilder(builder, srcs,
       rootPackage: pkgName, onLog: captureError);
-  return error ??
-      result.readerWriter.testing.readString(AssetId(
+  return errors.isNotEmpty
+      ? errors.join('\n')
+      : result.readerWriter.testing.readString(AssetId(
           pkgName, '.dart_tool/build/generated/$pkgName/lib/test_enum.g.dart'));
 }
 

@@ -239,7 +239,7 @@ abstract class Value implements Built<Value, ValueBuilder> {
 abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
-}'''), contains("1. Import generated part: part 'value.g.dart';"));
+}'''), contains("lib/value.dart: Import generated part: part 'value.g.dart';"));
       });
 
       test('to make value class abstract', () async {
@@ -253,7 +253,7 @@ class Value implements Built<Value, ValueBuilder> {
 abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
-}'''), contains('1. Make class abstract.'));
+}'''), contains('lib/value.dart: Make class abstract.'));
       });
 
       test('correct Built type parameters for implements', () async {
@@ -267,7 +267,7 @@ abstract class Value implements Built<Foo, Bar> {
 abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
-}'''), contains('1. Make class implement Built<Value, ValueBuilder>.'));
+}'''), contains('lib/value.dart: Make class implement Built<Value, ValueBuilder>.'));
       });
 
       test('making builder initializer static', () async {
@@ -468,7 +468,7 @@ abstract class Value implements Built<Value, ValueBuilder> {
 abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
-}'''), contains('1. Make class have exactly one constructor: Value._();'));
+}'''), contains('lib/value.dart: Make class have exactly one constructor: Value._();'));
       });
 
       test('to fix invalid primary constructor on value class', () async {
@@ -481,7 +481,7 @@ abstract class Value.other() implements Built<Value, ValueBuilder> {
 abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
-}'''), contains('1. Make class have exactly one constructor: Value._()'));
+}'''), contains('lib/value.dart: Make class have exactly one constructor: Value._()'));
       });
 
       test('to reject exact Value._() primary constructor', () async {
@@ -495,7 +495,8 @@ abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
 }''');
-        expect(result, contains('1. Value._() must go in the body.'));
+        expect(
+            result, contains('lib/value.dart: Value._() must go in the body.'));
       });
 
       test('to reject exact ValueBuilder._() primary constructor', () async {
@@ -523,7 +524,7 @@ abstract class Value._(int x) implements Built<Value, ValueBuilder> {
 abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
-}'''), contains('1. Make class have exactly one constructor: Value._()'));
+}'''), contains('lib/value.dart: Make class have exactly one constructor: Value._()'));
       });
 
       test('to fix new constructor with parameters on value class', () async {
@@ -537,7 +538,7 @@ abstract class Value implements Built<Value, ValueBuilder> {
 abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
-}'''), contains('1. Make class have exactly one constructor: Value._()'));
+}'''), contains('lib/value.dart: Make class have exactly one constructor: Value._()'));
       });
 
       test('to remove primary constructor from non-instantiable value class',
@@ -565,7 +566,7 @@ abstract class Value._() implements Built<Value, ValueBuilder> {
 abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
-}'''), contains('1. Remove invalid constructor.'));
+}'''), contains('lib/value.dart: Remove invalid constructor.'));
       });
 
       test('to add constructor when there is synthetic constructor', () async {
@@ -577,7 +578,7 @@ abstract class Value implements Built<Value, ValueBuilder> {
 abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
-}'''), contains('1. Make class have exactly one constructor: Value._();'));
+}'''), contains('lib/value.dart: Make class have exactly one constructor: Value._();'));
       });
 
       test('to remove constructor from non-instantiable value class', () async {
@@ -608,7 +609,7 @@ abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   factory ValueBuilder() = _\$ValueBuilder;
 }'''),
             contains(
-                '1. Add a factory so your class can be instantiated. Example:\n'
+                'lib/value.dart: Add a factory so your class can be instantiated. Example:\n'
                 '\n'
                 'factory Value([void Function(ValueBuilder)? updates]) = _\$Value;'));
       });
@@ -1102,19 +1103,20 @@ Future<String> generate(String source) async {
     '$pkgName|lib/value.dart': source,
   };
 
-  // Capture any error from generation; if there is one, return that instead of
-  // the generated output.
-  String? error;
+  // Capture errors from generation; if there are any, return them instead of
+  // the generated output. Errors with fixes are each reported separately, as
+  // required edits.
+  final errors = <String>[];
   void captureError(LogRecord logRecord) {
     if (logRecord.level != Level.SEVERE) return;
-    if (error != null) throw StateError('Expected at most one error.');
-    error = logRecord.message;
+    errors.add(logRecord.message);
   }
 
   final result = await testBuilder(builder, srcs,
       rootPackage: pkgName, onLog: captureError);
-  return error ??
-      result.readerWriter.testing.readString(AssetId(
+  return errors.isNotEmpty
+      ? errors.join('\n')
+      : result.readerWriter.testing.readString(AssetId(
           pkgName, '.dart_tool/build/generated/$pkgName/lib/value.g.dart'));
 }
 

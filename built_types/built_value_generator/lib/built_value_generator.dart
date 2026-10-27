@@ -7,6 +7,7 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'src/enum_source_library.dart';
+import 'src/fixes.dart';
 import 'src/parsed_library_results.dart';
 import 'src/serializer_source_library.dart';
 import 'src/value_source_class.dart';
@@ -77,9 +78,16 @@ class BuiltValueGenerator extends Generator {
     for (final element in libraryElement.classes) {
       if (ValueSourceClass.needsBuiltValue(element)) {
         try {
-          result.writeln(
-            ValueSourceClass(parsedLibraryResults, element).generateCode(),
+          final valueSourceClass = ValueSourceClass(
+            parsedLibraryResults,
+            element,
           );
+          final reported = _requireEdits(
+            buildStep,
+            element,
+            valueSourceClass.computeErrors(),
+          );
+          result.writeln(valueSourceClass.generateCode(reported: reported));
         } catch (e, st) {
           result.writeln(_error(e));
           log.severe('Error in BuiltValueGenerator for $element.', e, st);
@@ -97,6 +105,38 @@ class BuiltValueGenerator extends Generator {
       return null;
     }
   }
+}
+
+/// Reports each of [errors] that has a fix as a required edit, so that
+/// `build_runner` can apply it or offer it, and returns the reported errors.
+///
+/// Fix offsets are relative to the library's defining unit, so fixes for a
+/// class declared in a `part` file are not reported.
+Set<GeneratorError> _requireEdits(
+  BuildStep buildStep,
+  ClassElement element,
+  Iterable<GeneratorError> errors,
+) {
+  final reported = <GeneratorError>{};
+  if (element.firstFragment.libraryFragment != element.library.firstFragment) {
+    return reported;
+  }
+  for (final error in errors) {
+    final offset = error.offset;
+    final length = error.length;
+    final fix = error.fix;
+    if (offset == null || length == null || fix == null) continue;
+    buildStep.addRequiredEdit(
+      RequiredEdit(
+        message: error.message,
+        offset: offset,
+        length: length,
+        replacement: fix,
+      ),
+    );
+    reported.add(error);
+  }
+  return reported;
 }
 
 String _error(Object error) {

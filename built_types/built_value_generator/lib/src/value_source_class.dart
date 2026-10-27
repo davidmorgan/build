@@ -927,9 +927,16 @@ abstract class ValueSourceClass
           return bound.isEmpty ? parameter : '$parameter extends $bound';
         }).join(', ')}>';
 
-  String generateCode() {
-    final errors = computeErrors();
+  /// Generates code, or throws the errors other than [reported].
+  ///
+  /// Returns nothing if there are only [reported] errors.
+  String generateCode({Set<GeneratorError> reported = const {}}) {
+    final errors = [
+      for (final error in computeErrors())
+        if (!reported.contains(error)) error,
+    ];
     if (errors.isNotEmpty) throw _makeError(errors);
+    if (reported.isNotEmpty) return '';
 
     final result = StringBuffer();
     if (settings.instantiable) result.write(_generateImpl());

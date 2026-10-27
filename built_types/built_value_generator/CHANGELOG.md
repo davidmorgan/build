@@ -2,6 +2,9 @@
 
 ## 8.14.0-wip
 
+- Report errors that have a fix with `BuildStep.addRequiredEdit`, new and
+  experimental in `build` 5.1.0, so `build_runner` can apply the fix. Requires
+  `build` 5.1.0.
 - Support generating to `BuildStep.librarySourceSink`, new and experimental
   in `build` 5.0.0. A library with `part 'x.g.dart';` still generates to
   `x.g.dart`; a library without it now generates to the shared part file that
