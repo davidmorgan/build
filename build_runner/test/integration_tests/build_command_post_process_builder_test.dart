@@ -191,5 +191,29 @@ targets:
     );
     expect(output, contains('wrote 1 output'));
     expect(tester.read('root_pkg/lib/a.txt.post'), 'a(default dev)');
+
+    // Post process builder imported from a library no other builder uses.
+    tester.write(
+      'builder_pkg/lib/post_process.dart',
+      "export 'builder.dart' show testPostProcessBuilder;\n",
+    );
+    tester.write(
+      'builder_pkg/build.yaml',
+      tester
+          .read('builder_pkg/build.yaml')!
+          .replaceFirst(
+            'import: "package:builder_pkg/builder.dart"\n'
+                '    builder_factory:',
+            'import: "package:builder_pkg/post_process.dart"\n'
+                '    builder_factory:',
+          ),
+    );
+    expect(
+      tester.read('builder_pkg/build.yaml'),
+      contains('package:builder_pkg/post_process.dart'),
+    );
+    tester.delete('root_pkg/lib/a.txt.post');
+    await tester.run('root_pkg', 'dart run build_runner build --force-jit');
+    expect(tester.read('root_pkg/lib/a.txt.post'), 'a(default dev)');
   });
 }
