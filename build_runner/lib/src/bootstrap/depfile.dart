@@ -66,7 +66,7 @@ class Depfile {
 
     final digests = digestFile.readAsStringSync();
 
-    if (digestsAreFresh) {
+    if (digestsAreFresh || _statsUnchanged()) {
       return FreshnessResult(outputIsFresh: true, digest: digests);
     }
 
@@ -99,9 +99,57 @@ class Depfile {
 
   /// Writes a digest of all input files mentioned in [depfilePath] to
   /// [digestPath].
+  ///
+  /// Also writes the stats of the input files, so that [checkFreshness] can
+  /// skip reading them if their stats are unchanged.
   void writeDigest() {
     _depfilePaths = _readPaths();
+    final statsFile = File(_statsPath)..writeAsStringSync('');
+    final start = statsFile.lastModifiedSync();
+    final stats = _renderStats(before: start);
     File(digestPath).writeAsStringSync(_digestPaths());
+    if (stats == null) {
+      statsFile.deleteSync();
+    } else {
+      statsFile.writeAsStringSync('${start.microsecondsSinceEpoch}\n$stats');
+    }
+  }
+
+  String get _statsPath => '$digestPath.stats';
+
+  /// Whether the input files have the stats written by [writeDigest].
+  ///
+  /// [writeDigest] writes stats only if every mtime is before it started, so
+  /// any later write to an input gives it a different mtime.
+  bool _statsUnchanged() {
+    final statsFile = File(_statsPath);
+    if (!statsFile.existsSync()) return false;
+    final contents = statsFile.readAsStringSync();
+    final newline = contents.indexOf('\n');
+    if (newline == -1) return false;
+    final start = DateTime.fromMicrosecondsSinceEpoch(
+      int.parse(contents.substring(0, newline)),
+    );
+    return _renderStats(before: start) == contents.substring(newline + 1);
+  }
+
+  /// One line per input file with its type, size and mtime.
+  ///
+  /// Returns `null` if any input file has an mtime that is not [before].
+  String? _renderStats({required DateTime before}) {
+    final result = StringBuffer();
+    for (final path in _depfilePaths!) {
+      final stat = FileStat.statSync(path);
+      if (stat.type != FileSystemEntityType.notFound &&
+          !stat.modified.isBefore(before)) {
+        return null;
+      }
+      result.writeln(
+        '${stat.type} ${stat.size} '
+        '${stat.modified.microsecondsSinceEpoch} $path',
+      );
+    }
+    return result.toString();
   }
 
   /// Reads input paths from the depfile.

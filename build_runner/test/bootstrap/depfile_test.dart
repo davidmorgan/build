@@ -87,6 +87,81 @@ void main() {
         result = depfile.checkFreshness(digestsAreFresh: false);
         expect(result.outputIsFresh, false);
       });
+
+      test('trusts unchanged stats without reading content', () async {
+        final mtime = DateTime.now().subtract(const Duration(hours: 1));
+        input1.setLastModifiedSync(mtime);
+        final depfile = Depfile(
+          outputPath: outputFile.path,
+          depfilePath: depsFile.path,
+          digestPath: digestFile.path,
+        )..writeDigest();
+
+        // Same size and mtime, different content: only a check that reads
+        // the content can tell.
+        input1
+          ..writeAsStringSync('INPUT1')
+          ..setLastModifiedSync(mtime);
+        expect(
+          depfile.checkFreshness(digestsAreFresh: false).outputIsFresh,
+          true,
+        );
+
+        input1.setLastModifiedSync(mtime.add(const Duration(seconds: 1)));
+        expect(
+          depfile.checkFreshness(digestsAreFresh: false).outputIsFresh,
+          false,
+        );
+      });
+
+      test(
+        'reads content if an input mtime is not before writing the digest',
+        () async {
+          // An mtime at or after the start of `writeDigest` could be a write
+          // that happened while digesting, so its stats are not trusted.
+          final mtime = DateTime.now().add(const Duration(hours: 1));
+          input1.setLastModifiedSync(mtime);
+          final depfile = Depfile(
+            outputPath: outputFile.path,
+            depfilePath: depsFile.path,
+            digestPath: digestFile.path,
+          )..writeDigest();
+
+          input1
+            ..writeAsStringSync('INPUT1')
+            ..setLastModifiedSync(mtime);
+          expect(
+            depfile.checkFreshness(digestsAreFresh: false).outputIsFresh,
+            false,
+          );
+        },
+      );
+
+      test('trusts stats only for the same set of inputs', () async {
+        final mtime = DateTime.now().subtract(const Duration(hours: 1));
+        input1.setLastModifiedSync(mtime);
+        final input2 = File(p.join(tempDir.path, 'input2.txt'))
+          ..writeAsStringSync('input2')
+          ..setLastModifiedSync(mtime);
+        Depfile(
+          outputPath: outputFile.path,
+          depfilePath: depsFile.path,
+          digestPath: digestFile.path,
+        ).writeDigest();
+
+        depsFile.writeAsStringSync(
+          '${outputFile.path}: ${input1.path} ${input2.path}\n',
+        );
+        final depfile = Depfile(
+          outputPath: outputFile.path,
+          depfilePath: depsFile.path,
+          digestPath: digestFile.path,
+        );
+        expect(
+          depfile.checkFreshness(digestsAreFresh: false).outputIsFresh,
+          false,
+        );
+      });
     });
   });
 }
