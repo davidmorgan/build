@@ -139,13 +139,16 @@ class BuilderFactoriesExpressions {
     required this.postProcessBuilderFactories,
   }) {
     var prefixNumber = 0;
-    for (final factories in builderFactories.values) {
-      for (final factory in factories) {
-        if (!importPrefixes.containsKey(factory.import)) {
-          importPrefixes[factory.import] = '_i${++prefixNumber}';
-        }
+    void addPrefix(FactoryExpression factory) {
+      if (!importPrefixes.containsKey(factory.import)) {
+        importPrefixes[factory.import] = '_i${++prefixNumber}';
       }
     }
+
+    for (final factories in builderFactories.values) {
+      factories.forEach(addPrefix);
+    }
+    postProcessBuilderFactories.values.forEach(addPrefix);
   }
 
   String get renderImports {

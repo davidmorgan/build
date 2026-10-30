@@ -1,5 +1,8 @@
 ## 2.17.2-wip
 
+- Bug fix: import post-process builder factories in the generated build
+  script when no other builder uses the same library.
+
 ## 2.17.1
 
 - Require `build` 5.0.0, which is the retracted `build` 4.1.0 republished as a
