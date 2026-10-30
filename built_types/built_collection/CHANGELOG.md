@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.0.1-wip
+
+- Bug fix: `BuiltListMultimap` and `BuiltSetMultimap` constructors now drop
+  keys with no values, as the builders already did. Before, a multimap
+  created from `{'key': []}` contained `'key'` and was not equal to the same
+  multimap built with `addValues('key', [])`.
+
 ## 6.0.0
 
 - Breaking change: `BuiltList.asList`, `BuiltMap.asMap`,

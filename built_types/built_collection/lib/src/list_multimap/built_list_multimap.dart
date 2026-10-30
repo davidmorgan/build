@@ -174,7 +174,8 @@ class _BuiltListMultimap<K, V> extends BuiltListMultimap<K, V> {
     : super._(<K, BuiltList<V>>{}) {
     for (final key in keys) {
       if (key is K) {
-        _map[key] = BuiltList<V>(lookup(key));
+        final values = BuiltList<V>(lookup(key));
+        if (values.isNotEmpty) _map[key] = values;
       } else {
         throw ArgumentError('map contained invalid key: $key');
       }

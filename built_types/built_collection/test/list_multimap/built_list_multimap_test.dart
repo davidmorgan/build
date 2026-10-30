@@ -22,6 +22,36 @@ void main() {
       BuiltListMultimap<dynamic, dynamic>();
     });
 
+    test('drops keys with no values when instantiated from a Map', () {
+      final multimap = BuiltListMultimap<String, Object>({'key': <Object>[]});
+      expect(multimap.isEmpty, isTrue);
+      expect(multimap.containsKey('key'), isFalse);
+      expect(multimap.keys, isEmpty);
+    });
+
+    test('drops keys with no values when instantiated from a multimap', () {
+      final multimap = BuiltListMultimap<String, Object>(
+        BuiltListMultimap<String, Object>({'key': <Object>[]}),
+      );
+      expect(multimap.containsKey('key'), isFalse);
+    });
+
+    test('equals a multimap built with no values for a key', () {
+      final fromMap = BuiltListMultimap<String, Object>({'key': <Object>[]});
+      final built = BuiltListMultimap<String, Object>.build(
+        (b) => b.addValues('key', <Object>[]),
+      );
+      expect(fromMap, built);
+      expect(fromMap.hashCode, built.hashCode);
+    });
+
+    test('rebuild with no changes drops keys with no values', () {
+      final multimap = BuiltListMultimap<String, Object>({
+        'key': <Object>[],
+      }).rebuild((_) {});
+      expect(multimap.containsKey('key'), isFalse);
+    });
+
     test('can be instantiated from ListMultimap', () {
       BuiltListMultimap<int, String>({});
     });

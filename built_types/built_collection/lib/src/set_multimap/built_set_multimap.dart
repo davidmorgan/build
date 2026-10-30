@@ -180,7 +180,8 @@ class _BuiltSetMultimap<K, V> extends BuiltSetMultimap<K, V> {
     : super._(<K, BuiltSet<V>>{}) {
     for (final key in keys) {
       if (key is K) {
-        _map[key] = BuiltSet<V>(lookup(key));
+        final values = BuiltSet<V>(lookup(key));
+        if (values.isNotEmpty) _map[key] = values;
       } else {
         throw ArgumentError('map contained invalid key: $key');
       }
