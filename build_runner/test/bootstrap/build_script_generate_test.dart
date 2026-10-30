@@ -105,5 +105,23 @@ void main() {
       );
       expect(() => expressions.renderBuilderFactories, throwsArgumentError);
     });
+
+    test('imports post-process builder factories', () {
+      final expressions = BuilderFactoriesExpressions(
+        builderFactories: {},
+        postProcessBuilderFactories: {
+          'a:a': FactoryExpression(
+            builderKey: 'a:a',
+            name: 'postProcess',
+            import: 'package:a/a.dart',
+          ),
+        },
+      );
+      expect(expressions.renderImports, "import 'package:a/a.dart' as _i1;\n");
+      expect(
+        expressions.renderPostProcessBuilderFactories,
+        "'a:a': _i1.postProcess,\n",
+      );
+    });
   });
 }
