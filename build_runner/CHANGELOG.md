@@ -1,5 +1,8 @@
 ## 2.17.2-wip
 
+- Performance: check whether the build script is up to date from file stats
+  where possible, instead of hashing every file it depends on.
+
 ## 2.17.1
 
 - Require `build` 5.0.0, which is the retracted `build` 4.1.0 republished as a
