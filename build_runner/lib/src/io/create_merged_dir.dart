@@ -111,6 +111,18 @@ Future<bool> _createMergedOutputDir({
       return false;
     }
 
+    final packageConfigPath = '.dart_tool/package_config.json';
+    // Delete removed outputs before writing, so that a path which changes
+    // between file and directory is free when it is written.
+    _deleteOutputs(
+      outputDir,
+      previousOutputs.toSet().difference({
+        packageConfigPath,
+        for (final id in builtAssets)
+          _normalize(_assetPath(id, root, buildPackages, hoist)),
+      }),
+    );
+
     final outputPaths = <String>[];
     if (!outputDirExists) {
       await outputDir.create(recursive: true);
@@ -132,6 +144,7 @@ Future<bool> _createMergedOutputDir({
           buildPackages.outputRoot,
           buildPackages,
           outputDir,
+          packageConfigPath,
         ),
       ]),
     );
@@ -145,13 +158,7 @@ Future<bool> _createMergedOutputDir({
       }
     }
 
-    // Normalize path separators for the manifest.
-    final manifestPaths =
-        outputPaths.map((path) => path.replaceAll(r'\', '/')).toList()..sort();
-    _deleteOutputs(
-      outputDir,
-      previousOutputs.toSet().difference(manifestPaths.toSet()),
-    );
+    final manifestPaths = outputPaths.map(_normalize).toList()..sort();
     await _writeAsString(
       outputDir,
       _manifestName,
@@ -188,6 +195,7 @@ Future<String> _writeModifiedPackageConfig(
   String rootPackage,
   BuildPackages buildPackages,
   Directory outputDir,
+  String packageConfigPath,
 ) async {
   final packageConfig = <String, Object?>{
     'configVersion': 2,
@@ -206,7 +214,6 @@ Future<String> _writeModifiedPackageConfig(
         },
     ],
   };
-  final packageConfigPath = '.dart_tool/package_config.json';
   await _writeAsString(outputDir, packageConfigPath, jsonEncode(packageConfig));
   return packageConfigPath;
 }
@@ -236,20 +243,7 @@ Future<String> _writeAsset(
   bool hoist,
 ) {
   return _descriptorPool.withResource(() async {
-    String assetPath;
-    if (id.path.startsWith('lib/')) {
-      assetPath = p.url.join(
-        'packages',
-        id.package,
-        id.path.substring('lib/'.length),
-      );
-    } else {
-      assetPath = id.path;
-      assert(id.package == buildPackages.outputRoot);
-      if (hoist && p.isWithin(root, id.path)) {
-        assetPath = p.relative(id.path, from: root);
-      }
-    }
+    final assetPath = _assetPath(id, root, buildPackages, hoist);
 
     try {
       if (symlinkOnly) {
@@ -259,8 +253,9 @@ Future<String> _writeAsset(
         switch (FileSystemEntity.typeSync(linkPath, followLinks: false)) {
           case FileSystemEntityType.notFound:
             break;
-          case FileSystemEntityType.link when link.targetSync() == target:
-            return assetPath;
+          case FileSystemEntityType.link:
+            if (link.targetSync() == target) return assetPath;
+            link.deleteSync();
           default:
             File(linkPath).deleteSync();
         }
@@ -286,6 +281,26 @@ Future<String> _writeAsset(
     return assetPath;
   });
 }
+
+/// Returns the path under the output directory that [id] is written to.
+String _assetPath(
+  AssetId id,
+  String root,
+  BuildPackages buildPackages,
+  bool hoist,
+) {
+  if (id.path.startsWith('lib/')) {
+    return p.url.join('packages', id.package, id.path.substring('lib/'.length));
+  }
+  assert(id.package == buildPackages.outputRoot);
+  if (hoist && p.isWithin(root, id.path)) {
+    return p.relative(id.path, from: root);
+  }
+  return id.path;
+}
+
+/// Normalizes path separators for the manifest.
+String _normalize(String path) => path.replaceAll(r'\', '/');
 
 /// Writes [bytes] to [path] under [outputDir], unless the file there already
 /// has exactly those bytes.
@@ -357,9 +372,25 @@ void _deleteOutputs(Directory outputDir, Iterable<String> paths) {
   if (paths.isEmpty) return;
   final outputPath = outputDir.resolveSymbolicLinksSync();
   for (final path in paths) {
-    final file = File(p.join(outputPath, path));
-    if (!_existsResolvedWithin(file, outputPath)) continue;
-    file.deleteSync();
+    final filePath = p.join(outputPath, path);
+    // Check the parent rather than the file itself: a link from a
+    // `--symlink` build resolves outside the output directory, and may be
+    // broken.
+    final parent = Directory(p.dirname(filePath));
+    if (!parent.existsSync()) continue;
+    final resolvedParent = parent.resolveSymbolicLinksSync();
+    if (resolvedParent != outputPath &&
+        !p.isWithin(outputPath, resolvedParent)) {
+      continue;
+    }
+    switch (FileSystemEntity.typeSync(filePath, followLinks: false)) {
+      case FileSystemEntityType.link:
+        Link(filePath).deleteSync();
+      case FileSystemEntityType.file:
+        File(filePath).deleteSync();
+      default:
+        break;
+    }
   }
   _cleanEmptyDirectories(outputPath, paths);
 }
