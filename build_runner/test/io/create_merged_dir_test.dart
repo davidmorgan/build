@@ -169,6 +169,31 @@ void main() {
       _expectAllFiles(tmpDir);
     });
 
+    test('leaves unchanged files untouched on rebuild', () async {
+      Future<bool> create() => createMergedOutputDirectories(
+        buildDirs: {
+          BuildDirectory('', outputLocation: OutputLocation(tmpDir.path)),
+        }.build(),
+        buildPackages: buildPackages,
+        buildOutputReader: buildOutputReader,
+        outputSymlinksOnly: false,
+      );
+      expect(await create(), isTrue);
+
+      final unchanged = File(p.join(tmpDir.path, 'web/b.txt'));
+      final oldTime = DateTime(2000);
+      unchanged.setLastModifiedSync(oldTime);
+      // Same length, different content: must be rewritten.
+      final changed = File(p.join(tmpDir.path, 'packages/a/a.txt'))
+        ..writeAsStringSync('x');
+
+      expect(await create(), isTrue);
+
+      expect(unchanged.lastModifiedSync(), oldTime);
+      expect(changed.readAsStringSync(), 'a');
+      _expectAllFiles(tmpDir);
+    });
+
     test('doesnt write deleted files', () async {
       final targetId = AssetId('b', 'lib/c.txt.copy');
       buildState.addPostProcessBuildStepResult(

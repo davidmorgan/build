@@ -95,14 +95,18 @@ Future<bool> _createMergedOutputDir({
     }
     final outputDir = Directory(outputPath);
     final outputDirExists = await outputDir.exists();
+    var previousOutputs = <String>[];
     if (outputDirExists) {
-      if (!await _cleanUpOutputDir(outputDir)) return false;
+      final outputs = _previousOutputs(outputDir);
+      if (outputs == null) return false;
+      previousOutputs = outputs;
     }
     final builtAssets = buildOutputReader.allAssets(rootDir: root).toList();
     if (root != '' &&
         !builtAssets
             .where((id) => id.package == buildPackages.outputRoot)
             .any((id) => p.isWithin(root, id.path))) {
+      _deleteOutputs(outputDir, previousOutputs);
       buildLog.error('No assets exist in $root, skipping output.');
       return false;
     }
@@ -141,12 +145,18 @@ Future<bool> _createMergedOutputDir({
       }
     }
 
-    outputPaths.sort();
-    final content = outputPaths
-        // Normalize path separators for the manifest.
-        .map((path) => path.replaceAll(r'\', '/'))
-        .join(_manifestSeparator);
-    await _writeAsString(outputDir, _manifestName, content);
+    // Normalize path separators for the manifest.
+    final manifestPaths =
+        outputPaths.map((path) => path.replaceAll(r'\', '/')).toList()..sort();
+    _deleteOutputs(
+      outputDir,
+      previousOutputs.toSet().difference(manifestPaths.toSet()),
+    );
+    await _writeAsString(
+      outputDir,
+      _manifestName,
+      manifestPaths.join(_manifestSeparator),
+    );
 
     return true;
   } on FileSystemException catch (e) {
@@ -243,9 +253,18 @@ Future<String> _writeAsset(
 
     try {
       if (symlinkOnly) {
-        await Link(
-          _filePathFor(outputDir, assetPath),
-        ).create(buildOutputReader.pathFor(id), recursive: true);
+        final linkPath = _filePathFor(outputDir, assetPath);
+        final target = buildOutputReader.pathFor(id);
+        final link = Link(linkPath);
+        switch (FileSystemEntity.typeSync(linkPath, followLinks: false)) {
+          case FileSystemEntityType.notFound:
+            break;
+          case FileSystemEntityType.link when link.targetSync() == target:
+            return assetPath;
+          default:
+            File(linkPath).deleteSync();
+        }
+        await link.create(target, recursive: true);
       } else {
         await _writeAsBytes(
           outputDir,
@@ -268,29 +287,56 @@ Future<String> _writeAsset(
   });
 }
 
-Future<void> _writeAsBytes(Directory outputDir, String path, List<int> bytes) =>
-    _fileFor(outputDir, path).then((file) => file.writeAsBytes(bytes));
+/// Writes [bytes] to [path] under [outputDir], unless the file there already
+/// has exactly those bytes.
+///
+/// Leaving unchanged files alone keeps their modification times, so tools
+/// watching the output directory see only what changed.
+Future<void> _writeAsBytes(
+  Directory outputDir,
+  String path,
+  List<int> bytes,
+) async {
+  final filePath = _filePathFor(outputDir, path);
+  final file = File(filePath);
+  switch (FileSystemEntity.typeSync(filePath, followLinks: false)) {
+    case FileSystemEntityType.notFound:
+      break;
+    case FileSystemEntityType.file:
+      if (_bytesEqual(await file.readAsBytes(), bytes)) return;
+    default:
+      // Most likely a symlink from a previous `--symlink` build: writing
+      // through it would change the file it points to.
+      Link(filePath).deleteSync();
+  }
+  await file.create(recursive: true);
+  await file.writeAsBytes(bytes);
+}
 
 Future<void> _writeAsString(
   Directory outputDir,
   String path,
   String contents,
-) => _fileFor(outputDir, path).then((file) => file.writeAsString(contents));
+) => _writeAsBytes(outputDir, path, utf8.encode(contents));
 
-Future<File> _fileFor(Directory outputDir, String path) {
-  return File(_filePathFor(outputDir, path)).create(recursive: true);
+bool _bytesEqual(List<int> a, List<int> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }
 
 String _filePathFor(Directory outputDir, String path) {
   return p.join(outputDir.path, path);
 }
 
-/// Checks for a manifest file in [outputDir] and deletes all referenced files.
+/// Returns the paths listed in the manifest file in [outputDir].
 ///
-/// Prompts the user with a few options if no manifest file is found.
-///
-/// Returns whether or not the directory was successfully cleaned up.
-Future<bool> _cleanUpOutputDir(Directory outputDir) async {
+/// Returns an empty list if there is no manifest and [outputDir] is empty.
+/// Logs an error and returns `null` if there is no manifest but [outputDir]
+/// has other files in it.
+List<String>? _previousOutputs(Directory outputDir) {
   final outputPath = outputDir.resolveSymbolicLinksSync();
   final manifestFile = File(p.join(outputPath, _manifestName));
   if (!manifestFile.existsSync()) {
@@ -299,21 +345,23 @@ Future<bool> _cleanUpOutputDir(Directory outputDir) async {
         'Unable to create merged directory $outputPath. Choose a different '
         'directory or delete the contents of that directory.',
       );
-      return false;
+      return null;
     }
-  } else {
-    final previousOutputs = manifestFile.readAsStringSync().split(
-      _manifestSeparator,
-    );
-
-    for (final path in previousOutputs) {
-      final file = File(p.join(outputPath, path));
-      if (!_existsResolvedWithin(file, outputPath)) continue;
-      file.deleteSync();
-    }
-    _cleanEmptyDirectories(outputPath, previousOutputs);
+    return [];
   }
-  return true;
+  return manifestFile.readAsStringSync().split(_manifestSeparator);
+}
+
+/// Deletes [paths] under [outputDir], then any directories they leave empty.
+void _deleteOutputs(Directory outputDir, Iterable<String> paths) {
+  if (paths.isEmpty) return;
+  final outputPath = outputDir.resolveSymbolicLinksSync();
+  for (final path in paths) {
+    final file = File(p.join(outputPath, path));
+    if (!_existsResolvedWithin(file, outputPath)) continue;
+    file.deleteSync();
+  }
+  _cleanEmptyDirectories(outputPath, paths);
 }
 
 /// Deletes all the directories which used to contain any path in

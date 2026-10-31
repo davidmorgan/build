@@ -1,5 +1,9 @@
 ## 2.17.2-wip
 
+- Merged output directories, from `--output`, are now updated in place:
+  unchanged files are no longer deleted and rewritten on every build, so they
+  keep their modification times.
+
 ## 2.17.1
 
 - Require `build` 5.0.0, which is the retracted `build` 4.1.0 republished as a
