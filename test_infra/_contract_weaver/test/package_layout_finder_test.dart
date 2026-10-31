@@ -99,6 +99,35 @@ void main() {
       });
     }
 
+    group('in a nested workspace', () {
+      /// `ws/nested` is a member of `ws` that is itself a workspace, with
+      /// member `ws/nested/c`.
+      void writeNestedWorkspace() {
+        write('ws/pubspec.yaml', 'name: ws\nworkspace:\n- nested\n');
+        write(
+          'ws/nested/pubspec.yaml',
+          'name: nested\nresolution: workspace\nworkspace:\n- c\n',
+        );
+        write('ws/nested/c/pubspec.yaml', 'name: c\nresolution: workspace\n');
+      }
+
+      test('finds the outer root from the nested workspace', () {
+        writeNestedWorkspace();
+        expect(
+          find('ws/nested'),
+          PackageLayout.of(root: '$temp/ws', member: 'nested'),
+        );
+      });
+
+      test('finds the outer root from a member of the nested workspace', () {
+        writeNestedWorkspace();
+        expect(
+          find('ws/nested/c'),
+          PackageLayout.of(root: '$temp/ws', member: 'nested/c'),
+        );
+      });
+    });
+
     test('rejects a member with no workspace above it', () {
       write('a/pubspec.yaml', 'name: a\nresolution: workspace\n');
       expect(() => find('a'), throwsWeaverException('no workspace root'));

@@ -48,18 +48,27 @@ class PackageLayoutFinder {
 
   /// The root of the pub workspace that [packageDir] is in, or `null` if it is
   /// a standalone package.
+  ///
+  /// Workspaces nest: a member can itself declare a workspace. The root is the
+  /// outermost one, the first found that is not itself a member.
   static Directory? _workspaceRoot(Directory packageDir) {
-    final pubspec = _loadPubspec(packageDir);
-    if (pubspec['workspace'] != null) return packageDir;
-    if (pubspec['resolution'] != 'workspace') return null;
-    final workspaceRoot = _enclosingWorkspace(packageDir.parent);
-    if (workspaceRoot == null) {
-      throw WeaverException(
-        '${packageDir.path} has `resolution: workspace` but no workspace '
-        'root was found above it.',
-      );
+    var dir = packageDir;
+    var pubspec = _loadPubspec(dir);
+    if (pubspec['resolution'] != 'workspace') {
+      return pubspec['workspace'] == null ? null : dir;
     }
-    return workspaceRoot;
+    while (pubspec['resolution'] == 'workspace') {
+      final enclosing = _enclosingWorkspace(dir.parent);
+      if (enclosing == null) {
+        throw WeaverException(
+          '${dir.path} has `resolution: workspace` but no workspace root was '
+          'found above it.',
+        );
+      }
+      dir = enclosing;
+      pubspec = _loadPubspec(dir);
+    }
+    return dir;
   }
 
   /// The member of the workspace at [root] to weave, relative to [root]: the
