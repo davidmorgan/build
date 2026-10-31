@@ -12,9 +12,9 @@ class Box {
   Box(this.width){ if (!Contracts.checking) { Contracts.checking = true; try { if (!(width > 0)) throw ContractViolation('Precondition failed: width > 0'); } finally { Contracts.checking = false; } } this._enterInvariantScope(check: false); this._exitInvariantScope(); }
 
   @Requires('size > 0')
-  Box.square(int size) : width = size { if (!Contracts.checking) { Contracts.checking = true; try { if (!(size > 0)) throw ContractViolation('Precondition failed: size > 0'); } finally { Contracts.checking = false; } } this._enterInvariantScope(check: false);  
+  Box.square(int size) : width = size { if (!Contracts.checking) { Contracts.checking = true; try { if (!(size > 0)) throw ContractViolation('Precondition failed: size > 0'); } finally { Contracts.checking = false; } } this._enterInvariantScope(check: false); var $threw = false; try { 
     print('square');
-   this._exitInvariantScope(); }
+   } catch (_) { $threw = true; rethrow; } finally { if (!$threw) { this._exitInvariantScope(); } } }
 
   @Requires('width > 0')
   @Ensures('result.width == width')

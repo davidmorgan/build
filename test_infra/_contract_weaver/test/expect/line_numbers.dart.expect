@@ -87,12 +87,14 @@ class Ledger {
     this._enterInvariantScope();
     Object? $inFlight;
     try {
+      Future<String> $body() async {
+        return Future.value('total: $total');
+      }
+
       String? $result;
       var $threw = false;
       try {
-        return $result = await Future<String>.value(
-          Future.value('total: $total'),
-        );
+        return $result = await $body();
       } catch (_) {
         $threw = true;
         rethrow;
@@ -227,14 +229,20 @@ class Box {
       }
     }
     this._enterInvariantScope(check: false);
-    if (width > 10) {
-      {
-        this._exitInvariantScope();
+    var $threw = false;
+    try {
+      if (width > 10) {
         return;
       }
+      print('small');
+    } catch (_) {
+      $threw = true;
+      rethrow;
+    } finally {
+      if (!$threw) {
+        this._exitInvariantScope();
+      }
     }
-    print('small');
-    this._exitInvariantScope();
   }
 }
 

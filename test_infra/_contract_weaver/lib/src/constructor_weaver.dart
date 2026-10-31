@@ -10,7 +10,6 @@ import 'clause_emitter.dart';
 import 'clause_reader.dart';
 import 'member_contract.dart';
 import 'reserved_name_checker.dart';
-import 'return_statement_collector.dart';
 import 'source_edits.dart';
 
 /// Weaves checks into constructors.
@@ -147,23 +146,30 @@ class ConstructorWeaver {
     }
   }
 
-  /// Inserts [entry] at the start of [block] and [exit] before each way out.
+  /// Inserts [entry] at the start of [block] and [exit] once it finishes
+  /// without throwing.
+  ///
+  /// [exit] runs after the body's own `try` statements, so it sees the state
+  /// that their `finally` blocks leave.
   void _weaveGenerativeBlock(
     Block block, {
     required String entry,
     required String exit,
   }) {
-    if (entry.isNotEmpty) {
-      edits.insert(block.leftBracket.end, ' $entry ');
+    if (exit.isEmpty) {
+      if (entry.isNotEmpty) edits.insert(block.leftBracket.end, ' $entry ');
+      return;
     }
-    if (exit.isEmpty) return;
-    for (final ret in ReturnStatementCollector.collect(block)) {
-      edits.replace(ret.offset, ret.length, '{ ${exit}return; }');
-    }
-    final fallsOffEnd =
-        block.statements.isEmpty || block.statements.last is! ReturnStatement;
-    if (fallsOffEnd) {
-      edits.insert(block.rightBracket.offset, ' $exit');
-    }
+    edits
+      ..insert(
+        block.leftBracket.end,
+        ' $entry'
+        r'var $threw = false; try { ',
+      )
+      ..insert(
+        block.rightBracket.offset,
+        r' } catch (_) { $threw = true; rethrow; } '
+        'finally { if (!\$threw) { $exit} } ',
+      );
   }
 }

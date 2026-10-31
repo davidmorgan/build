@@ -304,7 +304,8 @@ class AsyncService {
 }
 ''';
       final output = ContractWeaver().weave(input);
-      expect(output, contains(r'return $result = await Future<String>.value('));
+      expect(output, contains(r'Future<String> $body() async {'));
+      expect(output, contains(r'return $result = await $body();'));
       expect(output, contains('.then((int result)'));
       expect(output, contains('Postcondition failed: result.isNotEmpty'));
       expect(output, contains('Postcondition failed: result > 0'));
@@ -589,6 +590,431 @@ Future<void> main() async {
         final transformedSource = ContractWeaver().weave(originalSource);
         await script.writeAsString(transformedSource);
 
+        final result = await Process.run(Platform.resolvedExecutable, [
+          script.path,
+        ]);
+        expect(
+          result.exitCode,
+          0,
+          reason: 'stderr: ${result.stderr}\nstdout: ${result.stdout}',
+        );
+      } finally {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test(
+      'checks @Ensures of an async void function after its returned future',
+      () async {
+        final tempDir = await Directory.systemTemp.createTemp(
+          'contracts_async_void_',
+        );
+        try {
+          final script = File('${tempDir.path}/async_void_runner.dart');
+          const originalSource = '''
+class Ensures {
+  final String clause;
+  const Ensures(this.clause);
+}
+
+class Writer {
+  bool done = false;
+
+  Future<void> _write() async {
+    await Future.delayed(Duration(milliseconds: 1));
+    done = true;
+  }
+
+  Future<void> _fail() async {
+    await Future.delayed(Duration(milliseconds: 1));
+    throw StateError('write failed');
+  }
+
+  @Ensures('done')
+  Future<void> write() async {
+    try {
+      return _write();
+    } finally {}
+  }
+
+  @Ensures('done')
+  Future<void> fail() async {
+    return _fail();
+  }
+
+  void _mark() {
+    done = true;
+  }
+
+  @Ensures('done')
+  Future<void> mark(bool now) async {
+    if (now) return _mark();
+    return _mark();
+  }
+}
+
+Future<void> main() async {
+  await Writer().write();
+  await Writer().mark(true);
+  await Writer().mark(false);
+  try {
+    await Writer().fail();
+    throw 'Should have thrown StateError';
+  } on StateError {
+    // Expected: the body failed, so @Ensures must not run.
+  }
+}
+''';
+          final transformedSource = ContractWeaver().weave(originalSource);
+          await script.writeAsString(transformedSource);
+
+          final result = await Process.run(Platform.resolvedExecutable, [
+            script.path,
+          ]);
+          expect(
+            result.exitCode,
+            0,
+            reason: 'stderr: ${result.stderr}\nstdout: ${result.stdout}',
+          );
+        } finally {
+          await tempDir.delete(recursive: true);
+        }
+      },
+    );
+
+    test('keeps how an async body returns a future: error escapes its catch, '
+        'finally runs first', () async {
+      final tempDir = await Directory.systemTemp.createTemp(
+        'contracts_async_return_',
+      );
+      try {
+        final script = File('${tempDir.path}/async_return_runner.dart');
+        const originalSource = '''
+class Ensures {
+  final String clause;
+  const Ensures(this.clause);
+}
+
+final log = <String>[];
+
+Future<void> _failVoid() => Future.error(StateError('void'));
+Future<int> _failInt() => Future.error(StateError('int'));
+Future<int> _logged() async {
+  await Future.delayed(Duration(milliseconds: 1));
+  log.add('future');
+  return 1;
+}
+
+class Runner {
+  @Ensures('true')
+  Future<void> escapeVoid() async {
+    try {
+      return _failVoid();
+    } catch (_) {
+      log.add('caught void');
+    }
+  }
+
+  @Ensures('result == 1')
+  Future<int> escapeInt() async {
+    try {
+      return _failInt();
+    } catch (_) {
+      log.add('caught int');
+      return 1;
+    }
+  }
+
+  @Ensures('result == 1')
+  Future<int> order() async {
+    try {
+      return _logged();
+    } finally {
+      log.add('finally');
+    }
+  }
+}
+
+Future<void> main() async {
+  try {
+    await Runner().escapeVoid();
+    throw 'escapeVoid should have thrown';
+  } on StateError {
+    // Expected.
+  }
+  try {
+    await Runner().escapeInt();
+    throw 'escapeInt should have thrown';
+  } on StateError {
+    // Expected.
+  }
+  if (await Runner().order() != 1) throw 'order returned the wrong value';
+  final expected = 'finally,future';
+  if (log.join(',') != expected) throw 'log: \${log.join(',')}';
+}
+''';
+        // The original program must pass too, so the fixture describes
+        // Dart, not the weaver.
+        final original = File('${tempDir.path}/original.dart');
+        await original.writeAsString(originalSource);
+        final originalResult = await Process.run(Platform.resolvedExecutable, [
+          original.path,
+        ]);
+        expect(
+          originalResult.exitCode,
+          0,
+          reason:
+              'stderr: ${originalResult.stderr}\n'
+              'stdout: ${originalResult.stdout}',
+        );
+
+        final transformedSource = ContractWeaver().weave(originalSource);
+        await script.writeAsString(transformedSource);
+        final result = await Process.run(Platform.resolvedExecutable, [
+          script.path,
+        ]);
+        expect(
+          result.exitCode,
+          0,
+          reason: 'stderr: ${result.stderr}\nstdout: ${result.stdout}',
+        );
+      } finally {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test(
+      'promotes an assigned parameter of an async body, and @Ensures sees its '
+      'final value',
+      () async {
+        final tempDir = await Directory.systemTemp.createTemp(
+          'contracts_async_assigned_',
+        );
+        try {
+          final script = File('${tempDir.path}/async_assigned_runner.dart');
+          const originalSource = '''
+class Ensures {
+  final String clause;
+  const Ensures(this.clause);
+}
+
+int? two() => 2;
+
+class Base {
+  Future<int> step(num n) async => 0;
+}
+
+class Runner extends Base {
+  @Ensures('x == 2')
+  Future<int> reassign(int? x, [int unused = 7]) async {
+    if (x == null) return 0;
+    await null;
+    x = two();
+    if (x != null) return x.isEven ? 1 : 2;
+    return 3;
+  }
+
+  @override
+  @Ensures('n == 3')
+  Future<int> step(covariant int n) async {
+    n++;
+    n += 1;
+    return n;
+  }
+}
+
+Future<void> main() async {
+  if (await Runner().reassign(1) != 1) throw 'reassign';
+  if (await Runner().step(1) != 3) throw 'step';
+}
+''';
+          final transformedSource = ContractWeaver().weave(originalSource);
+          await script.writeAsString(transformedSource);
+          final result = await Process.run(Platform.resolvedExecutable, [
+            script.path,
+          ]);
+          expect(
+            result.exitCode,
+            0,
+            reason: 'stderr: ${result.stderr}\nstdout: ${result.stdout}',
+          );
+        } finally {
+          await tempDir.delete(recursive: true);
+        }
+      },
+    );
+
+    test('binds result to null when a finally abandons a return', () async {
+      final tempDir = await Directory.systemTemp.createTemp(
+        'contracts_abandoned_return_',
+      );
+      try {
+        final script = File('${tempDir.path}/abandoned_return_runner.dart');
+        const originalSource = '''
+class Ensures {
+  final String clause;
+  const Ensures(this.clause);
+}
+
+@Ensures('result == null')
+int? abandon() {
+  for (;;) {
+    try {
+      return 1;
+    } finally {
+      break;
+    }
+  }
+}
+
+void main() {
+  if (abandon() != null) throw 'abandon';
+}
+''';
+        final transformedSource = ContractWeaver().weave(originalSource);
+        await script.writeAsString(transformedSource);
+        final result = await Process.run(Platform.resolvedExecutable, [
+          script.path,
+        ]);
+        expect(
+          result.exitCode,
+          0,
+          reason: 'stderr: ${result.stderr}\nstdout: ${result.stdout}',
+        );
+      } finally {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test('checks a constructor\'s @Ensures after its finally blocks', () async {
+      final tempDir = await Directory.systemTemp.createTemp(
+        'contracts_constructor_finally_',
+      );
+      try {
+        final script = File('${tempDir.path}/constructor_finally_runner.dart');
+        const originalSource = '''
+class Ensures {
+  final String clause;
+  const Ensures(this.clause);
+}
+
+class Invariant {
+  final String clause;
+  const Invariant(this.clause);
+}
+
+@Invariant('ready')
+class Box {
+  bool ready = false;
+
+  @Ensures('ready')
+  Box(bool early) {
+    try {
+      if (early) return;
+    } finally {
+      ready = true;
+    }
+  }
+}
+
+void main() {
+  Box(true);
+  Box(false);
+}
+''';
+        final transformedSource = ContractWeaver().weave(originalSource);
+        await script.writeAsString(transformedSource);
+        final result = await Process.run(Platform.resolvedExecutable, [
+          script.path,
+        ]);
+        expect(
+          result.exitCode,
+          0,
+          reason: 'stderr: ${result.stderr}\nstdout: ${result.stdout}',
+        );
+      } finally {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    test('keeps types and final values of assigned parameters, and null '
+        'results after abandoned returns', () async {
+      final tempDir = await Directory.systemTemp.createTemp(
+        'contracts_assigned_edges_',
+      );
+      try {
+        final script = File('${tempDir.path}/assigned_edges_runner.dart');
+        const originalSource = '''
+class Ensures {
+  final String clause;
+  const Ensures(this.clause);
+}
+
+extension on int {
+  int doubleIt() => this * 2;
+}
+
+class Base {
+  Future<int> compute(int x) async => 0;
+}
+
+class Runner extends Base {
+  @override
+  @Ensures('x == 4')
+  Future<int> compute(x) async {
+    x = x.doubleIt();
+    return x;
+  }
+
+  @Ensures('x == 3')
+  Future<int> last(int? x, List<int> items) async {
+    for (x in items) {}
+    if (x != null) return x.isEven ? 0 : 1;
+    return 2;
+  }
+
+  @Ensures('x == 99')
+  Future<int> later(int x) async {
+    x = 0;
+    return Future(() {
+      x = 99;
+      return 1;
+    });
+  }
+
+  @Ensures('result == null')
+  dynamic abandon() {
+    try {
+      return 1;
+    } finally {
+      // ignore: control_flow_in_finally
+      return;
+    }
+  }
+}
+
+@Ensures('result == null')
+untyped() {
+  for (;;) {
+    try {
+      return 1;
+    } finally {
+      // ignore: control_flow_in_finally
+      break;
+    }
+  }
+}
+
+Future<void> main() async {
+  if (await Runner().compute(2) != 4) throw 'compute';
+  if (await Runner().last(null, [1, 2, 3]) != 1) throw 'last';
+  if (await Runner().later(1) != 1) throw 'later';
+  if (Runner().abandon() != null) throw 'abandon';
+  if (untyped() != null) throw 'untyped';
+}
+''';
+        final transformedSource = ContractWeaver().weave(originalSource);
+        await script.writeAsString(transformedSource);
         final result = await Process.run(Platform.resolvedExecutable, [
           script.path,
         ]);

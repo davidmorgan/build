@@ -35,8 +35,17 @@ class Box {
       }
     }
     this._enterInvariantScope(check: false);
-    print('square');
-    this._exitInvariantScope();
+    var $threw = false;
+    try {
+      print('square');
+    } catch (_) {
+      $threw = true;
+      rethrow;
+    } finally {
+      if (!$threw) {
+        this._exitInvariantScope();
+      }
+    }
   }
 
   @Requires('width > 0')

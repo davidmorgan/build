@@ -82,18 +82,20 @@ class ExitRewriter {
   /// Whether the function may complete by falling off the end of its body,
   /// which returns `null`.
   ///
-  /// Only true when the declared type, or the type a future completes with,
-  /// is written nullable. A missing type may be inferred from an override, so
-  /// it is not trusted.
+  /// True when the declared type, or the type a future completes with, is
+  /// written nullable. Also true when no type is written: if an override
+  /// infers a non-nullable one, falling off the end does not compile.
   bool get mayFallOffEnd {
     var type = returnType?.trim();
-    if (type == null) return false;
-    if (isAsync) {
-      final open = type.indexOf('<');
-      if (open == -1 || !type.endsWith('>')) return false;
+    if (type == null) return true;
+    final open = type.indexOf('<');
+    if (open != -1 && type.endsWith('>')) {
       final name = type.substring(type.indexOf('.') + 1, open);
-      if (name != 'Future' && name != 'FutureOr') return false;
-      type = type.substring(open + 1, type.length - 1).trim();
+      if (name == 'FutureOr' || (isAsync && name == 'Future')) {
+        type = type.substring(open + 1, type.length - 1).trim();
+      }
+    } else if (isAsync) {
+      return false;
     }
     return type.endsWith('?') || type == 'dynamic' || type == 'Null';
   }

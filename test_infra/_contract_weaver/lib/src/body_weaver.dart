@@ -4,6 +4,7 @@
 
 import 'package:analyzer/dart/ast/ast.dart';
 
+import 'async_body_extractor.dart';
 import 'body_guard.dart';
 import 'clause_emitter.dart';
 import 'exit_rewriter.dart';
@@ -138,15 +139,43 @@ class BodyWeaver {
         _weaveReturns(block, postconditions, exitRewriter);
       } else {
         final valueType = isVoid ? null : exitRewriter.valueType;
+        final asyncBody = exitRewriter.isAsync
+            ? AsyncBodyExtractor(body, returnType: exitRewriter.returnType)
+            : null;
+        if (asyncBody != null) {
+          // The original statements become the body of a local function,
+          // so `return` keeps its meaning inside the body's own `try`.
+          opening.write(asyncBody.header);
+          closing.write(asyncBody.footer);
+        }
+        final open = asyncBody == null ? opening : closing;
         if (!isVoid) {
-          opening.write(
+          open.write(
             valueType == null
                 ? r'dynamic $result; '
                 : '${_nullable(valueType)} \$result; ',
           );
-          _recordReturns(block, exitRewriter, valueType);
+          if (asyncBody == null) _recordReturns(block);
         }
-        opening.write(r'var $threw = false; try { ');
+        open.write(r'var $threw = false; try { ');
+        if (asyncBody != null) {
+          final call = asyncBody.call;
+          final copyBack = asyncBody.copyBack;
+          if (isVoid) {
+            closing.write('await $call; $copyBack');
+          } else if (copyBack.isEmpty) {
+            closing.write('return \$result = await $call; ');
+          } else {
+            closing.write(
+              'final \$value = await $call; '
+              '${copyBack}return \$result = \$value; ',
+            );
+          }
+        } else if (!isVoid && exitRewriter.mayFallOffEnd) {
+          // Falling off the end returns `null`, even after a `finally`
+          // abandoned an earlier `return` that recorded a value.
+          closing.write(r'$result = null; ');
+        }
         closing
           ..write(r'} catch (_) { $threw = true; rethrow; } ')
           ..write(r'finally { if (!$threw) { ');
@@ -180,32 +209,28 @@ class BodyWeaver {
     return '$trimmed?';
   }
 
-  /// Rewrites each `return e;` in [block] to record the value it returns in
-  /// `$result`.
-  void _recordReturns(
-    Block block,
-    ExitRewriter exitRewriter,
-    String? valueType,
-  ) {
+  /// Rewrites each `return e;` in the [block] of a synchronous function to
+  /// record the value it returns in `$result`.
+  void _recordReturns(Block block) {
     for (final statement in ReturnStatementCollector.collect(block)) {
       final expr = statement.expression;
-      if (expr == null) continue;
-      final String before;
-      final String after;
-      if (exitRewriter.isAsync) {
-        // An `async` function waits for a returned future; record the value.
-        final constructor = valueType == null
-            ? 'Future.value'
-            : 'Future<$valueType>.value';
-        before = 'return \$result = await $constructor(';
-        after = ');';
-      } else {
-        before = r'return $result = ';
-        after = ';';
+      if (expr == null) {
+        // A bare `return;` returns `null`, even after a `finally` abandoned
+        // an earlier `return` that recorded a value.
+        edits.replace(
+          statement.offset,
+          statement.length,
+          r'{ $result = null; return; }',
+        );
+        continue;
       }
       edits
-        ..replace(statement.offset, expr.offset - statement.offset, before)
-        ..replace(expr.end, statement.end - expr.end, after);
+        ..replace(
+          statement.offset,
+          expr.offset - statement.offset,
+          r'return $result = ',
+        )
+        ..replace(expr.end, statement.end - expr.end, ';');
     }
   }
 
