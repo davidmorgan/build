@@ -194,6 +194,63 @@ void main() {
       _expectAllFiles(tmpDir);
     });
 
+    test('replaces outputs that change between file and directory', () async {
+      // A previous build wrote `web/b.txt` as a directory and `foo` as a
+      // file; this build writes them the other way round.
+      File(
+        p.join(tmpDir.path, 'web/b.txt/old.txt'),
+      ).createSync(recursive: true);
+      File(p.join(tmpDir.path, 'foo')).createSync();
+      File(
+        p.join(tmpDir.path, '.build.manifest'),
+      ).writeAsStringSync('web/b.txt/old.txt\nfoo');
+
+      final success = await createMergedOutputDirectories(
+        buildDirs: {
+          BuildDirectory('', outputLocation: OutputLocation(tmpDir.path)),
+        }.build(),
+        buildPackages: buildPackages,
+        buildOutputReader: buildOutputReader,
+        outputSymlinksOnly: false,
+      );
+
+      expect(success, isTrue);
+      _expectAllFiles(tmpDir);
+    });
+
+    test('deletes removed outputs of a --symlink build', () async {
+      Future<bool> create() => createMergedOutputDirectories(
+        buildDirs: {
+          BuildDirectory('', outputLocation: OutputLocation(tmpDir.path)),
+        }.build(),
+        buildPackages: buildPackages,
+        buildOutputReader: buildOutputReader,
+        outputSymlinksOnly: true,
+      );
+      expect(await create(), isTrue);
+      final link = Link(p.join(tmpDir.path, 'web/b.txt'));
+      expect(link.existsSync(), isTrue);
+
+      buildState.addPostProcessBuildStepResult(
+        step: PostProcessBuildStepId(
+          input: makeAssetId('a|web/b.txt'),
+          actionNumber: 1,
+        ),
+        result: PostProcessBuildStepResult(
+          inArtifactTree: true,
+          deletedPrimaryInput: true,
+        ),
+      );
+      buildOutputReader = BuildOutputReader(
+        buildPackages: buildPlan.buildSpec.buildPackages,
+        readerWriter: buildPlan.readerWriter,
+        buildState: buildState.toFinishedBuildState(),
+      );
+      expect(await create(), isTrue);
+
+      expect(link.existsSync(), isFalse);
+    });
+
     test('doesnt write deleted files', () async {
       final targetId = AssetId('b', 'lib/c.txt.copy');
       buildState.addPostProcessBuildStepResult(
