@@ -51,20 +51,29 @@ class Box {
         Contracts.checking = false;
       }
     }
-    return ((Box result) {
-      if (!Contracts.checking) {
-        Contracts.checking = true;
-        try {
-          if (!(result.width == width))
-            throw ContractViolation(
-              'Postcondition failed: result.width == width',
-            );
-        } finally {
-          Contracts.checking = false;
+    Box? $result;
+    var $threw = false;
+    try {
+      return $result = Box(width);
+    } catch (_) {
+      $threw = true;
+      rethrow;
+    } finally {
+      if (!$threw) {
+        final result = $result as Box;
+        if (!Contracts.checking) {
+          Contracts.checking = true;
+          try {
+            if (!(result.width == width))
+              throw ContractViolation(
+                'Postcondition failed: result.width == width',
+              );
+          } finally {
+            Contracts.checking = false;
+          }
         }
       }
-      return result;
-    })(Box(width));
+    }
   }
 }
 

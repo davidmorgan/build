@@ -68,6 +68,17 @@ class ExitRewriter {
     );
   }
 
+  /// Whether the checks must run where each value is returned, because the
+  /// function returns a future without being `async` and the value exists
+  /// only once that future completes.
+  bool get checksAtReturn => !isAsync && _isFutureType(returnType);
+
+  /// The type of the value the caller receives, or `null` if it is unknown.
+  ///
+  /// For an `async` function, that is the type the future completes with.
+  String? get valueType =>
+      isAsync ? _futureTypeArgument(returnType) : _syncValueType;
+
   /// Whether the function may complete by falling off the end of its body,
   /// which returns `null`.
   ///

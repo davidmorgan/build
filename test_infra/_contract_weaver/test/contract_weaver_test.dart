@@ -225,8 +225,8 @@ class Searcher {
 }
 ''';
         final output = ContractWeaver().weave(input);
-        expect(output, contains('})(item);'));
-        expect(output, contains('})(0);'));
+        expect(output, contains(r'return $result = item;'));
+        expect(output, contains(r'return $result = 0;'));
       },
     );
 
@@ -246,7 +246,7 @@ class Filter {
 ''';
       final output = ContractWeaver().weave(input);
       expect(output, contains('return x > 0;'));
-      expect(output, contains('})(filtered);'));
+      expect(output, contains(r'return $result = filtered;'));
     });
 
     test('transforms @Ensures on void method fallthrough', () {
@@ -304,7 +304,7 @@ class AsyncService {
 }
 ''';
       final output = ContractWeaver().weave(input);
-      expect(output, contains('.then((String result)'));
+      expect(output, contains(r'return $result = await Future<String>.value('));
       expect(output, contains('.then((int result)'));
       expect(output, contains('Postcondition failed: result.isNotEmpty'));
       expect(output, contains('Postcondition failed: result > 0'));
@@ -601,6 +601,73 @@ Future<void> main() async {
         await tempDir.delete(recursive: true);
       }
     });
+
+    test(
+      'checks @Ensures after the body exits, outside its try statements',
+      () async {
+        final tempDir = await Directory.systemTemp.createTemp(
+          'contracts_after_exit_',
+        );
+        try {
+          final script = File('${tempDir.path}/after_exit_runner.dart');
+          const originalSource = '''
+class Ensures {
+  final String clause;
+  const Ensures(this.clause);
+}
+
+class Compiler {
+  bool busy = false;
+
+  @Ensures('!busy')
+  int compile() {
+    busy = true;
+    try {
+      return 1;
+    } finally {
+      busy = false;
+    }
+  }
+
+  @Ensures('result > 0')
+  int recover() {
+    try {
+      return -1;
+    } catch (e) {
+      return 1;
+    }
+  }
+}
+
+void main() {
+  final compiler = Compiler();
+  print('compile: \${compiler.compile()}');
+  try {
+    print('recover: \${compiler.recover()}');
+  } catch (e) {
+    print('recover threw: \$e');
+  }
+}
+''';
+          final transformedSource = ContractWeaver().weave(originalSource);
+          await script.writeAsString(transformedSource);
+
+          final result = await Process.run(Platform.resolvedExecutable, [
+            script.path,
+          ]);
+          expect(result.exitCode, 0, reason: 'stderr: ${result.stderr}');
+          expect(
+            result.stdout,
+            allOf(
+              contains('compile: 1'),
+              contains('recover threw: ContractViolation'),
+            ),
+          );
+        } finally {
+          await tempDir.delete(recursive: true);
+        }
+      },
+    );
 
     test(
       're-entrancy guard prevents recursion during contract evaluation',
@@ -1419,8 +1486,8 @@ class A {
           final checks = 'Postcondition failed: result != null'
               .allMatches(woven)
               .length;
-          expect(checks, kind == 'nullable' ? 2 : 1, reason: woven);
-          expect(woven, contains('(null)'), reason: woven);
+          expect(checks, 1, reason: woven);
+          expect(woven, contains(r'if (!$threw)'), reason: woven);
         });
       }
 

@@ -116,8 +116,12 @@ class BodyWeaver {
       );
   }
 
-  /// Inserts [entry] at the start of the block, checks [postconditions] at
-  /// each exit, and closes [guard] at the end.
+  /// Inserts [entry] at the start of the block, checks [postconditions]
+  /// once the body exits normally, and closes [guard] at the end.
+  ///
+  /// The checks run after the body's own `try` statements have finished, so
+  /// they see the state that `finally` blocks leave and the body cannot catch
+  /// a violation.
   void _weaveBlockBody(
     BlockFunctionBody body, {
     required String entry,
@@ -127,35 +131,81 @@ class BodyWeaver {
     required BodyGuard guard,
   }) {
     final block = body.block;
-    if (entry.isNotEmpty) {
-      edits.insert(block.leftBracket.end, ' $entry ');
-    }
-
-    if (postconditions.isNotEmpty) {
-      _weaveReturns(block, postconditions, exitRewriter);
-    }
-
+    final opening = StringBuffer(entry);
     final closing = StringBuffer();
-    final fallsOffEnd =
-        block.statements.isEmpty || block.statements.last is! ReturnStatement;
-    if (fallsOffEnd && postconditions.isNotEmpty) {
-      if (isVoid) {
-        closing.write(ClauseEmitter.postconditions(postconditions));
-      } else if (exitRewriter.mayFallOffEnd) {
-        // Falling off the end returns `null`; check it like `return null;`.
+    if (postconditions.isNotEmpty) {
+      if (exitRewriter.checksAtReturn) {
+        _weaveReturns(block, postconditions, exitRewriter);
+      } else {
+        final valueType = isVoid ? null : exitRewriter.valueType;
+        if (!isVoid) {
+          opening.write(
+            valueType == null
+                ? r'dynamic $result; '
+                : '${_nullable(valueType)} \$result; ',
+          );
+          _recordReturns(block, exitRewriter, valueType);
+        }
+        opening.write(r'var $threw = false; try { ');
         closing
-          ..write(
-            exitRewriter.returnValue(
-              'null',
-              ClauseEmitter.postconditions(postconditions),
-            ),
-          )
-          ..write(' ');
+          ..write(r'} catch (_) { $threw = true; rethrow; } ')
+          ..write(r'finally { if (!$threw) { ');
+        if (!isVoid) {
+          closing.write(
+            valueType == null || _nullable(valueType) == valueType
+                ? r'final result = $result; '
+                : 'final result = \$result as $valueType; ',
+          );
+        }
+        closing
+          ..write(ClauseEmitter.postconditions(postconditions))
+          ..write('} } ');
       }
     }
     closing.write(ClauseEmitter.guardClose(guard));
+    if (opening.isNotEmpty) {
+      edits.insert(block.leftBracket.end, ' $opening ');
+    }
     if (closing.isNotEmpty) {
       edits.insert(block.rightBracket.offset, ' $closing');
+    }
+  }
+
+  /// [type] made nullable, unless it already is.
+  static String _nullable(String type) {
+    final trimmed = type.trim();
+    if (trimmed.endsWith('?') || trimmed == 'dynamic' || trimmed == 'Null') {
+      return trimmed;
+    }
+    return '$trimmed?';
+  }
+
+  /// Rewrites each `return e;` in [block] to record the value it returns in
+  /// `$result`.
+  void _recordReturns(
+    Block block,
+    ExitRewriter exitRewriter,
+    String? valueType,
+  ) {
+    for (final statement in ReturnStatementCollector.collect(block)) {
+      final expr = statement.expression;
+      if (expr == null) continue;
+      final String before;
+      final String after;
+      if (exitRewriter.isAsync) {
+        // An `async` function waits for a returned future; record the value.
+        final constructor = valueType == null
+            ? 'Future.value'
+            : 'Future<$valueType>.value';
+        before = 'return \$result = await $constructor(';
+        after = ');';
+      } else {
+        before = r'return $result = ';
+        after = ';';
+      }
+      edits
+        ..replace(statement.offset, expr.offset - statement.offset, before)
+        ..replace(expr.end, statement.end - expr.end, after);
     }
   }
 

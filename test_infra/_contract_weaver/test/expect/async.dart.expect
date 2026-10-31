@@ -17,21 +17,30 @@ class Loader {
         Contracts.checking = false;
       }
     }
-    await Future<void>.delayed(Duration.zero);
-    return await (Future<String>.value('contents of $path').then((
-      String result,
-    ) {
-      if (!Contracts.checking) {
-        Contracts.checking = true;
-        try {
-          if (!(result.isNotEmpty))
-            throw ContractViolation('Postcondition failed: result.isNotEmpty');
-        } finally {
-          Contracts.checking = false;
+    String? $result;
+    var $threw = false;
+    try {
+      await Future<void>.delayed(Duration.zero);
+      return $result = await Future<String>.value('contents of $path');
+    } catch (_) {
+      $threw = true;
+      rethrow;
+    } finally {
+      if (!$threw) {
+        final result = $result as String;
+        if (!Contracts.checking) {
+          Contracts.checking = true;
+          try {
+            if (!(result.isNotEmpty))
+              throw ContractViolation(
+                'Postcondition failed: result.isNotEmpty',
+              );
+          } finally {
+            Contracts.checking = false;
+          }
         }
       }
-      return result;
-    }));
+    }
   }
 }
 
@@ -40,14 +49,24 @@ class Saver {
 
   @Ensures('saved')
   Future<void> save() async {
-    await Future<void>.delayed(Duration.zero);
-    saved = true;
-    if (!Contracts.checking) {
-      Contracts.checking = true;
-      try {
-        if (!(saved)) throw ContractViolation('Postcondition failed: saved');
-      } finally {
-        Contracts.checking = false;
+    var $threw = false;
+    try {
+      await Future<void>.delayed(Duration.zero);
+      saved = true;
+    } catch (_) {
+      $threw = true;
+      rethrow;
+    } finally {
+      if (!$threw) {
+        if (!Contracts.checking) {
+          Contracts.checking = true;
+          try {
+            if (!(saved))
+              throw ContractViolation('Postcondition failed: saved');
+          } finally {
+            Contracts.checking = false;
+          }
+        }
       }
     }
   }

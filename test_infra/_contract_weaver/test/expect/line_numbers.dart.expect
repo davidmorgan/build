@@ -25,19 +25,30 @@ class Ledger {
     this._enterInvariantScope();
     Object? $inFlight;
     try {
-      total += amount;
-      return ((int result) {
-        if (!Contracts.checking) {
-          Contracts.checking = true;
-          try {
-            if (!(result == total))
-              throw ContractViolation('Postcondition failed: result == total');
-          } finally {
-            Contracts.checking = false;
+      int? $result;
+      var $threw = false;
+      try {
+        total += amount;
+        return $result = total + 0;
+      } catch (_) {
+        $threw = true;
+        rethrow;
+      } finally {
+        if (!$threw) {
+          final result = $result as int;
+          if (!Contracts.checking) {
+            Contracts.checking = true;
+            try {
+              if (!(result == total))
+                throw ContractViolation(
+                  'Postcondition failed: result == total',
+                );
+            } finally {
+              Contracts.checking = false;
+            }
           }
         }
-        return result;
-      })(total + 0);
+      }
     } catch ($thrown) {
       $inFlight = $thrown;
       rethrow;
@@ -76,21 +87,31 @@ class Ledger {
     this._enterInvariantScope();
     Object? $inFlight;
     try {
-      return await (Future<String>.value(Future.value('total: $total'))
-          .then((String result) {
-            if (!Contracts.checking) {
-              Contracts.checking = true;
-              try {
-                if (!(result.isNotEmpty))
-                  throw ContractViolation(
-                    'Postcondition failed: result.isNotEmpty',
-                  );
-              } finally {
-                Contracts.checking = false;
-              }
+      String? $result;
+      var $threw = false;
+      try {
+        return $result = await Future<String>.value(
+          Future.value('total: $total'),
+        );
+      } catch (_) {
+        $threw = true;
+        rethrow;
+      } finally {
+        if (!$threw) {
+          final result = $result as String;
+          if (!Contracts.checking) {
+            Contracts.checking = true;
+            try {
+              if (!(result.isNotEmpty))
+                throw ContractViolation(
+                  'Postcondition failed: result.isNotEmpty',
+                );
+            } finally {
+              Contracts.checking = false;
             }
-            return result;
-          }));
+          }
+        }
+      }
     } catch ($thrown) {
       $inFlight = $thrown;
       rethrow;
@@ -104,9 +125,18 @@ class Ledger {
     this._enterInvariantScope();
     Object? $inFlight;
     try {
-      if (total > 100) {
-        total = 0;
-        {
+      var $threw = false;
+      try {
+        if (total > 100) {
+          total = 0;
+          return;
+        }
+        total = total ~/ 2;
+      } catch (_) {
+        $threw = true;
+        rethrow;
+      } finally {
+        if (!$threw) {
           if (!Contracts.checking) {
             Contracts.checking = true;
             try {
@@ -116,17 +146,6 @@ class Ledger {
               Contracts.checking = false;
             }
           }
-          return;
-        }
-      }
-      total = total ~/ 2;
-      if (!Contracts.checking) {
-        Contracts.checking = true;
-        try {
-          if (!(total >= 0))
-            throw ContractViolation('Postcondition failed: total >= 0');
-        } finally {
-          Contracts.checking = false;
         }
       }
     } catch ($thrown) {

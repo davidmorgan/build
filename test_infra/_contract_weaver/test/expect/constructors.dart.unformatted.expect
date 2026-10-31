@@ -18,7 +18,7 @@ class Box {
 
   @Requires('width > 0')
   @Ensures('result.width == width')
-  factory Box.cached(int width) { if (!Contracts.checking) { Contracts.checking = true; try { if (!(width > 0)) throw ContractViolation('Precondition failed: width > 0'); } finally { Contracts.checking = false; } }  
-    return ((Box result) { if (!Contracts.checking) { Contracts.checking = true; try { if (!(result.width == width)) throw ContractViolation('Postcondition failed: result.width == width'); } finally { Contracts.checking = false; } } return result; })(Box(width));
-  }
+  factory Box.cached(int width) { if (!Contracts.checking) { Contracts.checking = true; try { if (!(width > 0)) throw ContractViolation('Precondition failed: width > 0'); } finally { Contracts.checking = false; } } Box? $result; var $threw = false; try {  
+    return $result = Box(width);
+   } catch (_) { $threw = true; rethrow; } finally { if (!$threw) { final result = $result as Box; if (!Contracts.checking) { Contracts.checking = true; try { if (!(result.width == width)) throw ContractViolation('Postcondition failed: result.width == width'); } finally { Contracts.checking = false; } } } } }
 } extension _ContractsOn$Box on Box { void _enterInvariantScope({bool check = true}) { final open = Contracts.openScopes[this] ?? 0; if (check && open == 0) _checkInvariants(); Contracts.openScopes[this] = open + 1; } void _exitInvariantScope({Object? during}) { final open = Contracts.openScopes[this]! - 1; Contracts.openScopes[this] = open == 0 ? null : open; if (open == 0) _checkInvariants(during: during); } void _checkInvariants({Object? during}) { final inFlight = during == null ? '' : ', thrown while handling $during'; if (!Contracts.checking) { Contracts.checking = true; try { if (!(width > 0)) throw ContractViolation('Invariant failed: width > 0$inFlight'); } finally { Contracts.checking = false; } } } }  
