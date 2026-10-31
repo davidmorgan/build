@@ -162,6 +162,22 @@ void main() {
           false,
         );
       });
+
+      test('reads content if the stats file is unparseable', () async {
+        final mtime = DateTime.now().subtract(const Duration(hours: 1));
+        input1.setLastModifiedSync(mtime);
+        final depfile = Depfile(
+          outputPath: outputFile.path,
+          depfilePath: depsFile.path,
+          digestPath: digestFile.path,
+        )..writeDigest();
+
+        File('${digestFile.path}.stats').writeAsStringSync('corrupt\n');
+        expect(
+          depfile.checkFreshness(digestsAreFresh: false).outputIsFresh,
+          true,
+        );
+      });
     });
   });
 }
