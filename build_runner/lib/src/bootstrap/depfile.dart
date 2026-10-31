@@ -127,9 +127,9 @@ class Depfile {
     final contents = statsFile.readAsStringSync();
     final newline = contents.indexOf('\n');
     if (newline == -1) return false;
-    final start = DateTime.fromMicrosecondsSinceEpoch(
-      int.parse(contents.substring(0, newline)),
-    );
+    final startMicros = int.tryParse(contents.substring(0, newline));
+    if (startMicros == null) return false;
+    final start = DateTime.fromMicrosecondsSinceEpoch(startMicros);
     return _renderStats(before: start) == contents.substring(newline + 1);
   }
 
