@@ -874,6 +874,29 @@ abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
 }'''), contains('1. Make builder field foo have type: int'));
       });
 
+      test('builder field type error names the nested builder type', () async {
+        expect(
+            await generate('''library value;
+import 'package:built_value/built_value.dart';
+part 'value.g.dart';
+abstract class Other implements Built<Other, OtherBuilder> {
+  Other._();
+  factory Other([void Function(OtherBuilder) updates]) = _\$Other;
+}
+abstract class Value implements Built<Value, ValueBuilder> {
+  Value._();
+  factory Value([void Function(ValueBuilder) updates]) = _\$Value;
+  Other get foo;
+}
+abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
+  ValueBuilder._();
+  factory ValueBuilder() = _\$ValueBuilder;
+  int? foo;
+}'''),
+            contains('1. Make builder field foo have type: Other? or '
+                'OtherBuilder'));
+      });
+
       test('built_collection fields instead of SDK fields', () async {
         expect(
             await generate('''library value;
