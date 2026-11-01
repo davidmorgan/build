@@ -140,11 +140,12 @@ abstract class SerializerSourceClass
   // TODO(davidmorgan): better check.
   @memoized
   bool get isBuiltValue =>
-      element.allSupertypes
-          .map((type) => type.element.name)
-          .any((name) => name == 'Built') &&
       !element.name!.startsWith(r'_$') &&
-      element.fields.any((field) => field.name == 'serializer');
+      element.fields.any((field) => field.name == 'serializer') &&
+      (element.allSupertypes
+              .map((type) => type.element.name)
+              .any((name) => name == 'Built') ||
+          !builtValueSettings.instantiable);
 
   // TODO(davidmorgan): better check.
   @memoized

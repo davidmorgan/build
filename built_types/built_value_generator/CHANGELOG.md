@@ -25,6 +25,9 @@
 - Bug fix: generate a serializer only for classes that implement `Built`.
   Before, any class with a `serializer` field and a supertype whose name
   started with `Built` got one, google/built_value.dart#1303.
+- Bug fix: add the custom serializer of a `@BuiltValue(instantiable: false)`
+  class to `@SerializersFor` serializers even when it has no `Built`
+  supertype, google/built_value.dart#838.
 
 ## 8.13.0
 
