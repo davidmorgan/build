@@ -393,6 +393,7 @@ abstract class ValueSourceField
         element.type,
         type,
       );
+      final hasNestedBuilder = builderType != null && builderType != type;
       if (builderElementTypeOrNull != '$type?' &&
           (builderType == null ||
               (builderElementTypeOrNull != builderType &&
@@ -401,7 +402,7 @@ abstract class ValueSourceField
           GeneratorError(
             (b) => b
               ..message = 'Make builder field $name have type: $type?'
-                  '${builderType == null ? '' : ' or $builderType'}',
+                  '${hasNestedBuilder ? ' or $builderType' : ''}',
           ),
         );
       }
