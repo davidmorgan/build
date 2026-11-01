@@ -22,6 +22,8 @@
 - Bug fix: report an error for fields named `build`, `replace` or `update`,
   which clash with methods on the generated builder, instead of generating
   code that doesn't compile.
+- Report an error when two serialized fields of one class have the same wire
+  name, instead of generating a serializer that silently mixes them up.
 
 ## 8.13.0
 

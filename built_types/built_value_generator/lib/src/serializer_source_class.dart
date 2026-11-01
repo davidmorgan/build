@@ -279,6 +279,17 @@ abstract class SerializerSourceClass
       result.addAll(field.computeErrors());
     }
 
+    final fieldsByWireName = <String, SerializerSourceField>{};
+    for (final field in fields) {
+      final other = fieldsByWireName.putIfAbsent(field.wireName, () => field);
+      if (other != field) {
+        result.add(
+          'Fields ${other.name} and ${field.name} both have wire name '
+          '"${field.wireName}"; give each a different wireName.',
+        );
+      }
+    }
+
     return result;
   }
 
