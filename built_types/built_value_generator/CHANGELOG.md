@@ -22,6 +22,8 @@
 - Bug fix: report an error for fields named `build`, `replace` or `update`,
   which clash with methods on the generated builder, instead of generating
   code that doesn't compile.
+- The error for a field with `dynamic` type now also suggests checking that
+  the file declaring the type is in the build.yaml `sources`.
 
 ## 8.13.0
 

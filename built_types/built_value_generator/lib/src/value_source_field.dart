@@ -341,7 +341,9 @@ abstract class ValueSourceField
           (b) => b
             ..message = 'Make field $name have non-dynamic type. '
                 'If you are already specifying a type, '
-                'please make sure the type is correctly imported.',
+                'please make sure the type is correctly imported. '
+                'If the type is declared in this package, also check that the '
+                'file declaring it is in the `sources` of your build.yaml.',
         ),
       );
     }
