@@ -22,6 +22,9 @@
 - Bug fix: report an error for fields named `build`, `replace` or `update`,
   which clash with methods on the generated builder, instead of generating
   code that doesn't compile.
+- When a builder field has the wrong type, the error now names the nested
+  builder type it may have, such as `ListBuilder<int>`, instead of saying "or,
+  if applicable, builder".
 
 ## 8.13.0
 

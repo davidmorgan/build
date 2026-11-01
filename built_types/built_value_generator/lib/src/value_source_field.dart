@@ -400,8 +400,8 @@ abstract class ValueSourceField
         result.add(
           GeneratorError(
             (b) => b
-              ..message = 'Make builder field $name have type: '
-                  '$type? (or, if applicable, builder)',
+              ..message = 'Make builder field $name have type: $type?'
+                  '${builderType == null ? '' : ' or $builderType'}',
           ),
         );
       }
