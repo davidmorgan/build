@@ -871,7 +871,9 @@ abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
   String foo;
-}'''), contains('1. Make builder field foo have type: int'));
+}'''),
+            allOf(contains('1. Make builder field foo have type: int?'),
+                isNot(contains('have type: int? or'))));
       });
 
       test('builder field type error names the nested builder type', () async {
