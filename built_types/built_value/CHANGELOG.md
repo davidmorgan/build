@@ -6,6 +6,8 @@
 - Document how missing and `null` fields are deserialized.
 - Migrate to `package:dart_flutter_team_lints`.
 - Fix analysis issues and remove the lint suppressions that hid them.
+- Speed up serialization of generic types by caching serializer lookups by
+  raw type name, google/built_value.dart#637.
 
 ## 8.13.0
 

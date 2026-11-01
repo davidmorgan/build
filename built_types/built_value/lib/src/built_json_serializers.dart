@@ -202,7 +202,12 @@ class BuiltJsonSerializers implements Serializers {
 
   @override
   Serializer? serializerForType(Type? type) =>
-      _typeToSerializer[type] ?? _typeNameToSerializer[_getRawName(type)];
+      _typeToSerializer[type] ??
+      _serializerForRawType.putIfAbsent(
+          type, () => _typeNameToSerializer[_getRawName(type)]);
+
+  /// Lookups by raw type name, which call [Type.toString].
+  final Map<Type?, Serializer?> _serializerForRawType = {};
 
   @override
   Serializer? serializerForWireName(String wireName) =>
