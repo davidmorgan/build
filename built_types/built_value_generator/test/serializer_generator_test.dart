@@ -35,6 +35,25 @@ abstract class Value implements Built<Value, ValueBuilder> {}
 '''), isNot(contains('implements StructuredSerializer<Value>')));
     });
 
+    test(
+        'ignores class with serializer whose supertype name starts with '
+        'Built', () async {
+      expect(await generate(r'''
+library value;
+
+import 'package:test_support/test_support.dart';
+
+abstract class BuiltJsonSerializable {
+  Serializer<Object> get serializer;
+}
+
+class Wrapper extends BuiltJsonSerializable {
+  @override
+  Serializer<Object> get serializer => throw UnimplementedError();
+}
+'''), isEmpty);
+    });
+
     test('generates for built_value class with serializer', () async {
       expect(await generate(r'''
 library value;
