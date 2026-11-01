@@ -30,4 +30,12 @@ void main() {
         ..simpleValues.add(SimpleValue((b) => b..anInt = 4)));
     });
   });
+
+  group('ImportedMemoizedValue', () {
+    test('memoizes a getter with an import-prefixed type', () {
+      final value = ImportedMemoizedValue((b) => b..anInt = 3);
+      expect(value.simpleValue.anInt, 3);
+      expect(identical(value.simpleValue, value.simpleValue), isTrue);
+    });
+  });
 }

@@ -72,3 +72,18 @@ abstract class ImportedCustomNestedValueBuilder
   factory ImportedCustomNestedValueBuilder() =
       _$ImportedCustomNestedValueBuilder;
 }
+
+// With a memoized getter whose type has an import prefix.
+abstract class ImportedMemoizedValue
+    implements Built<ImportedMemoizedValue, ImportedMemoizedValueBuilder> {
+  int get anInt;
+
+  @memoized
+  prefix.SimpleValue get simpleValue =>
+      prefix.SimpleValue((b) => b..anInt = anInt);
+
+  factory ImportedMemoizedValue(
+          [void Function(ImportedMemoizedValueBuilder) updates]) =
+      _$ImportedMemoizedValue;
+  ImportedMemoizedValue._();
+}
