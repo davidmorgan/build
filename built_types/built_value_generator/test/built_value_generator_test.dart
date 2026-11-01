@@ -207,7 +207,9 @@ abstract class Value implements Built<Value, ValueBuilder> {
   get foo;
 }'''),
             contains('1. Make field foo have non-dynamic type. If you are '
-                'already specifying a type, please make sure the type is correctly imported.'));
+                'already specifying a type, please make sure the type is correctly imported. '
+                'If the type is declared in this package, also check that the '
+                'file declaring it is in the `sources` of your build.yaml.'));
       });
 
       test('2.12 rejects @nullable annotation', () async {
