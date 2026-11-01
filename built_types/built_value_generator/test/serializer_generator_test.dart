@@ -254,6 +254,53 @@ abstract class Value implements Built<Value, ValueBuilder> {
               'automatically serializable. '
               'To allow the class to be serialized, modify "record" by'));
     });
+
+    test('errors on duplicate wire names', () async {
+      expect(
+          await generate(r'''
+library value;
+
+import 'package:test_support/test_support.dart';
+
+part 'value.g.dart';
+
+abstract class Value implements Built<Value, ValueBuilder> {
+  static Serializer<Value> get serializer => _$valueSerializer;
+  @BuiltValueField(wireName: 'x')
+  int get a;
+  @BuiltValueField(wireName: 'x')
+  int get b;
+
+  Value._();
+  factory Value([void Function(ValueBuilder) updates]) = _$Value;
+}
+'''),
+          contains(r'1. Fields a and b both have wire name "x"; '
+              'give each a different wireName.'));
+    });
+
+    test('errors on wire name matching another field name', () async {
+      expect(
+          await generate(r'''
+library value;
+
+import 'package:test_support/test_support.dart';
+
+part 'value.g.dart';
+
+abstract class Value implements Built<Value, ValueBuilder> {
+  static Serializer<Value> get serializer => _$valueSerializer;
+  int get a;
+  @BuiltValueField(wireName: 'a')
+  int get b;
+
+  Value._();
+  factory Value([void Function(ValueBuilder) updates]) = _$Value;
+}
+'''),
+          contains(r'1. Fields a and b both have wire name "a"; '
+              'give each a different wireName.'));
+    });
   });
 }
 
@@ -300,6 +347,12 @@ class Builder<V, B> {}
 class BuiltList<E> {}
 
 class BuiltMap<K, V> {}
+
+class BuiltValueField {
+  final String? wireName;
+
+  const BuiltValueField({this.wireName});
+}
 
 class EnumClass {}
 
