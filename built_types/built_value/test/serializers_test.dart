@@ -2,6 +2,7 @@
 // All rights reserved. Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/serializer.dart';
 import 'package:built_value/src/date_time_serializer.dart';
 import 'package:built_value/src/int_serializer.dart';
@@ -95,6 +96,19 @@ void main() {
     test('deserializes null from unknown type null when plugin is installed',
         () {
       expect(serializersWithPlugin.deserialize({r'$': 'Null', '': null}), null);
+    });
+
+    test('finds serializer for generic runtime type on repeated lookups', () {
+      final type = BuiltList<int>().runtimeType;
+      final first = serializers.serializerForType(type);
+      expect(first, isNotNull);
+      expect(first!.types, contains(BuiltList));
+      expect(serializers.serializerForType(type), same(first));
+    });
+
+    test('finds no serializer for unknown type on repeated lookups', () {
+      expect(serializers.serializerForType(TestSerializer), isNull);
+      expect(serializers.serializerForType(TestSerializer), isNull);
     });
   });
 }
