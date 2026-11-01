@@ -80,14 +80,6 @@ Serializers _$serializers =
             () => ListBuilder<SimpleValue>(),
           )
           ..addBuilderFactory(
-            const FullType(BuiltList, const [const FullType(SimpleValue)]),
-            () => ListBuilder<SimpleValue>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [const FullType(SimpleValue)]),
-            () => ListBuilder<SimpleValue>(),
-          )
-          ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(ThirdDiscoverableValue),
             ]),
@@ -103,10 +95,6 @@ Serializers _$serializers =
               const FullType(String),
             ]),
             () => MapBuilder<int, String>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [const FullType(int)]),
-            () => ListBuilder<int>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltSet, const [const FullType(String)]),
@@ -163,35 +151,6 @@ Serializers _$serializers =
             () => SetMultimapBuilder<String, bool?>(),
           )
           ..addBuilderFactory(
-            const FullType(BuiltList, const [const FullType(int)]),
-            () => ListBuilder<int>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltSet, const [const FullType(String)]),
-            () => SetBuilder<String>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltMap, const [
-              const FullType(String),
-              const FullType(int),
-            ]),
-            () => MapBuilder<String, int>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltListMultimap, const [
-              const FullType(int),
-              const FullType(bool),
-            ]),
-            () => ListMultimapBuilder<int, bool>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltSetMultimap, const [
-              const FullType(String),
-              const FullType(bool),
-            ]),
-            () => SetMultimapBuilder<String, bool>(),
-          )
-          ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(Foo, const [const FullType.nullable(int)]),
             ]),
@@ -213,20 +172,12 @@ Serializers _$serializers =
             () => MapBuilder<String, JsonObject>(),
           )
           ..addBuilderFactory(
-            const FullType(BuiltList, const [const FullType(Animal)]),
-            () => ListBuilder<Animal>(),
-          )
-          ..addBuilderFactory(
             const FullType(BuiltSet, const [const FullType(Animal)]),
             () => SetBuilder<Animal>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
             () => ListBuilder<String>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [const FullType.nullable(int)]),
-            () => ListBuilder<int?>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType.nullable(String)]),

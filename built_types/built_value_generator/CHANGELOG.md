@@ -22,6 +22,8 @@
 - Bug fix: report an error for fields named `build`, `replace` or `update`,
   which clash with methods on the generated builder, instead of generating
   code that doesn't compile.
+- Bug fix: `@SerializersFor` added the same builder factory once per class
+  that needed it; it now adds each once, google/built_value.dart#1160.
 
 ## 8.13.0
 

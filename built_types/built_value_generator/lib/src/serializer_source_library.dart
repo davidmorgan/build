@@ -231,13 +231,27 @@ abstract class SerializerSourceLibrary
             'Serializers _\$$field = (Serializers().toBuilder()${(serializeForTransitiveClasses[field]!.map(
                   (sourceClass) =>
                       sourceClass.generateTransitiveSerializerAdder(),
-                ).toList()..sort()).join('\n')}${(serializeForTransitiveClasses[field]!.map(
-                  (sourceClass) => sourceClass.generateBuilderFactoryAdders(
-                    element.library.firstFragment,
-                  ),
-                ).toList()..sort()).join('\n')}).build();',
+                ).toList()..sort()).join('\n')}${_generateBuilderFactoryAdders(field)}).build();',
       )
       .join('\n');
+
+  /// Returns the `addBuilderFactory` calls for [field], each once: classes
+  /// with fields of the same type need the same factory.
+  String _generateBuilderFactoryAdders(String field) {
+    final classAdders = serializeForTransitiveClasses[field]!
+        .map(
+          (sourceClass) => sourceClass.generateBuilderFactoryAdders(
+            element.library.firstFragment,
+          ),
+        )
+        .toList()
+      ..sort();
+    return classAdders
+        .expand((adders) => adders.split('\n'))
+        .where((adder) => adder.isNotEmpty)
+        .toSet()
+        .join('\n');
+  }
 }
 
 InvalidGenerationSourceError _makeError(Iterable<String> todos) {
