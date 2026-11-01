@@ -177,7 +177,10 @@ class BodyWeaver {
           closing.write(r'$result = null; ');
         }
         closing
-          ..write(r'} catch (_) { $threw = true; rethrow; } ')
+          ..write(r'} catch (_) { $threw = true; ')
+          // Exceptional postconditions run outside, and see final values too.
+          ..write(asyncBody?.copyBack ?? '')
+          ..write('rethrow; } ')
           ..write(r'finally { if (!$threw) { ');
         if (!isVoid) {
           closing.write(

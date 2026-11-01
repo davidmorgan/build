@@ -90,6 +90,16 @@ class ClauseEmitter {
     if (guard.isEmpty) return '';
     final checksInvariant = guard.checksInvariant;
     final buffer = StringBuffer();
+    if (guard.throwClauses.isNotEmpty) {
+      // A violation is not the body's failure: let it pass the exceptional
+      // postconditions, which might otherwise catch and replace it.
+      buffer.write(
+        checksInvariant
+            ? r'on ContractViolation catch ($violation) { '
+                  r'$inFlight = $violation; rethrow; } '
+            : 'on ContractViolation { rethrow; } ',
+      );
+    }
     for (final clauses in guard.throwClauses) {
       buffer.write(
         exceptionalPostconditions(

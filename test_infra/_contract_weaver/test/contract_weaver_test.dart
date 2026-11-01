@@ -1028,6 +1028,77 @@ Future<void> main() async {
       }
     });
 
+    test('reports an @Ensures violation past @ThrowEnsures(Object), and '
+        '@ThrowEnsures sees assigned async parameters', () async {
+      final tempDir = await Directory.systemTemp.createTemp(
+        'contracts_throw_mask_',
+      );
+      try {
+        final script = File('${tempDir.path}/throw_mask_runner.dart');
+        const originalSource = '''
+class Ensures {
+  final String clause;
+  const Ensures(this.clause);
+}
+
+class ThrowEnsures {
+  final Type type;
+  final String clause;
+  const ThrowEnsures(this.type, this.clause);
+}
+
+@Ensures('false')
+@ThrowEnsures(Object, 'false')
+int syncBroken() => 1;
+
+@Ensures('false')
+@ThrowEnsures(Object, 'false')
+Future<int> asyncBroken() async => 1;
+
+@Ensures('x == 2')
+@ThrowEnsures(StateError, 'x == 2')
+Future<int> mutateThenThrow(int x) async {
+  x = 2;
+  await Future<void>.delayed(Duration.zero);
+  throw StateError('boom');
+}
+
+Future<void> expectPostconditionFailure(Future<void> Function() f) async {
+  try {
+    await f();
+  } catch (e) {
+    if ('\$e'.contains('Postcondition failed: false')) return;
+    throw 'wrong failure: \$e';
+  }
+  throw 'no failure';
+}
+
+Future<void> main() async {
+  await expectPostconditionFailure(() async => syncBroken());
+  await expectPostconditionFailure(asyncBroken);
+  try {
+    await mutateThenThrow(1);
+    throw 'mutateThenThrow should have thrown';
+  } on StateError {
+    // Expected: the body's own error, not a violation.
+  }
+}
+''';
+        final transformedSource = ContractWeaver().weave(originalSource);
+        await script.writeAsString(transformedSource);
+        final result = await Process.run(Platform.resolvedExecutable, [
+          script.path,
+        ]);
+        expect(
+          result.exitCode,
+          0,
+          reason: 'stderr: ${result.stderr}\nstdout: ${result.stdout}',
+        );
+      } finally {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
     test(
       'checks @Ensures after the body exits, outside its try statements',
       () async {

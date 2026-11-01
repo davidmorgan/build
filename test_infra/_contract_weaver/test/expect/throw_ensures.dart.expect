@@ -17,6 +17,8 @@ class Queue {
       if (_items.isEmpty) throw StateError('empty');
       if (index < 0) throw ArgumentError.value(index);
       return _items.removeAt(index);
+    } on ContractViolation {
+      rethrow;
     } on StateError catch (signal) {
       if (!Contracts.checking) {
         Contracts.checking = true;
