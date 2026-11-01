@@ -54,6 +54,49 @@ class Wrapper extends BuiltJsonSerializable {
 '''), isEmpty);
     });
 
+    test('adds custom serializer of non-instantiable class to serializers',
+        () async {
+      expect(await generate(r'''
+library value;
+
+import 'package:test_support/test_support.dart';
+
+part 'value.g.dart';
+
+@SerializersFor(const [Animal])
+final Serializers serializers = _$serializers;
+
+@BuiltValue(instantiable: false)
+abstract class Animal {
+  @BuiltValueSerializer(custom: true)
+  static Serializer<Animal> get serializer => throw UnimplementedError();
+}
+'''), contains('..add(Animal.serializer)'));
+    });
+
+    test(
+        'adds custom serializer of non-instantiable class with Built-named supertype',
+        () async {
+      expect(await generate(r'''
+library value;
+
+import 'package:test_support/test_support.dart';
+
+part 'value.g.dart';
+
+@SerializersFor(const [Animal])
+final Serializers serializers = _$serializers;
+
+abstract class BuiltFaker {}
+
+@BuiltValue(instantiable: false)
+abstract class Animal implements BuiltFaker {
+  @BuiltValueSerializer(custom: true)
+  static Serializer<Animal> get serializer => throw UnimplementedError();
+}
+'''), contains('..add(Animal.serializer)'));
+    });
+
     test('generates for built_value class with serializer', () async {
       expect(await generate(r'''
 library value;
@@ -331,4 +374,16 @@ class SerializersFor {
 class Serializer<T> {}
 
 class Serializers {}
+
+class BuiltValue {
+  final bool instantiable;
+
+  const BuiltValue({this.instantiable = true});
+}
+
+class BuiltValueSerializer {
+  final bool custom;
+
+  const BuiltValueSerializer({this.custom = false});
+}
 ''';
