@@ -141,8 +141,8 @@ abstract class SerializerSourceClass
   @memoized
   bool get isBuiltValue =>
       element.allSupertypes
-          .map((type) => type.element.name!)
-          .any((name) => name.startsWith('Built')) &&
+          .map((type) => type.element.name)
+          .any((name) => name == 'Built') &&
       !element.name!.startsWith(r'_$') &&
       element.fields.any((field) => field.name == 'serializer');
 

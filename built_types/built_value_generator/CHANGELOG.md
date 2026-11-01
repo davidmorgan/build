@@ -22,6 +22,9 @@
 - Bug fix: report an error for fields named `build`, `replace` or `update`,
   which clash with methods on the generated builder, instead of generating
   code that doesn't compile.
+- Bug fix: generate a serializer only for classes that implement `Built`.
+  Before, any class with a `serializer` field and a supertype whose name
+  started with `Built` got one, google/built_value.dart#1303.
 
 ## 8.13.0
 
