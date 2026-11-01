@@ -533,4 +533,91 @@ class _$ImportedCustomNestedValueBuilder
   }
 }
 
+class _$ImportedMemoizedValue extends ImportedMemoizedValue {
+  @override
+  final int anInt;
+  prefix.SimpleValue? __simpleValue;
+
+  factory _$ImportedMemoizedValue(
+          [void Function(ImportedMemoizedValueBuilder)? updates]) =>
+      (ImportedMemoizedValueBuilder()..update(updates))._build();
+
+  _$ImportedMemoizedValue._({required this.anInt}) : super._();
+  @override
+  prefix.SimpleValue get simpleValue => __simpleValue ??= super.simpleValue;
+
+  @override
+  ImportedMemoizedValue rebuild(
+          void Function(ImportedMemoizedValueBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  ImportedMemoizedValueBuilder toBuilder() =>
+      ImportedMemoizedValueBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is ImportedMemoizedValue && anInt == other.anInt;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, anInt.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'ImportedMemoizedValue')
+          ..add('anInt', anInt))
+        .toString();
+  }
+}
+
+class ImportedMemoizedValueBuilder
+    implements Builder<ImportedMemoizedValue, ImportedMemoizedValueBuilder> {
+  _$ImportedMemoizedValue? _$v;
+
+  int? _anInt;
+  int? get anInt => _$this._anInt;
+  set anInt(int? anInt) => _$this._anInt = anInt;
+
+  ImportedMemoizedValueBuilder();
+
+  ImportedMemoizedValueBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      _anInt = $v.anInt;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(ImportedMemoizedValue other) {
+    _$v = other as _$ImportedMemoizedValue;
+  }
+
+  @override
+  void update(void Function(ImportedMemoizedValueBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  ImportedMemoizedValue build() => _build();
+
+  _$ImportedMemoizedValue _build() {
+    final _$result = _$v ??
+        _$ImportedMemoizedValue._(
+          anInt: BuiltValueNullFieldError.checkNotNull(
+              anInt, r'ImportedMemoizedValue', 'anInt'),
+        );
+    replace(_$result);
+    return _$result;
+  }
+}
+
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

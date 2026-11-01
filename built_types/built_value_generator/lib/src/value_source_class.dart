@@ -339,8 +339,8 @@ abstract class ValueSourceClass
       );
 
   @memoized
-  BuiltList<MemoizedGetter> get memoizedGetters =>
-      BuiltList<MemoizedGetter>(MemoizedGetter.fromClassElement(element));
+  BuiltList<MemoizedGetter> get memoizedGetters => BuiltList<MemoizedGetter>(
+      MemoizedGetter.fromClassElement(element, parsedLibrary));
 
   /// Returns the `implements` clause for the builder.
   ///

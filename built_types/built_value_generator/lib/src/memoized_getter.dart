@@ -1,5 +1,7 @@
 library;
 
+import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:built_value/built_value.dart';
@@ -22,6 +24,7 @@ abstract class MemoizedGetter
 
   static Iterable<MemoizedGetter> fromClassElement(
     InterfaceElement classElement,
+    ParsedLibraryResult parsedLibrary,
   ) {
     return classElement.fields
         .where(
@@ -35,11 +38,35 @@ abstract class MemoizedGetter
         .map(
           (field) => MemoizedGetter(
             (b) => b
-              ..returnType = DartTypes.getName(field.getter!.returnType)
+              ..returnType = _returnType(field.getter!, parsedLibrary)
               ..nullabilitySuffix = field.getter!.returnType.nullabilitySuffix
               ..name = field.displayName,
           ),
         )
         .toList();
+  }
+
+  /// The return type of [getter] without any nullability suffix, keeping any
+  /// import prefix written in the source.
+  static String _returnType(
+    GetterElement getter,
+    ParsedLibraryResult parsedLibrary,
+  ) {
+    final typeFromElement = DartTypes.getName(getter.returnType);
+    final declaration =
+        parsedLibrary.getFragmentDeclaration(getter.firstFragment)?.node;
+    if (declaration is! MethodDeclaration) return typeFromElement;
+    var typeFromAst = declaration.returnType?.toSource();
+    if (typeFromAst == null) return typeFromElement;
+    if (typeFromAst.endsWith('?')) {
+      typeFromAst = typeFromAst.substring(0, typeFromAst.length - 1);
+    }
+
+    // Function types are formatted incorrectly by the element. Otherwise
+    // prefer the element unless the source has an import prefix, because the
+    // element handles inherited generics correctly.
+    if (typeFromElement.contains('(')) return typeFromAst;
+    if (!typeFromAst.contains('.')) return typeFromElement;
+    return typeFromAst;
   }
 }
