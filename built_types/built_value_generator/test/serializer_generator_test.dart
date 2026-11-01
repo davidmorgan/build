@@ -73,6 +73,35 @@ class Enum extends EnumClass {
 '''), isNotEmpty);
     });
 
+    test('adds each builder factory once', () async {
+      final output = await generate(r'''
+library value;
+
+import 'package:test_support/test_support.dart';
+
+part 'value.g.dart';
+
+@SerializersFor([Value1, Value2])
+final Serializers serializers = _$serializers;
+
+abstract class Value1 implements Built<Value1, Value1Builder> {
+  static Serializer<Value1> get serializer => _$value1Serializer;
+  BuiltList<int> get ints;
+  Value1._();
+  factory Value1([void Function(Value1Builder) updates]) = _$Value1;
+}
+
+abstract class Value2 implements Built<Value2, Value2Builder> {
+  static Serializer<Value2> get serializer => _$value2Serializer;
+  BuiltList<int> get ints;
+  Value2._();
+  factory Value2([void Function(Value2Builder) updates]) = _$Value2;
+}
+''');
+      expect('addBuilderFactory('.allMatches(output), hasLength(1),
+          reason: output);
+    });
+
     test('does not generate for serializers without annotation', () async {
       expect(await generate(r'''
 library value;
