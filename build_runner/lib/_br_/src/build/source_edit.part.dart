@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../src/build/source_edit.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 class _$SourceEdit extends SourceEdit {
   @override
   final int offset;

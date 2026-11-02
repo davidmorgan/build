@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../src/build_plan/build_triggers.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 class _$ImportBuildTrigger extends ImportBuildTrigger {
   @override
   final String import;

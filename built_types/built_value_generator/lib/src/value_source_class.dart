@@ -16,7 +16,6 @@ import 'package:source_gen/source_gen.dart';
 
 import 'dart_types.dart';
 import 'fixes.dart';
-import 'generation_mode.dart';
 import 'library_elements.dart';
 import 'memoized_getter.dart';
 import 'metadata.dart';
@@ -248,21 +247,6 @@ abstract class ValueSourceClass
   String get source => element.library.firstFragment.source.contents.data;
 
   @memoized
-  String get partStatement {
-    final fileName = element.library.firstFragment.source.shortName.replaceAll(
-      '.dart',
-      '',
-    );
-    return "part '$fileName.g.dart';";
-  }
-
-  @memoized
-  bool get hasPartStatement {
-    final expectedCode = partStatement;
-    return isLibrarySourceSinkMode || source.contains(expectedCode);
-  }
-
-  @memoized
   bool get hasBuiltValueImportWithShow {
     // It would be more accurate to check using the AST, but this is
     // potentially expensive. We already have the source for the "part of"
@@ -425,40 +409,12 @@ abstract class ValueSourceClass
 
   Iterable<GeneratorError> computeErrors() {
     return [
-      ..._checkPart(),
       ..._checkSettings(),
       ..._checkValueClass(),
       ..._checkBuilderClass(),
       ..._checkFieldList(),
       for (final field in fields) ...field.computeErrors(),
     ];
-  }
-
-  Iterable<GeneratorError> _checkPart() {
-    if (hasPartStatement) return [];
-
-    final directives = (classDeclaration.parent as CompilationUnit).directives;
-    if (directives.isEmpty) {
-      return [
-        GeneratorError(
-          (b) => b
-            ..message = 'Import generated part: $partStatement'
-            ..offset = 0
-            ..length = 0
-            ..fix = '$partStatement\n\n',
-        ),
-      ];
-    } else {
-      return [
-        GeneratorError(
-          (b) => b
-            ..message = 'Import generated part: $partStatement'
-            ..offset = directives.last.offset + directives.last.length
-            ..length = 0
-            ..fix = '\n\n$partStatement\n\n',
-        ),
-      ];
-    }
   }
 
   Iterable<GeneratorError> _checkSettings() {

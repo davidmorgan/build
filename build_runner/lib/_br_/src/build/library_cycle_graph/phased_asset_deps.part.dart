@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../../src/build/library_cycle_graph/phased_asset_deps.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 Serializer<PhasedAssetDeps> _$phasedAssetDepsSerializer =
     _$PhasedAssetDepsSerializer();
 

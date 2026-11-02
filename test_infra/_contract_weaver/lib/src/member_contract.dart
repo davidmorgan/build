@@ -7,8 +7,7 @@ import 'package:built_value/built_value.dart';
 
 import 'throw_clauses.dart';
 
-part 'member_contract.g.dart';
-
+part '../_br_/src/member_contract.part.dart';
 /// The contract annotations on one function, method or constructor.
 abstract class MemberContract
     implements Built<MemberContract, MemberContractBuilder> {

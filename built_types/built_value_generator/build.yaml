@@ -9,18 +9,6 @@ builders:
     target: ":built_value_generator"
     import: "package:built_value_generator/builder.dart"
     builder_factories: ["builtValue"]
-    build_extensions: {".dart": [".built_value.g.part"]}
-    auto_apply: dependents
-    build_to: cache
-    applies_builders: ["source_gen|combining_builder"]
-    defaults:
-      options:
-        run_only_if_triggered: true
-
-  br_part:
-    target: ":built_value_generator"
-    import: "package:built_value_generator/builder.dart"
-    builder_factories: ["builtValueBrPart"]
     build_extensions: {".dart": []}
     auto_apply: dependents
     build_to: source
@@ -31,8 +19,5 @@ builders:
 
 triggers:
   built_value_generator:built_value:
-    - import built_value/built_value.dart
-    - annotation SerializersFor
-  built_value_generator:br_part:
     - import built_value/built_value.dart
     - annotation SerializersFor

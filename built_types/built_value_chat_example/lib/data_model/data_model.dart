@@ -9,8 +9,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'data_model.g.dart';
-
+part '../_br_/data_model/data_model.part.dart';
 /// Marker interface for classes sent from client to server.
 abstract class Command {}
 

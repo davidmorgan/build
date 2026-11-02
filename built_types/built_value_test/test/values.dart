@@ -7,8 +7,7 @@ library;
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 
-part 'values.g.dart';
-
+part '../_br_/test/values.part.dart';
 abstract class SimpleValue implements Built<SimpleValue, SimpleValueBuilder> {
   int get anInt;
   BuiltList<String> get list;

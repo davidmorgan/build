@@ -1,7 +1,7 @@
 // dart format off
 part of '../interfaces.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 const EnumWithInt _$one = const EnumWithInt._('one');
 const EnumWithInt _$two = const EnumWithInt._('two');
 const EnumWithInt _$three = const EnumWithInt._('three');

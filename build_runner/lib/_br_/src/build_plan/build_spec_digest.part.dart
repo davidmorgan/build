@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../src/build_plan/build_spec_digest.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 Serializer<BuildSpecDigest> _$buildSpecDigestSerializer =
     _$BuildSpecDigestSerializer();
 

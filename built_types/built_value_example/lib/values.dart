@@ -9,8 +9,7 @@ import 'package:built_value/built_value.dart';
 import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 
-part 'values.g.dart';
-
+part '_br_/values.part.dart';
 /// Example of how to use built_value.
 ///
 /// The value class must implement [Built]. It must be abstract, and have

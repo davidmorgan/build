@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../src/build/part_contribution.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 class _$PartContribution extends PartContribution {
   @override
   final String builderKey;

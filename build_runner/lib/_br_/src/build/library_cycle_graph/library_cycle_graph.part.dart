@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../../src/build/library_cycle_graph/library_cycle_graph.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 Serializer<LibraryCycleGraph> _$libraryCycleGraphSerializer =
     _$LibraryCycleGraphSerializer();
 

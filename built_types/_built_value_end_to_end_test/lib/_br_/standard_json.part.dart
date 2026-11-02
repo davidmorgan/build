@@ -1,12 +1,8 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 // @dart=2.12
+// dart format off
+part of '../standard_json.dart';
 
-part of 'standard_json.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 Serializer<StandardJsonValue> _$standardJsonValueSerializer =
     _$StandardJsonValueSerializer();
 Serializer<ComplexValue> _$complexValueSerializer = _$ComplexValueSerializer();
@@ -19,68 +15,105 @@ class _$StandardJsonValueSerializer
   final String wireName = 'StandardJsonValue';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, StandardJsonValue object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    StandardJsonValue object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'number',
       serializers.serialize(object.number, specifiedType: const FullType(num)),
       'text',
       serializers.serialize(object.text, specifiedType: const FullType(String)),
       'value',
-      serializers.serialize(object.value,
-          specifiedType: const FullType(ComplexValue)),
+      serializers.serialize(
+        object.value,
+        specifiedType: const FullType(ComplexValue),
+      ),
       'keyValues',
-      serializers.serialize(object.keyValues,
-          specifiedType: const FullType(BuiltMap,
-              const [const FullType(String), const FullType(JsonObject)])),
+      serializers.serialize(
+        object.keyValues,
+        specifiedType: const FullType(BuiltMap, const [
+          const FullType(String),
+          const FullType(JsonObject),
+        ]),
+      ),
       'zoo',
-      serializers.serialize(object.zoo,
-          specifiedType:
-              const FullType(BuiltList, const [const FullType(Animal)])),
+      serializers.serialize(
+        object.zoo,
+        specifiedType: const FullType(BuiltList, const [
+          const FullType(Animal),
+        ]),
+      ),
       'uniqueZoo',
-      serializers.serialize(object.uniqueZoo,
-          specifiedType:
-              const FullType(BuiltSet, const [const FullType(Animal)])),
+      serializers.serialize(
+        object.uniqueZoo,
+        specifiedType: const FullType(BuiltSet, const [const FullType(Animal)]),
+      ),
       'nullsInList',
-      serializers.serialize(object.nullsInList,
-          specifiedType:
-              const FullType(BuiltList, const [const FullType.nullable(int)])),
+      serializers.serialize(
+        object.nullsInList,
+        specifiedType: const FullType(BuiltList, const [
+          const FullType.nullable(int),
+        ]),
+      ),
       'nullsInSet',
-      serializers.serialize(object.nullsInSet,
-          specifiedType: const FullType(
-              BuiltList, const [const FullType.nullable(String)])),
+      serializers.serialize(
+        object.nullsInSet,
+        specifiedType: const FullType(BuiltList, const [
+          const FullType.nullable(String),
+        ]),
+      ),
       'nullsInMap',
-      serializers.serialize(object.nullsInMap,
-          specifiedType: const FullType(BuiltMap,
-              const [const FullType(String), const FullType.nullable(int)])),
+      serializers.serialize(
+        object.nullsInMap,
+        specifiedType: const FullType(BuiltMap, const [
+          const FullType(String),
+          const FullType.nullable(int),
+        ]),
+      ),
       'objects',
-      serializers.serialize(object.objects,
-          specifiedType:
-              const FullType(BuiltList, const [const FullType(Object)])),
+      serializers.serialize(
+        object.objects,
+        specifiedType: const FullType(BuiltList, const [
+          const FullType(Object),
+        ]),
+      ),
     ];
     Object? value;
     value = object.strings;
     if (value != null) {
       result
         ..add('strings')
-        ..add(serializers.serialize(value,
-            specifiedType:
-                const FullType(BuiltList, const [const FullType(String)])));
+        ..add(
+          serializers.serialize(
+            value,
+            specifiedType: const FullType(BuiltList, const [
+              const FullType(String),
+            ]),
+          ),
+        );
     }
     value = object.object;
     if (value != null) {
       result
         ..add('object')
-        ..add(serializers.serialize(value,
-            specifiedType: const FullType(ComplexValueInterface)));
+        ..add(
+          serializers.serialize(
+            value,
+            specifiedType: const FullType(ComplexValueInterface),
+          ),
+        );
     }
     return result;
   }
 
   @override
   StandardJsonValue deserialize(
-      Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = StandardJsonValueBuilder();
 
     final iterator = serialized.iterator;
@@ -90,71 +123,123 @@ class _$StandardJsonValueSerializer
       final Object? value = iterator.current;
       switch (key) {
         case 'number':
-          result.number = serializers.deserialize(value,
-              specifiedType: const FullType(num))! as num;
+          result.number =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(num),
+                  )!
+                  as num;
           break;
         case 'text':
-          result.text = serializers.deserialize(value,
-              specifiedType: const FullType(String))! as String;
+          result.text =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )!
+                  as String;
           break;
         case 'value':
-          result.value.replace(serializers.deserialize(value,
-              specifiedType: const FullType(ComplexValue))! as ComplexValue);
+          result.value.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(ComplexValue),
+                )!
+                as ComplexValue,
+          );
           break;
         case 'keyValues':
-          result.keyValues.replace(serializers.deserialize(value,
+          result.keyValues.replace(
+            serializers.deserialize(
+              value,
               specifiedType: const FullType(BuiltMap, const [
                 const FullType(String),
-                const FullType(JsonObject)
-              ]))!);
+                const FullType(JsonObject),
+              ]),
+            )!,
+          );
           break;
         case 'zoo':
-          result.zoo.replace(serializers.deserialize(value,
-                  specifiedType: const FullType(
-                      BuiltList, const [const FullType(Animal)]))!
-              as BuiltList<Object?>);
+          result.zoo.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType(Animal),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
           break;
         case 'uniqueZoo':
-          result.uniqueZoo.replace(serializers.deserialize(value,
-                  specifiedType:
-                      const FullType(BuiltSet, const [const FullType(Animal)]))!
-              as BuiltSet<Object?>);
+          result.uniqueZoo.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltSet, const [
+                    const FullType(Animal),
+                  ]),
+                )!
+                as BuiltSet<Object?>,
+          );
           break;
         case 'strings':
-          result.strings.replace(serializers.deserialize(value,
-                  specifiedType: const FullType(
-                      BuiltList, const [const FullType(String)]))!
-              as BuiltList<Object?>);
+          result.strings.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType(String),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
           break;
         case 'nullsInList':
-          result.nullsInList.replace(serializers.deserialize(value,
-                  specifiedType: const FullType(
-                      BuiltList, const [const FullType.nullable(int)]))!
-              as BuiltList<Object?>);
+          result.nullsInList.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType.nullable(int),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
           break;
         case 'nullsInSet':
-          result.nullsInSet.replace(serializers.deserialize(value,
-                  specifiedType: const FullType(
-                      BuiltList, const [const FullType.nullable(String)]))!
-              as BuiltList<Object?>);
+          result.nullsInSet.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType.nullable(String),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
           break;
         case 'nullsInMap':
-          result.nullsInMap.replace(serializers.deserialize(value,
+          result.nullsInMap.replace(
+            serializers.deserialize(
+              value,
               specifiedType: const FullType(BuiltMap, const [
                 const FullType(String),
-                const FullType.nullable(int)
-              ]))!);
+                const FullType.nullable(int),
+              ]),
+            )!,
+          );
           break;
         case 'object':
-          result.object = serializers.deserialize(value,
-                  specifiedType: const FullType(ComplexValueInterface))
-              as ComplexValueInterface?;
+          result.object = serializers.deserialize(
+            value,
+            specifiedType: const FullType(ComplexValueInterface),
+          ) as ComplexValueInterface?;
           break;
         case 'objects':
-          result.objects.replace(serializers.deserialize(value,
-                  specifiedType: const FullType(
-                      BuiltList, const [const FullType(Object)]))!
-              as BuiltList<Object?>);
+          result.objects.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType(Object),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
           break;
       }
     }
@@ -170,15 +255,22 @@ class _$ComplexValueSerializer implements StructuredSerializer<ComplexValue> {
   final String wireName = 'ComplexValue';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, ComplexValue object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    ComplexValue object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'primitive',
-      serializers.serialize(object.primitive,
-          specifiedType: const FullType(int)),
+      serializers.serialize(
+        object.primitive,
+        specifiedType: const FullType(int),
+      ),
       'value',
-      serializers.serialize(object.value,
-          specifiedType: const FullType(SimpleValue)),
+      serializers.serialize(
+        object.value,
+        specifiedType: const FullType(SimpleValue),
+      ),
     ];
     Object? value;
     value = object.nullablePrimitive;
@@ -197,23 +289,33 @@ class _$ComplexValueSerializer implements StructuredSerializer<ComplexValue> {
     if (value != null) {
       result
         ..add('nullableValue')
-        ..add(serializers.serialize(value,
-            specifiedType: const FullType(SimpleValue)));
+        ..add(
+          serializers.serialize(
+            value,
+            specifiedType: const FullType(SimpleValue),
+          ),
+        );
     }
     value = object.nullableValueDoNotUse;
     if (value != null) {
       result
         ..add('nullableValueDoNotUse')
-        ..add(serializers.serialize(value,
-            specifiedType: const FullType(SimpleValue)));
+        ..add(
+          serializers.serialize(
+            value,
+            specifiedType: const FullType(SimpleValue),
+          ),
+        );
     }
     return result;
   }
 
   @override
   ComplexValue deserialize(
-      Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = ComplexValueBuilder();
 
     final iterator = serialized.iterator;
@@ -223,28 +325,51 @@ class _$ComplexValueSerializer implements StructuredSerializer<ComplexValue> {
       final Object? value = iterator.current;
       switch (key) {
         case 'primitive':
-          result.primitive = serializers.deserialize(value,
-              specifiedType: const FullType(int))! as int;
+          result.primitive =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
           break;
         case 'nullablePrimitive':
-          result.nullablePrimitive = serializers.deserialize(value,
-              specifiedType: const FullType(int)) as int?;
+          result.nullablePrimitive = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int?;
           break;
         case 'nullablePrimitiveDoNotUse':
-          result.nullablePrimitiveDoNotUse = serializers.deserialize(value,
-              specifiedType: const FullType(int)) as int?;
+          result.nullablePrimitiveDoNotUse = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int?;
           break;
         case 'value':
-          result.value.replace(serializers.deserialize(value,
-              specifiedType: const FullType(SimpleValue))! as SimpleValue);
+          result.value.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(SimpleValue),
+                )!
+                as SimpleValue,
+          );
           break;
         case 'nullableValue':
-          result.nullableValue.replace(serializers.deserialize(value,
-              specifiedType: const FullType(SimpleValue))! as SimpleValue);
+          result.nullableValue.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(SimpleValue),
+                )!
+                as SimpleValue,
+          );
           break;
         case 'nullableValueDoNotUse':
-          result.nullableValueDoNotUse.replace(serializers.deserialize(value,
-              specifiedType: const FullType(SimpleValue))! as SimpleValue);
+          result.nullableValueDoNotUse.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(SimpleValue),
+                )!
+                as SimpleValue,
+          );
           break;
       }
     }
@@ -279,24 +404,24 @@ class _$StandardJsonValue extends StandardJsonValue {
   @override
   final BuiltList<Object> objects;
 
-  factory _$StandardJsonValue(
-          [void Function(StandardJsonValueBuilder)? updates]) =>
-      (StandardJsonValueBuilder()..update(updates))._build();
+  factory _$StandardJsonValue([
+    void Function(StandardJsonValueBuilder)? updates,
+  ]) => (StandardJsonValueBuilder()..update(updates))._build();
 
-  _$StandardJsonValue._(
-      {required this.number,
-      required this.text,
-      required this.value,
-      required this.keyValues,
-      required this.zoo,
-      required this.uniqueZoo,
-      this.strings,
-      required this.nullsInList,
-      required this.nullsInSet,
-      required this.nullsInMap,
-      this.object,
-      required this.objects})
-      : super._();
+  _$StandardJsonValue._({
+    required this.number,
+    required this.text,
+    required this.value,
+    required this.keyValues,
+    required this.zoo,
+    required this.uniqueZoo,
+    this.strings,
+    required this.nullsInList,
+    required this.nullsInSet,
+    required this.nullsInMap,
+    this.object,
+    required this.objects,
+  }) : super._();
   @override
   StandardJsonValue rebuild(void Function(StandardJsonValueBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -460,12 +585,19 @@ class StandardJsonValueBuilder
   _$StandardJsonValue _build() {
     _$StandardJsonValue _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$StandardJsonValue._(
             number: BuiltValueNullFieldError.checkNotNull(
-                number, r'StandardJsonValue', 'number'),
+              number,
+              r'StandardJsonValue',
+              'number',
+            ),
             text: BuiltValueNullFieldError.checkNotNull(
-                text, r'StandardJsonValue', 'text'),
+              text,
+              r'StandardJsonValue',
+              'text',
+            ),
             value: value.build(),
             keyValues: keyValues.build(),
             zoo: zoo.build(),
@@ -501,7 +633,10 @@ class StandardJsonValueBuilder
         objects.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'StandardJsonValue', _$failedField, e.toString());
+          r'StandardJsonValue',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }
@@ -527,14 +662,14 @@ class _$ComplexValue extends ComplexValue {
   factory _$ComplexValue([void Function(ComplexValueBuilder)? updates]) =>
       (ComplexValueBuilder()..update(updates))._build();
 
-  _$ComplexValue._(
-      {required this.primitive,
-      this.nullablePrimitive,
-      this.nullablePrimitiveDoNotUse,
-      required this.value,
-      this.nullableValue,
-      this.nullableValueDoNotUse})
-      : super._();
+  _$ComplexValue._({
+    required this.primitive,
+    this.nullablePrimitive,
+    this.nullablePrimitiveDoNotUse,
+    required this.value,
+    this.nullableValue,
+    this.nullableValueDoNotUse,
+  }) : super._();
   @override
   ComplexValue rebuild(void Function(ComplexValueBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -646,10 +781,14 @@ class ComplexValueBuilder
   _$ComplexValue _build() {
     _$ComplexValue _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$ComplexValue._(
             primitive: BuiltValueNullFieldError.checkNotNull(
-                primitive, r'ComplexValue', 'primitive'),
+              primitive,
+              r'ComplexValue',
+              'primitive',
+            ),
             nullablePrimitive: nullablePrimitive,
             nullablePrimitiveDoNotUse: nullablePrimitiveDoNotUse,
             value: value.build(),
@@ -667,7 +806,10 @@ class ComplexValueBuilder
         _nullableValueDoNotUse?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'ComplexValue', _$failedField, e.toString());
+          r'ComplexValue',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }
@@ -677,3 +819,4 @@ class ComplexValueBuilder
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

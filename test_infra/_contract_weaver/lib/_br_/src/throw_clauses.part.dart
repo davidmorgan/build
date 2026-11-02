@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../../src/throw_clauses.dart';
 
-part of 'throw_clauses.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 class _$ThrowClauses extends ThrowClauses {
   @override
   final String type;
@@ -119,3 +115,4 @@ class ThrowClausesBuilder
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

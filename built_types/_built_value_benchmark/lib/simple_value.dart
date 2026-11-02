@@ -6,8 +6,7 @@ library;
 
 import 'package:built_value/built_value.dart';
 
-part 'simple_value.g.dart';
-
+part '_br_/simple_value.part.dart';
 abstract class SimpleValue implements Built<SimpleValue, SimpleValueBuilder> {
   int get anInt;
 

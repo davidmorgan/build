@@ -7,8 +7,7 @@ library;
 import 'package:built_value/built_value.dart';
 import 'package:test/test.dart';
 
-part 'private_value_test.g.dart';
-
+part '../_br_/test/private_value_test.part.dart';
 // This has to go here so we can access it in the test.
 abstract class _PrivateValue
     implements Built<_PrivateValue, _PrivateValueBuilder> {

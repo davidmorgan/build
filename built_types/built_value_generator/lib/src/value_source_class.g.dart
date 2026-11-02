@@ -33,8 +33,6 @@ class _$ValueSourceClass extends ValueSourceClass {
   String? __builderParameters;
   BuiltList<ValueSourceField>? __fields;
   String? __source;
-  String? __partStatement;
-  bool? __hasPartStatement;
   bool? __hasBuiltValueImportWithShow;
   bool? __hasBuiltValueImportWithAs;
   bool? __valueClassIsAbstract;
@@ -140,12 +138,6 @@ class _$ValueSourceClass extends ValueSourceClass {
 
   @override
   String get source => __source ??= super.source;
-
-  @override
-  String get partStatement => __partStatement ??= super.partStatement;
-
-  @override
-  bool get hasPartStatement => __hasPartStatement ??= super.hasPartStatement;
 
   @override
   bool get hasBuiltValueImportWithShow =>

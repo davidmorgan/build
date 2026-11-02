@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../enums.dart';
 
-part of 'enums.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 const TestEnum _$yes = const TestEnum._('yes');
 const TestEnum _$no = const TestEnum._('no');
 const TestEnum _$maybe = const TestEnum._('maybe');
@@ -518,3 +514,4 @@ class _$NewConstructorEnumSerializer
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

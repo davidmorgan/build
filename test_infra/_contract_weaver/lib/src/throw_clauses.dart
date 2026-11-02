@@ -5,8 +5,7 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 
-part 'throw_clauses.g.dart';
-
+part '../_br_/src/throw_clauses.part.dart';
 /// Clauses that must hold when a body throws [type].
 abstract class ThrowClauses
     implements Built<ThrowClauses, ThrowClausesBuilder> {

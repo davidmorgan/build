@@ -1,7 +1,7 @@
 // dart format off
 part of '../enums.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 const TestEnum _$yes = const TestEnum._('yes');
 const TestEnum _$no = const TestEnum._('no');
 const TestEnum _$maybe = const TestEnum._('maybe');

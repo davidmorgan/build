@@ -11,6 +11,8 @@ import 'package:logging/logging.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 
+import 'library_source_sink_harness.dart';
+
 final String correctInput = r'''
 library test_enum;
 
@@ -87,12 +89,12 @@ void main() {
 
       test('without error on missing part statement', () async {
         expect(
-            await generate(r'''
+            await generateWithLibrarySourceSink({
+              'built_value|lib/built_value.dart': builtValueSource,
+              '$pkgName|lib/test_enum.dart': r'''
 library test_enum;
 
 import 'package:built_value/built_value.dart';
-
-part 'src_par.dart';
 
 class TestEnum extends EnumClass {
   static const TestEnum yes = _$yes;
@@ -104,7 +106,8 @@ class TestEnum extends EnumClass {
   static BuiltSet<TestEnum> get values => _$values;
   static TestEnum valueOf(String name) => _$valueOf(name);
 }
-'''),
+''',
+            }, 'test_enum'),
             allOf(contains(r'const TestEnum _$yes'),
                 isNot(contains('Import generated part'))));
       });

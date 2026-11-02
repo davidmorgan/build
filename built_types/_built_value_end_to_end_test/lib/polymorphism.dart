@@ -7,8 +7,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'polymorphism.g.dart';
-
+part '_br_/polymorphism.part.dart';
 @BuiltValue(instantiable: false)
 abstract class Animal extends Object with Walker implements OtherInterface {
   @override

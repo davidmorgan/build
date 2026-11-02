@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../src/build_plan/asset_file.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 class _$AssetFile extends AssetFile {
   @override
   final AssetId id;

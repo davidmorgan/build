@@ -1,7 +1,7 @@
 // dart format off
 part of '../generics.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 Serializer<GenericValue<Object?>> _$genericValueSerializer =
     _$GenericValueSerializer();
 Serializer<BoundGenericValue<num>> _$boundGenericValueSerializer =

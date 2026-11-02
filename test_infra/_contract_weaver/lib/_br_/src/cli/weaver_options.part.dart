@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../../../src/cli/weaver_options.dart';
 
-part of 'weaver_options.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 class _$WeaverOptions extends WeaverOptions {
   @override
   final bool help;
@@ -179,3 +175,4 @@ class WeaverOptionsBuilder
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

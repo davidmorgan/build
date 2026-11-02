@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../../test/private_value_test.dart';
 
-part of 'private_value_test.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 class _$PrivateValue extends _PrivateValue {
   @override
   final int value;
@@ -91,3 +87,4 @@ class _PrivateValueBuilder
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

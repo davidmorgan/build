@@ -8,8 +8,7 @@ import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'values.dart' as prefix;
 
-part 'imported_values.g.dart';
-
+part '_br_/imported_values.part.dart';
 abstract class ImportedValue
     implements Built<ImportedValue, ImportedValueBuilder> {
   static Serializer<ImportedValue> get serializer => _$importedValueSerializer;

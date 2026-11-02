@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../values.dart';
 
-part of 'values.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 Serializer<SimpleValue> _$simpleValueSerializer = _$SimpleValueSerializer();
 Serializer<CompoundValue> _$compoundValueSerializer =
     _$CompoundValueSerializer();
@@ -8460,3 +8456,4 @@ class _$NewConstructorValueBuilder extends NewConstructorValueBuilder {
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

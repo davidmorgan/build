@@ -8,8 +8,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/serializer.dart';
 import 'data_model.dart';
 
-part 'serializers.g.dart';
-
+part '../_br_/data_model/serializers.part.dart';
 /// Collection of generated serializers for the built_value chat example.
 @SerializersFor([
   Chat,

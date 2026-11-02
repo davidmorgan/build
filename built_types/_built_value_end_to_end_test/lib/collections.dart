@@ -7,8 +7,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'collections.g.dart';
-
+part '_br_/collections.part.dart';
 abstract class Collections implements Built<Collections, CollectionsBuilder> {
   static Serializer<Collections> get serializer => _$collectionsSerializer;
 

@@ -5,8 +5,7 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 
-part 'stage_result.g.dart';
-
+part '../../_br_/src/cli/stage_result.part.dart';
 /// What staging did to the `lib` directory of the woven package.
 abstract class StageResult implements Built<StageResult, StageResultBuilder> {
   /// Libraries written with contracts woven in.

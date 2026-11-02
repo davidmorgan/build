@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../../test/values.dart';
 
-part of 'values.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 class _$SimpleValue extends SimpleValue {
   @override
   final int anInt;
@@ -23,14 +19,14 @@ class _$SimpleValue extends SimpleValue {
   factory _$SimpleValue([void Function(SimpleValueBuilder)? updates]) =>
       (SimpleValueBuilder()..update(updates))._build();
 
-  _$SimpleValue._(
-      {required this.anInt,
-      required this.list,
-      required this.multimap,
-      required this.map,
-      required this.aSet,
-      required this.setMultimap})
-      : super._();
+  _$SimpleValue._({
+    required this.anInt,
+    required this.list,
+    required this.multimap,
+    required this.map,
+    required this.aSet,
+    required this.setMultimap,
+  }) : super._();
   @override
   SimpleValue rebuild(void Function(SimpleValueBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -139,10 +135,14 @@ class SimpleValueBuilder implements Builder<SimpleValue, SimpleValueBuilder> {
   _$SimpleValue _build() {
     _$SimpleValue _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$SimpleValue._(
             anInt: BuiltValueNullFieldError.checkNotNull(
-                anInt, r'SimpleValue', 'anInt'),
+              anInt,
+              r'SimpleValue',
+              'anInt',
+            ),
             list: list.build(),
             multimap: multimap.build(),
             map: map.build(),
@@ -164,7 +164,10 @@ class SimpleValueBuilder implements Builder<SimpleValue, SimpleValueBuilder> {
         setMultimap.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'SimpleValue', _$failedField, e.toString());
+          r'SimpleValue',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }
@@ -258,11 +261,9 @@ class CompoundValueBuilder
   _$CompoundValue _build() {
     _$CompoundValue _$result;
     try {
-      _$result = _$v ??
-          _$CompoundValue._(
-            simpleValue: simpleValue.build(),
-            string: string,
-          );
+      _$result =
+          _$v ??
+          _$CompoundValue._(simpleValue: simpleValue.build(), string: string);
     } catch (_) {
       late String _$failedField;
       try {
@@ -270,7 +271,10 @@ class CompoundValueBuilder
         simpleValue.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'CompoundValue', _$failedField, e.toString());
+          r'CompoundValue',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }
@@ -357,12 +361,19 @@ class ComparedValueBuilder
   ComparedValue build() => _build();
 
   _$ComparedValue _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$ComparedValue._(
           name: BuiltValueNullFieldError.checkNotNull(
-              name, r'ComparedValue', 'name'),
+            name,
+            r'ComparedValue',
+            'name',
+          ),
           onChanged: BuiltValueNullFieldError.checkNotNull(
-              onChanged, r'ComparedValue', 'onChanged'),
+            onChanged,
+            r'ComparedValue',
+            'onChanged',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -370,3 +381,4 @@ class ComparedValueBuilder
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

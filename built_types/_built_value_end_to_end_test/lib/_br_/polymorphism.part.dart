@@ -1,12 +1,8 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 // @dart=2.12
+// dart format off
+part of '../polymorphism.dart';
 
-part of 'polymorphism.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 Serializer<Cat> _$catSerializer = _$CatSerializer();
 Serializer<Fish> _$fishSerializer = _$FishSerializer();
 Serializer<Robot> _$robotSerializer = _$RobotSerializer();
@@ -24,8 +20,11 @@ class _$CatSerializer implements StructuredSerializer<Cat> {
   final String wireName = 'Cat';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, Cat object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    Cat object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'tail',
       serializers.serialize(object.tail, specifiedType: const FullType(bool)),
@@ -37,8 +36,11 @@ class _$CatSerializer implements StructuredSerializer<Cat> {
   }
 
   @override
-  Cat deserialize(Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+  Cat deserialize(
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = CatBuilder();
 
     final iterator = serialized.iterator;
@@ -48,12 +50,20 @@ class _$CatSerializer implements StructuredSerializer<Cat> {
       final Object? value = iterator.current;
       switch (key) {
         case 'tail':
-          result.tail = serializers.deserialize(value,
-              specifiedType: const FullType(bool))! as bool;
+          result.tail =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )!
+                  as bool;
           break;
         case 'legs':
-          result.legs = serializers.deserialize(value,
-              specifiedType: const FullType(int))! as int;
+          result.legs =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
           break;
       }
     }
@@ -69,8 +79,11 @@ class _$FishSerializer implements StructuredSerializer<Fish> {
   final String wireName = 'Fish';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, Fish object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    Fish object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'fins',
       serializers.serialize(object.fins, specifiedType: const FullType(int)),
@@ -82,8 +95,11 @@ class _$FishSerializer implements StructuredSerializer<Fish> {
   }
 
   @override
-  Fish deserialize(Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+  Fish deserialize(
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = FishBuilder();
 
     final iterator = serialized.iterator;
@@ -93,12 +109,20 @@ class _$FishSerializer implements StructuredSerializer<Fish> {
       final Object? value = iterator.current;
       switch (key) {
         case 'fins':
-          result.fins = serializers.deserialize(value,
-              specifiedType: const FullType(int))! as int;
+          result.fins =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
           break;
         case 'legs':
-          result.legs = serializers.deserialize(value,
-              specifiedType: const FullType(int))! as int;
+          result.legs =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
           break;
       }
     }
@@ -114,8 +138,11 @@ class _$RobotSerializer implements StructuredSerializer<Robot> {
   final String wireName = 'Robot';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, Robot object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    Robot object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'fins',
       serializers.serialize(object.fins, specifiedType: const FullType(int)),
@@ -127,8 +154,11 @@ class _$RobotSerializer implements StructuredSerializer<Robot> {
   }
 
   @override
-  Robot deserialize(Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+  Robot deserialize(
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = RobotBuilder();
 
     final iterator = serialized.iterator;
@@ -138,12 +168,20 @@ class _$RobotSerializer implements StructuredSerializer<Robot> {
       final Object? value = iterator.current;
       switch (key) {
         case 'fins':
-          result.fins = serializers.deserialize(value,
-              specifiedType: const FullType(int))! as int;
+          result.fins =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
           break;
         case 'legs':
-          result.legs = serializers.deserialize(value,
-              specifiedType: const FullType(int))! as int;
+          result.legs =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
           break;
       }
     }
@@ -159,24 +197,35 @@ class _$CageSerializer implements StructuredSerializer<Cage> {
   final String wireName = 'Cage';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, Cage object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    Cage object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'inhabitant',
-      serializers.serialize(object.inhabitant,
-          specifiedType: const FullType(Animal)),
+      serializers.serialize(
+        object.inhabitant,
+        specifiedType: const FullType(Animal),
+      ),
       'otherInhabitants',
-      serializers.serialize(object.otherInhabitants,
-          specifiedType:
-              const FullType(BuiltList, const [const FullType(Animal)])),
+      serializers.serialize(
+        object.otherInhabitants,
+        specifiedType: const FullType(BuiltList, const [
+          const FullType(Animal),
+        ]),
+      ),
     ];
 
     return result;
   }
 
   @override
-  Cage deserialize(Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+  Cage deserialize(
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = CageBuilder();
 
     final iterator = serialized.iterator;
@@ -186,14 +235,23 @@ class _$CageSerializer implements StructuredSerializer<Cage> {
       final Object? value = iterator.current;
       switch (key) {
         case 'inhabitant':
-          result.inhabitant = serializers.deserialize(value,
-              specifiedType: const FullType(Animal))! as Animal;
+          result.inhabitant =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(Animal),
+                  )!
+                  as Animal;
           break;
         case 'otherInhabitants':
-          result.otherInhabitants.replace(serializers.deserialize(value,
-                  specifiedType: const FullType(
-                      BuiltList, const [const FullType(Animal)]))!
-              as BuiltList<Object?>);
+          result.otherInhabitants.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType(Animal),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
           break;
       }
     }
@@ -209,8 +267,11 @@ class _$StandardCatSerializer implements StructuredSerializer<StandardCat> {
   final String wireName = 'StandardCat';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, StandardCat object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    StandardCat object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'tail',
       serializers.serialize(object.tail, specifiedType: const FullType(bool)),
@@ -220,8 +281,11 @@ class _$StandardCatSerializer implements StructuredSerializer<StandardCat> {
   }
 
   @override
-  StandardCat deserialize(Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+  StandardCat deserialize(
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = StandardCatBuilder();
 
     final iterator = serialized.iterator;
@@ -231,8 +295,12 @@ class _$StandardCatSerializer implements StructuredSerializer<StandardCat> {
       final Object? value = iterator.current;
       switch (key) {
         case 'tail':
-          result.tail = serializers.deserialize(value,
-              specifiedType: const FullType(bool))! as bool;
+          result.tail =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )!
+                  as bool;
           break;
       }
     }
@@ -248,20 +316,28 @@ class _$HasStringSerializer implements StructuredSerializer<HasString> {
   final String wireName = 'HasString';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, HasString object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    HasString object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'field',
-      serializers.serialize(object.field,
-          specifiedType: const FullType(String)),
+      serializers.serialize(
+        object.field,
+        specifiedType: const FullType(String),
+      ),
     ];
 
     return result;
   }
 
   @override
-  HasString deserialize(Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+  HasString deserialize(
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = HasStringBuilder();
 
     final iterator = serialized.iterator;
@@ -271,8 +347,12 @@ class _$HasStringSerializer implements StructuredSerializer<HasString> {
       final Object? value = iterator.current;
       switch (key) {
         case 'field':
-          result.field = serializers.deserialize(value,
-              specifiedType: const FullType(String))! as String;
+          result.field =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )!
+                  as String;
           break;
       }
     }
@@ -288,20 +368,28 @@ class _$HasDoubleSerializer implements StructuredSerializer<HasDouble> {
   final String wireName = 'HasDouble';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, HasDouble object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    HasDouble object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'field',
-      serializers.serialize(object.field,
-          specifiedType: const FullType(double)),
+      serializers.serialize(
+        object.field,
+        specifiedType: const FullType(double),
+      ),
     ];
 
     return result;
   }
 
   @override
-  HasDouble deserialize(Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+  HasDouble deserialize(
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = HasDoubleBuilder();
 
     final iterator = serialized.iterator;
@@ -311,8 +399,12 @@ class _$HasDoubleSerializer implements StructuredSerializer<HasDouble> {
       final Object? value = iterator.current;
       switch (key) {
         case 'field':
-          result.field = serializers.deserialize(value,
-              specifiedType: const FullType(double))! as double;
+          result.field =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )!
+                  as double;
           break;
       }
     }
@@ -328,12 +420,17 @@ class _$UsesHandCodedSerializer implements StructuredSerializer<UsesHandCoded> {
   final String wireName = 'UsesHandCoded';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, UsesHandCoded object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    UsesHandCoded object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'fieldInBaseBuilder',
-      serializers.serialize(object.fieldInBaseBuilder,
-          specifiedType: const FullType(int)),
+      serializers.serialize(
+        object.fieldInBaseBuilder,
+        specifiedType: const FullType(int),
+      ),
     ];
 
     return result;
@@ -341,8 +438,10 @@ class _$UsesHandCodedSerializer implements StructuredSerializer<UsesHandCoded> {
 
   @override
   UsesHandCoded deserialize(
-      Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = UsesHandCodedBuilder();
 
     final iterator = serialized.iterator;
@@ -352,8 +451,12 @@ class _$UsesHandCodedSerializer implements StructuredSerializer<UsesHandCoded> {
       final Object? value = iterator.current;
       switch (key) {
         case 'fieldInBaseBuilder':
-          result.fieldInBaseBuilder = serializers.deserialize(value,
-              specifiedType: const FullType(int))! as int;
+          result.fieldInBaseBuilder =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
           break;
       }
     }
@@ -454,7 +557,8 @@ class CatBuilder implements Builder<Cat, CatBuilder>, MammalBuilder {
   Cat build() => _build();
 
   _$Cat _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$Cat._(
           tail: BuiltValueNullFieldError.checkNotNull(tail, r'Cat', 'tail'),
           legs: BuiltValueNullFieldError.checkNotNull(legs, r'Cat', 'legs'),
@@ -542,7 +646,8 @@ class FishBuilder implements Builder<Fish, FishBuilder>, AnimalBuilder {
   Fish build() => _build();
 
   _$Fish _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$Fish._(
           fins: BuiltValueNullFieldError.checkNotNull(fins, r'Fish', 'fins'),
           legs: BuiltValueNullFieldError.checkNotNull(legs, r'Fish', 'legs'),
@@ -630,7 +735,8 @@ class RobotBuilder implements Builder<Robot, RobotBuilder> {
   Robot build() => _build();
 
   _$Robot _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$Robot._(
           fins: BuiltValueNullFieldError.checkNotNull(fins, r'Robot', 'fins'),
           legs: BuiltValueNullFieldError.checkNotNull(legs, r'Robot', 'legs'),
@@ -650,7 +756,7 @@ class _$Cage extends Cage {
       (CageBuilder()..update(updates))._build();
 
   _$Cage._({required this.inhabitant, required this.otherInhabitants})
-      : super._();
+    : super._();
   @override
   Cage rebuild(void Function(CageBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -725,10 +831,14 @@ class CageBuilder implements Builder<Cage, CageBuilder> {
   _$Cage _build() {
     _$Cage _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Cage._(
             inhabitant: BuiltValueNullFieldError.checkNotNull(
-                inhabitant, r'Cage', 'inhabitant'),
+              inhabitant,
+              r'Cage',
+              'inhabitant',
+            ),
             otherInhabitants: otherInhabitants.build(),
           );
     } catch (_) {
@@ -777,8 +887,9 @@ class _$StandardCat extends StandardCat {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'StandardCat')..add('tail', tail))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'StandardCat',
+    )..add('tail', tail)).toString();
   }
 }
 
@@ -814,10 +925,14 @@ class StandardCatBuilder implements Builder<StandardCat, StandardCatBuilder> {
   StandardCat build() => _build();
 
   _$StandardCat _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$StandardCat._(
           tail: BuiltValueNullFieldError.checkNotNull(
-              tail, r'StandardCat', 'tail'),
+            tail,
+            r'StandardCat',
+            'tail',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -862,8 +977,9 @@ class _$HasString extends HasString {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'HasString')..add('field', field))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'HasString',
+    )..add('field', field)).toString();
   }
 }
 
@@ -900,10 +1016,14 @@ class HasStringBuilder
   HasString build() => _build();
 
   _$HasString _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$HasString._(
           field: BuiltValueNullFieldError.checkNotNull(
-              field, r'HasString', 'field'),
+            field,
+            r'HasString',
+            'field',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -941,8 +1061,9 @@ class _$HasDouble extends HasDouble {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'HasDouble')..add('field', field))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'HasDouble',
+    )..add('field', field)).toString();
   }
 }
 
@@ -979,10 +1100,14 @@ class HasDoubleBuilder
   HasDouble build() => _build();
 
   _$HasDouble _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$HasDouble._(
           field: BuiltValueNullFieldError.checkNotNull(
-              field, r'HasDouble', 'field'),
+            field,
+            r'HasDouble',
+            'field',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -995,15 +1120,15 @@ class _$UsesChainedInterface extends UsesChainedInterface {
   @override
   final int foo;
 
-  factory _$UsesChainedInterface(
-          [void Function(UsesChainedInterfaceBuilder)? updates]) =>
-      (UsesChainedInterfaceBuilder()..update(updates))._build();
+  factory _$UsesChainedInterface([
+    void Function(UsesChainedInterfaceBuilder)? updates,
+  ]) => (UsesChainedInterfaceBuilder()..update(updates))._build();
 
   _$UsesChainedInterface._({required this.bar, required this.foo}) : super._();
   @override
   UsesChainedInterface rebuild(
-          void Function(UsesChainedInterfaceBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(UsesChainedInterfaceBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   UsesChainedInterfaceBuilder toBuilder() =>
@@ -1073,12 +1198,19 @@ class UsesChainedInterfaceBuilder
   UsesChainedInterface build() => _build();
 
   _$UsesChainedInterface _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$UsesChainedInterface._(
           bar: BuiltValueNullFieldError.checkNotNull(
-              bar, r'UsesChainedInterface', 'bar'),
+            bar,
+            r'UsesChainedInterface',
+            'bar',
+          ),
           foo: BuiltValueNullFieldError.checkNotNull(
-              foo, r'UsesChainedInterface', 'foo'),
+            foo,
+            r'UsesChainedInterface',
+            'foo',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -1117,9 +1249,9 @@ class _$UsesHandCoded extends UsesHandCoded {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'UsesHandCoded')
-          ..add('fieldInBaseBuilder', fieldInBaseBuilder))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'UsesHandCoded',
+    )..add('fieldInBaseBuilder', fieldInBaseBuilder)).toString();
   }
 }
 
@@ -1157,10 +1289,14 @@ class UsesHandCodedBuilder
   UsesHandCoded build() => _build();
 
   _$UsesHandCoded _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$UsesHandCoded._(
           fieldInBaseBuilder: BuiltValueNullFieldError.checkNotNull(
-              fieldInBaseBuilder, r'UsesHandCoded', 'fieldInBaseBuilder'),
+            fieldInBaseBuilder,
+            r'UsesHandCoded',
+            'fieldInBaseBuilder',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -1216,7 +1352,7 @@ class ImplementsTwoBuilder
   ImplementsTwoBuilder();
 
   @override
-// ignore: override_on_non_overriding_method
+  // ignore: override_on_non_overriding_method
   void replace(covariant ImplementsTwo other) {
     _$v = other as _$ImplementsTwo;
   }
@@ -1325,10 +1461,14 @@ class CarBuilder implements Builder<Car, CarBuilder>, VehicleBuilder {
   _$Car _build() {
     _$Car _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$Car._(
             seatsCount: BuiltValueNullFieldError.checkNotNull(
-                seatsCount, r'Car', 'seatsCount'),
+              seatsCount,
+              r'Car',
+              'seatsCount',
+            ),
             color: color.build(),
           );
     } catch (_) {
@@ -1430,10 +1570,14 @@ class MixinCarBuilder
   _$MixinCar _build() {
     _$MixinCar _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$MixinCar._(
             seatsCount: BuiltValueNullFieldError.checkNotNull(
-                seatsCount, r'MixinCar', 'seatsCount'),
+              seatsCount,
+              r'MixinCar',
+              'seatsCount',
+            ),
             color: color.build(),
           );
     } catch (_) {
@@ -1443,7 +1587,10 @@ class MixinCarBuilder
         color.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'MixinCar', _$failedField, e.toString());
+          r'MixinCar',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }
@@ -1483,8 +1630,9 @@ class _$VehicleColor extends VehicleColor {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'VehicleColor')..add('label', label))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'VehicleColor',
+    )..add('label', label)).toString();
   }
 }
 
@@ -1521,10 +1669,14 @@ class VehicleColorBuilder
   VehicleColor build() => _build();
 
   _$VehicleColor _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$VehicleColor._(
           label: BuiltValueNullFieldError.checkNotNull(
-              label, r'VehicleColor', 'label'),
+            label,
+            r'VehicleColor',
+            'label',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -1539,3 +1691,4 @@ abstract class NotInstantiableNotNestedBuilder
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

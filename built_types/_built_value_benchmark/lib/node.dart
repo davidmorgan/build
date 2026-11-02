@@ -6,8 +6,7 @@ library;
 
 import 'package:built_value/built_value.dart';
 
-part 'node.g.dart';
-
+part '_br_/node.part.dart';
 abstract class Node implements Built<Node, NodeBuilder> {
   String? get label;
 

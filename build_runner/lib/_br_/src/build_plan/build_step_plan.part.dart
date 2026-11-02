@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../src/build_plan/build_step_plan.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 class _$BuildStepPlan extends BuildStepPlan {
   @override
   final BuildPhases buildPhases;

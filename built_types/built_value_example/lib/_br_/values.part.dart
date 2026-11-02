@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../values.dart';
 
-part of 'values.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 Serializer<SimpleValue> _$simpleValueSerializer = _$SimpleValueSerializer();
 Serializer<VerySimpleValue> _$verySimpleValueSerializer =
     _$VerySimpleValueSerializer();
@@ -68,12 +64,10 @@ class _$SimpleValueSerializer implements StructuredSerializer<SimpleValue> {
                   as int;
           break;
         case 'aString':
-          result.aString =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String?;
+          result.aString = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String?;
           break;
       }
     }
@@ -257,12 +251,10 @@ class _$ValidatedValueSerializer
                   as int;
           break;
         case 'aString':
-          result.aString =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String?;
+          result.aString = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String?;
           break;
       }
     }
@@ -1301,3 +1293,4 @@ class WireNameValueBuilder
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

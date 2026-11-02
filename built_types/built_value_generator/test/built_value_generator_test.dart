@@ -11,6 +11,8 @@ import 'package:logging/logging.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 
+import 'library_source_sink_harness.dart';
+
 void main() {
   group('generator', () {
     group('rejects', () {
@@ -231,7 +233,9 @@ abstract class Value implements Built<Value, ValueBuilder> {
     group('suggests', () {
       test('nothing about a part file, which build_runner adds', () async {
         expect(
-            await generate('''library value;
+            await generateWithLibrarySourceSink({
+              'built_value|lib/built_value.dart': builtValueSource,
+              '$pkgName|lib/value.dart': '''library value;
 import 'package:built_value/built_value.dart';
 abstract class Value implements Built<Value, ValueBuilder> {
   Value._();
@@ -240,7 +244,8 @@ abstract class Value implements Built<Value, ValueBuilder> {
 abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
-}'''),
+}''',
+            }, 'value'),
             allOf(contains(r'class _$Value extends Value'),
                 isNot(contains('Import generated part'))));
       });

@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../node.dart';
 
-part of 'node.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 class _$Node extends Node {
   @override
   final String? label;
@@ -98,12 +94,9 @@ class NodeBuilder implements Builder<Node, NodeBuilder> {
   _$Node _build() {
     _$Node _$result;
     try {
-      _$result = _$v ??
-          _$Node._(
-            label: label,
-            left: _left?.build(),
-            right: _right?.build(),
-          );
+      _$result =
+          _$v ??
+          _$Node._(label: label, left: _left?.build(), right: _right?.build());
     } catch (_) {
       late String _$failedField;
       try {
@@ -122,3 +115,4 @@ class NodeBuilder implements Builder<Node, NodeBuilder> {
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

@@ -7,8 +7,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'enums.g.dart';
-
+part '_br_/enums.part.dart';
 class TestEnum extends EnumClass {
   static Serializer<TestEnum> get serializer => _$testEnumSerializer;
 

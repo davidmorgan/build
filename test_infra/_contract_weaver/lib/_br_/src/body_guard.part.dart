@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../../src/body_guard.dart';
 
-part of 'body_guard.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 class _$BodyGuard extends BodyGuard {
   @override
   final bool checksInvariant;
@@ -122,3 +118,4 @@ class BodyGuardBuilder implements Builder<BodyGuard, BodyGuardBuilder> {
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../../src/build/build_state/build_step_id.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 Serializer<BuildStepId> _$buildStepIdSerializer = _$BuildStepIdSerializer();
 
 class _$BuildStepIdSerializer implements StructuredSerializer<BuildStepId> {

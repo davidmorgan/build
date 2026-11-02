@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../src/build_plan/build_spec.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 class _$BuildSpec extends BuildSpec {
   @override
   final BuildSpecDigest buildPlanDigest;

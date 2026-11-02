@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../../src/build/build_state/post_process_build_step_id.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 Serializer<PostProcessBuildStepId> _$postProcessBuildStepIdSerializer =
     _$PostProcessBuildStepIdSerializer();
 

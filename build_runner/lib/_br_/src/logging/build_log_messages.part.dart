@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../src/logging/build_log_messages.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 class _$Message extends Message {
   @override
   final String? phaseName;

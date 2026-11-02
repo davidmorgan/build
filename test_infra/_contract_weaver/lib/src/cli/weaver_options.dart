@@ -8,8 +8,7 @@ import 'package:built_value/built_value.dart';
 
 import 'weaver_exception.dart';
 
-part 'weaver_options.g.dart';
-
+part '../../_br_/src/cli/weaver_options.part.dart';
 /// The command line options of `dart run _contract_weaver`.
 abstract class WeaverOptions
     implements Built<WeaverOptions, WeaverOptionsBuilder> {

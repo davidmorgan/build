@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../../src/build/build_state/incremental_build_state.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 Serializer<IncrementalBuildState> _$incrementalBuildStateSerializer =
     _$IncrementalBuildStateSerializer();
 

@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../../src/build/library_cycle_graph/library_cycle.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 class _$LibraryCycle extends LibraryCycle {
   @override
   final BuiltSet<AssetId> ids;

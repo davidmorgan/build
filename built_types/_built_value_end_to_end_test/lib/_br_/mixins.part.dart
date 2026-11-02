@@ -1,12 +1,8 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 // @dart=2.12
+// dart format off
+part of '../mixins.dart';
 
-part of 'mixins.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 Serializer<UsesMixin> _$usesMixinSerializer = _$UsesMixinSerializer();
 
 class _$UsesMixinSerializer implements StructuredSerializer<UsesMixin> {
@@ -16,14 +12,20 @@ class _$UsesMixinSerializer implements StructuredSerializer<UsesMixin> {
   final String wireName = 'UsesMixin';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, UsesMixin object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    UsesMixin object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     return <Object?>[];
   }
 
   @override
-  UsesMixin deserialize(Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+  UsesMixin deserialize(
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     return UsesMixinBuilder().build();
   }
 }
@@ -59,8 +61,9 @@ class _$UsesMixin extends UsesMixin {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'UsesMixin')..add('typeDef', typeDef))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'UsesMixin',
+    )..add('typeDef', typeDef)).toString();
   }
 }
 
@@ -96,10 +99,14 @@ class UsesMixinBuilder implements Builder<UsesMixin, UsesMixinBuilder> {
   UsesMixin build() => _build();
 
   _$UsesMixin _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$UsesMixin._(
           typeDef: BuiltValueNullFieldError.checkNotNull(
-              typeDef, r'UsesMixin', 'typeDef'),
+            typeDef,
+            r'UsesMixin',
+            'typeDef',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -110,15 +117,15 @@ class _$GetsCorrectFieldsViaMixins extends GetsCorrectFieldsViaMixins {
   @override
   final int shouldBeAField;
 
-  factory _$GetsCorrectFieldsViaMixins(
-          [void Function(GetsCorrectFieldsViaMixinsBuilder)? updates]) =>
-      (GetsCorrectFieldsViaMixinsBuilder()..update(updates))._build();
+  factory _$GetsCorrectFieldsViaMixins([
+    void Function(GetsCorrectFieldsViaMixinsBuilder)? updates,
+  ]) => (GetsCorrectFieldsViaMixinsBuilder()..update(updates))._build();
 
   _$GetsCorrectFieldsViaMixins._({required this.shouldBeAField}) : super._();
   @override
   GetsCorrectFieldsViaMixins rebuild(
-          void Function(GetsCorrectFieldsViaMixinsBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(GetsCorrectFieldsViaMixinsBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   GetsCorrectFieldsViaMixinsBuilder toBuilder() =>
@@ -141,9 +148,9 @@ class _$GetsCorrectFieldsViaMixins extends GetsCorrectFieldsViaMixins {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'GetsCorrectFieldsViaMixins')
-          ..add('shouldBeAField', shouldBeAField))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'GetsCorrectFieldsViaMixins',
+    )..add('shouldBeAField', shouldBeAField)).toString();
   }
 }
 
@@ -182,10 +189,14 @@ class GetsCorrectFieldsViaMixinsBuilder
   GetsCorrectFieldsViaMixins build() => _build();
 
   _$GetsCorrectFieldsViaMixins _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$GetsCorrectFieldsViaMixins._(
           shouldBeAField: BuiltValueNullFieldError.checkNotNull(
-              shouldBeAField, r'GetsCorrectFieldsViaMixins', 'shouldBeAField'),
+            shouldBeAField,
+            r'GetsCorrectFieldsViaMixins',
+            'shouldBeAField',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -193,3 +204,4 @@ class GetsCorrectFieldsViaMixinsBuilder
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

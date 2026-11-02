@@ -7,8 +7,7 @@ import 'package:built_value/built_value.dart';
 
 import 'throw_clauses.dart';
 
-part 'body_guard.g.dart';
-
+part '../_br_/src/body_guard.part.dart';
 /// The checks woven around a body so that they run however it exits.
 abstract class BodyGuard implements Built<BodyGuard, BodyGuardBuilder> {
   /// Whether the body is an invariant scope: entering it checks the invariant,

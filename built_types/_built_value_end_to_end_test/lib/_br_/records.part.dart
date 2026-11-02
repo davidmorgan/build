@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../records.dart';
 
-part of 'records.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 Serializer<SerializableRecordValue> _$serializableRecordValueSerializer =
     _$SerializableRecordValueSerializer();
 
@@ -608,3 +604,4 @@ class SerializableRecordValueBuilder
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

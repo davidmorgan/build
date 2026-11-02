@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../simple_value.dart';
 
-part of 'simple_value.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 class _$SimpleValue extends SimpleValue {
   @override
   final int anInt;
@@ -86,12 +82,19 @@ class SimpleValueBuilder implements Builder<SimpleValue, SimpleValueBuilder> {
   SimpleValue build() => _build();
 
   _$SimpleValue _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$SimpleValue._(
           anInt: BuiltValueNullFieldError.checkNotNull(
-              anInt, r'SimpleValue', 'anInt'),
+            anInt,
+            r'SimpleValue',
+            'anInt',
+          ),
           aString: BuiltValueNullFieldError.checkNotNull(
-              aString, r'SimpleValue', 'aString'),
+            aString,
+            r'SimpleValue',
+            'aString',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -99,3 +102,4 @@ class SimpleValueBuilder implements Builder<SimpleValue, SimpleValueBuilder> {
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

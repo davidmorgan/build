@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../src/build/finished_shared_part.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 class _$FinishedSharedPart extends FinishedSharedPart {
   @override
   final AssetId libraryId;

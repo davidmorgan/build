@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../../../src/cli/stage_result.dart';
 
-part of 'stage_result.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 class _$StageResult extends StageResult {
   @override
   final int transformedCount;
@@ -140,3 +136,4 @@ class StageResultBuilder implements Builder<StageResult, StageResultBuilder> {
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

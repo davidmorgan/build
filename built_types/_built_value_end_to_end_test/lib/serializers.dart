@@ -18,8 +18,7 @@ import 'records.dart';
 import 'standard_json.dart';
 import 'values.dart';
 
-part 'serializers.g.dart';
-
+part '_br_/serializers.part.dart';
 @SerializersFor([
   BoundGenericValue,
   Cage,

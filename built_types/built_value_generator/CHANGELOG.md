@@ -1,11 +1,18 @@
 # Changelog
 
-## 8.14.0-wip
+## 9.0.0-wip
 
-- Support generating to `BuildStep.librarySourceSink`, new and experimental
-  in `build` 5.0.0. A library with `part 'x.g.dart';` still generates to
-  `x.g.dart`; a library without it now generates to the shared part file that
-  `build_runner` adds. Requires `build` 5.0.0.
+- Breaking change: generate only to `BuildStep.librarySourceSink`, new and
+  experimental in `build` 5.0.0. Generated code goes to the shared part file
+  that `build_runner` adds, `lib/_br_/<path>.part.dart`, and nothing is
+  generated to `x.g.dart`. To migrate, remove `part 'x.g.dart';` from
+  libraries that use only `built_value`, and delete the `x.g.dart` files.
+  Libraries that have `x.g.dart` from other generators keep the directive.
+- Require `build_runner` 2.17.x. `BuildStep.librarySourceSink` is
+  experimental, so each `build_runner` minor version needs a new release of
+  this package.
+- The builder named `br_part` is removed; `built_value` is now the
+  `BuildStep.librarySourceSink` builder.
 - Allow `built_collection` 6.x.
 - Migrate to `package:dart_flutter_team_lints`.
 - Fix analysis issues and remove the lint suppressions that hid them.

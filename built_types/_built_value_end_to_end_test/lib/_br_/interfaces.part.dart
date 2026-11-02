@@ -1,12 +1,8 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 // @dart=2.12
+// dart format off
+part of '../interfaces.dart';
 
-part of 'interfaces.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 const EnumWithInt _$one = const EnumWithInt._('one');
 const EnumWithInt _$two = const EnumWithInt._('two');
 const EnumWithInt _$three = const EnumWithInt._('three');
@@ -24,12 +20,9 @@ EnumWithInt _$valueOf(String name) {
   }
 }
 
-final BuiltSet<EnumWithInt> _$values =
-    BuiltSet<EnumWithInt>(const <EnumWithInt>[
-  _$one,
-  _$two,
-  _$three,
-]);
+final BuiltSet<EnumWithInt> _$values = BuiltSet<EnumWithInt>(
+  const <EnumWithInt>[_$one, _$two, _$three],
+);
 
 Serializer<ValueWithInt> _$valueWithIntSerializer = _$ValueWithIntSerializer();
 Serializer<EnumWithInt> _$enumWithIntSerializer = _$EnumWithIntSerializer();
@@ -43,8 +36,11 @@ class _$ValueWithIntSerializer implements StructuredSerializer<ValueWithInt> {
   final String wireName = 'ValueWithInt';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, ValueWithInt object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    ValueWithInt object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'anInt',
       serializers.serialize(object.anInt, specifiedType: const FullType(int)),
@@ -57,8 +53,10 @@ class _$ValueWithIntSerializer implements StructuredSerializer<ValueWithInt> {
 
   @override
   ValueWithInt deserialize(
-      Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = ValueWithIntBuilder();
 
     final iterator = serialized.iterator;
@@ -68,12 +66,20 @@ class _$ValueWithIntSerializer implements StructuredSerializer<ValueWithInt> {
       final Object? value = iterator.current;
       switch (key) {
         case 'anInt':
-          result.anInt = serializers.deserialize(value,
-              specifiedType: const FullType(int))! as int;
+          result.anInt =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(int),
+                  )!
+                  as int;
           break;
         case 'note':
-          result.note = serializers.deserialize(value,
-              specifiedType: const FullType(String))! as String;
+          result.note =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )!
+                  as String;
           break;
       }
     }
@@ -89,14 +95,18 @@ class _$EnumWithIntSerializer implements PrimitiveSerializer<EnumWithInt> {
   final String wireName = 'EnumWithInt';
 
   @override
-  Object serialize(Serializers serializers, EnumWithInt object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      object.name;
+  Object serialize(
+    Serializers serializers,
+    EnumWithInt object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => object.name;
 
   @override
-  EnumWithInt deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      EnumWithInt.valueOf(serialized as String);
+  EnumWithInt deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => EnumWithInt.valueOf(serialized as String);
 }
 
 class _$ValueWithHasIntSerializer
@@ -107,12 +117,17 @@ class _$ValueWithHasIntSerializer
   final String wireName = 'ValueWithHasInt';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, ValueWithHasInt object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    ValueWithHasInt object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'hasInt',
-      serializers.serialize(object.hasInt,
-          specifiedType: const FullType(HasInt)),
+      serializers.serialize(
+        object.hasInt,
+        specifiedType: const FullType(HasInt),
+      ),
     ];
 
     return result;
@@ -120,8 +135,10 @@ class _$ValueWithHasIntSerializer
 
   @override
   ValueWithHasInt deserialize(
-      Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = ValueWithHasIntBuilder();
 
     final iterator = serialized.iterator;
@@ -131,8 +148,12 @@ class _$ValueWithHasIntSerializer
       final Object? value = iterator.current;
       switch (key) {
         case 'hasInt':
-          result.hasInt = serializers.deserialize(value,
-              specifiedType: const FullType(HasInt))! as HasInt;
+          result.hasInt =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(HasInt),
+                  )!
+                  as HasInt;
           break;
       }
     }
@@ -220,12 +241,19 @@ class ValueWithIntBuilder
   ValueWithInt build() => _build();
 
   _$ValueWithInt _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$ValueWithInt._(
           anInt: BuiltValueNullFieldError.checkNotNull(
-              anInt, r'ValueWithInt', 'anInt'),
+            anInt,
+            r'ValueWithInt',
+            'anInt',
+          ),
           note: BuiltValueNullFieldError.checkNotNull(
-              note, r'ValueWithInt', 'note'),
+            note,
+            r'ValueWithInt',
+            'note',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -263,9 +291,9 @@ class _$ValueWithHasInt extends ValueWithHasInt {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'ValueWithHasInt')
-          ..add('hasInt', hasInt))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'ValueWithHasInt',
+    )..add('hasInt', hasInt)).toString();
   }
 }
 
@@ -302,10 +330,14 @@ class ValueWithHasIntBuilder
   ValueWithHasInt build() => _build();
 
   _$ValueWithHasInt _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$ValueWithHasInt._(
           hasInt: BuiltValueNullFieldError.checkNotNull(
-              hasInt, r'ValueWithHasInt', 'hasInt'),
+            hasInt,
+            r'ValueWithHasInt',
+            'hasInt',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -313,3 +345,4 @@ class ValueWithHasIntBuilder
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

@@ -6,8 +6,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'records.g.dart';
-
+part '_br_/records.part.dart';
 abstract class SimpleRecordValue
     implements Built<SimpleRecordValue, SimpleRecordValueBuilder> {
   (int, int) get record;

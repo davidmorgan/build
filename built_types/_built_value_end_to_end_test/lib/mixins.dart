@@ -7,8 +7,7 @@ import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'mixins_src.dart';
 
-part 'mixins.g.dart';
-
+part '_br_/mixins.part.dart';
 abstract class UsesMixin extends Object
     with Mixin
     implements Built<UsesMixin, UsesMixinBuilder> {

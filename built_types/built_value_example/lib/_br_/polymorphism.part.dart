@@ -1,7 +1,7 @@
 // dart format off
 part of '../polymorphism.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 Serializer<Cat> _$catSerializer = _$CatSerializer();
 Serializer<Fish> _$fishSerializer = _$FishSerializer();
 

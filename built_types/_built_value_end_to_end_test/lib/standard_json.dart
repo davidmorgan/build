@@ -10,8 +10,7 @@ import 'package:built_value/serializer.dart';
 import 'polymorphism.dart';
 import 'values.dart';
 
-part 'standard_json.g.dart';
-
+part '_br_/standard_json.part.dart';
 abstract class StandardJsonValue
     implements Built<StandardJsonValue, StandardJsonValueBuilder> {
   static Serializer<StandardJsonValue> get serializer =>

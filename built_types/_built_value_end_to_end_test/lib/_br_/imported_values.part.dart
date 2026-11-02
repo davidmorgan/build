@@ -1,12 +1,8 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 // @dart=2.12
+// dart format off
+part of '../imported_values.dart';
 
-part of 'imported_values.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 Serializer<ImportedValue> _$importedValueSerializer =
     _$ImportedValueSerializer();
 Serializer<ImportedCustomValue> _$importedCustomValueSerializer =
@@ -21,16 +17,24 @@ class _$ImportedValueSerializer implements StructuredSerializer<ImportedValue> {
   final String wireName = 'ImportedValue';
 
   @override
-  Iterable<Object?> serialize(Serializers serializers, ImportedValue object,
-      {FullType specifiedType = FullType.unspecified}) {
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    ImportedValue object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'simpleValue',
-      serializers.serialize(object.simpleValue,
-          specifiedType: const FullType(prefix.SimpleValue)),
+      serializers.serialize(
+        object.simpleValue,
+        specifiedType: const FullType(prefix.SimpleValue),
+      ),
       'simpleValues',
-      serializers.serialize(object.simpleValues,
-          specifiedType: const FullType(
-              BuiltList, const [const FullType(prefix.SimpleValue)])),
+      serializers.serialize(
+        object.simpleValues,
+        specifiedType: const FullType(BuiltList, const [
+          const FullType(prefix.SimpleValue),
+        ]),
+      ),
     ];
 
     return result;
@@ -38,8 +42,10 @@ class _$ImportedValueSerializer implements StructuredSerializer<ImportedValue> {
 
   @override
   ImportedValue deserialize(
-      Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = ImportedValueBuilder();
 
     final iterator = serialized.iterator;
@@ -49,15 +55,24 @@ class _$ImportedValueSerializer implements StructuredSerializer<ImportedValue> {
       final Object? value = iterator.current;
       switch (key) {
         case 'simpleValue':
-          result.simpleValue.replace(serializers.deserialize(value,
-                  specifiedType: const FullType(prefix.SimpleValue))!
-              as prefix.SimpleValue);
+          result.simpleValue.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(prefix.SimpleValue),
+                )!
+                as prefix.SimpleValue,
+          );
           break;
         case 'simpleValues':
-          result.simpleValues.replace(serializers.deserialize(value,
-                  specifiedType: const FullType(
-                      BuiltList, const [const FullType(prefix.SimpleValue)]))!
-              as BuiltList<Object?>);
+          result.simpleValues.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType(prefix.SimpleValue),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
           break;
       }
     }
@@ -71,23 +86,30 @@ class _$ImportedCustomValueSerializer
   @override
   final Iterable<Type> types = const [
     ImportedCustomValue,
-    _$ImportedCustomValue
+    _$ImportedCustomValue,
   ];
   @override
   final String wireName = 'ImportedCustomValue';
 
   @override
   Iterable<Object?> serialize(
-      Serializers serializers, ImportedCustomValue object,
-      {FullType specifiedType = FullType.unspecified}) {
+    Serializers serializers,
+    ImportedCustomValue object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'simpleValue',
-      serializers.serialize(object.simpleValue,
-          specifiedType: const FullType(prefix.SimpleValue)),
+      serializers.serialize(
+        object.simpleValue,
+        specifiedType: const FullType(prefix.SimpleValue),
+      ),
       'simpleValues',
-      serializers.serialize(object.simpleValues,
-          specifiedType: const FullType(
-              BuiltList, const [const FullType(prefix.SimpleValue)])),
+      serializers.serialize(
+        object.simpleValues,
+        specifiedType: const FullType(BuiltList, const [
+          const FullType(prefix.SimpleValue),
+        ]),
+      ),
     ];
 
     return result;
@@ -95,8 +117,10 @@ class _$ImportedCustomValueSerializer
 
   @override
   ImportedCustomValue deserialize(
-      Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = ImportedCustomValueBuilder();
 
     final iterator = serialized.iterator;
@@ -106,15 +130,22 @@ class _$ImportedCustomValueSerializer
       final Object? value = iterator.current;
       switch (key) {
         case 'simpleValue':
-          result.simpleValue = serializers.deserialize(value,
-                  specifiedType: const FullType(prefix.SimpleValue))!
-              as prefix.SimpleValue;
+          result.simpleValue =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(prefix.SimpleValue),
+                  )!
+                  as prefix.SimpleValue;
           break;
         case 'simpleValues':
-          result.simpleValues = serializers.deserialize(value,
-                  specifiedType: const FullType(
-                      BuiltList, const [const FullType(prefix.SimpleValue)]))!
-              as BuiltList<prefix.SimpleValue>;
+          result.simpleValues =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, const [
+                      const FullType(prefix.SimpleValue),
+                    ]),
+                  )!
+                  as BuiltList<prefix.SimpleValue>;
           break;
       }
     }
@@ -128,23 +159,30 @@ class _$ImportedCustomNestedValueSerializer
   @override
   final Iterable<Type> types = const [
     ImportedCustomNestedValue,
-    _$ImportedCustomNestedValue
+    _$ImportedCustomNestedValue,
   ];
   @override
   final String wireName = 'ImportedCustomNestedValue';
 
   @override
   Iterable<Object?> serialize(
-      Serializers serializers, ImportedCustomNestedValue object,
-      {FullType specifiedType = FullType.unspecified}) {
+    Serializers serializers,
+    ImportedCustomNestedValue object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = <Object?>[
       'simpleValue',
-      serializers.serialize(object.simpleValue,
-          specifiedType: const FullType(prefix.SimpleValue)),
+      serializers.serialize(
+        object.simpleValue,
+        specifiedType: const FullType(prefix.SimpleValue),
+      ),
       'simpleValues',
-      serializers.serialize(object.simpleValues,
-          specifiedType: const FullType(
-              BuiltList, const [const FullType(prefix.SimpleValue)])),
+      serializers.serialize(
+        object.simpleValues,
+        specifiedType: const FullType(BuiltList, const [
+          const FullType(prefix.SimpleValue),
+        ]),
+      ),
     ];
 
     return result;
@@ -152,8 +190,10 @@ class _$ImportedCustomNestedValueSerializer
 
   @override
   ImportedCustomNestedValue deserialize(
-      Serializers serializers, Iterable<Object?> serialized,
-      {FullType specifiedType = FullType.unspecified}) {
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
     final result = ImportedCustomNestedValueBuilder();
 
     final iterator = serialized.iterator;
@@ -163,15 +203,24 @@ class _$ImportedCustomNestedValueSerializer
       final Object? value = iterator.current;
       switch (key) {
         case 'simpleValue':
-          result.simpleValue.replace(serializers.deserialize(value,
-                  specifiedType: const FullType(prefix.SimpleValue))!
-              as prefix.SimpleValue);
+          result.simpleValue.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(prefix.SimpleValue),
+                )!
+                as prefix.SimpleValue,
+          );
           break;
         case 'simpleValues':
-          result.simpleValues.replace(serializers.deserialize(value,
-                  specifiedType: const FullType(
-                      BuiltList, const [const FullType(prefix.SimpleValue)]))!
-              as BuiltList<Object?>);
+          result.simpleValues.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType(prefix.SimpleValue),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
           break;
       }
     }
@@ -190,7 +239,7 @@ class _$ImportedValue extends ImportedValue {
       (ImportedValueBuilder()..update(updates))._build();
 
   _$ImportedValue._({required this.simpleValue, required this.simpleValues})
-      : super._();
+    : super._();
   @override
   ImportedValue rebuild(void Function(ImportedValueBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -268,7 +317,8 @@ class ImportedValueBuilder
   _$ImportedValue _build() {
     _$ImportedValue _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$ImportedValue._(
             simpleValue: simpleValue.build(),
             simpleValues: simpleValues.build(),
@@ -282,7 +332,10 @@ class ImportedValueBuilder
         simpleValues.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'ImportedValue', _$failedField, e.toString());
+          r'ImportedValue',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }
@@ -297,18 +350,20 @@ class _$ImportedCustomValue extends ImportedCustomValue {
   @override
   final BuiltList<prefix.SimpleValue> simpleValues;
 
-  factory _$ImportedCustomValue(
-          [void Function(ImportedCustomValueBuilder)? updates]) =>
+  factory _$ImportedCustomValue([
+    void Function(ImportedCustomValueBuilder)? updates,
+  ]) =>
       (ImportedCustomValueBuilder()..update(updates)).build()
           as _$ImportedCustomValue;
 
-  _$ImportedCustomValue._(
-      {required this.simpleValue, required this.simpleValues})
-      : super._();
+  _$ImportedCustomValue._({
+    required this.simpleValue,
+    required this.simpleValues,
+  }) : super._();
   @override
   ImportedCustomValue rebuild(
-          void Function(ImportedCustomValueBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ImportedCustomValueBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   _$ImportedCustomValueBuilder toBuilder() =>
@@ -393,12 +448,19 @@ class _$ImportedCustomValueBuilder extends ImportedCustomValueBuilder {
   ImportedCustomValue build() => _build();
 
   _$ImportedCustomValue _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$ImportedCustomValue._(
           simpleValue: BuiltValueNullFieldError.checkNotNull(
-              simpleValue, r'ImportedCustomValue', 'simpleValue'),
+            simpleValue,
+            r'ImportedCustomValue',
+            'simpleValue',
+          ),
           simpleValues: BuiltValueNullFieldError.checkNotNull(
-              simpleValues, r'ImportedCustomValue', 'simpleValues'),
+            simpleValues,
+            r'ImportedCustomValue',
+            'simpleValues',
+          ),
         );
     replace(_$result);
     return _$result;
@@ -411,18 +473,20 @@ class _$ImportedCustomNestedValue extends ImportedCustomNestedValue {
   @override
   final BuiltList<prefix.SimpleValue> simpleValues;
 
-  factory _$ImportedCustomNestedValue(
-          [void Function(ImportedCustomNestedValueBuilder)? updates]) =>
+  factory _$ImportedCustomNestedValue([
+    void Function(ImportedCustomNestedValueBuilder)? updates,
+  ]) =>
       (ImportedCustomNestedValueBuilder()..update(updates)).build()
           as _$ImportedCustomNestedValue;
 
-  _$ImportedCustomNestedValue._(
-      {required this.simpleValue, required this.simpleValues})
-      : super._();
+  _$ImportedCustomNestedValue._({
+    required this.simpleValue,
+    required this.simpleValues,
+  }) : super._();
   @override
   ImportedCustomNestedValue rebuild(
-          void Function(ImportedCustomNestedValueBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ImportedCustomNestedValueBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   _$ImportedCustomNestedValueBuilder toBuilder() =>
@@ -510,7 +574,8 @@ class _$ImportedCustomNestedValueBuilder
   _$ImportedCustomNestedValue _build() {
     _$ImportedCustomNestedValue _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$ImportedCustomNestedValue._(
             simpleValue: simpleValue.build(),
             simpleValues: simpleValues.build(),
@@ -524,7 +589,10 @@ class _$ImportedCustomNestedValueBuilder
         simpleValues.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'ImportedCustomNestedValue', _$failedField, e.toString());
+          r'ImportedCustomNestedValue',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }
@@ -534,3 +602,4 @@ class _$ImportedCustomNestedValueBuilder
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

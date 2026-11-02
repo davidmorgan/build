@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../../src/build/build_state/serializers.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 Serializers _$serializers =
     (Serializers().toBuilder()
           ..add(AssetDeps.serializer)

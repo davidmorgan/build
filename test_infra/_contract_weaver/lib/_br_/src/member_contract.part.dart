@@ -1,11 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
+part of '../../src/member_contract.dart';
 
-part of 'member_contract.dart';
-
-// **************************************************************************
-// BuiltValueGenerator
-// **************************************************************************
-
+// === built_value_generator:built_value contribution.
 class _$MemberContract extends MemberContract {
   @override
   final BuiltList<String> preconditions;
@@ -140,3 +136,4 @@ class MemberContractBuilder
 }
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint
+

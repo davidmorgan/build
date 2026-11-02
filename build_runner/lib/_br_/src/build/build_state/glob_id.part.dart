@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../../src/build/build_state/glob_id.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 Serializer<GlobId> _$globIdSerializer = _$GlobIdSerializer();
 
 class _$GlobIdSerializer implements StructuredSerializer<GlobId> {

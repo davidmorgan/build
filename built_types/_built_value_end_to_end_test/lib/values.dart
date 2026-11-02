@@ -10,8 +10,7 @@ import 'package:fixnum/fixnum.dart';
 import 'enums.dart' as using_import_as;
 import 'mixins_src.dart';
 
-part 'values.g.dart';
-
+part '_br_/values.part.dart';
 abstract class SimpleValue implements Built<SimpleValue, SimpleValueBuilder> {
   static Serializer<SimpleValue> get serializer => _$simpleValueSerializer;
 

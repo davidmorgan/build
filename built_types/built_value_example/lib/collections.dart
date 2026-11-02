@@ -8,8 +8,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'collections.g.dart';
-
+part '_br_/collections.part.dart';
 /// Example of how to use built_value.
 ///
 /// Classes can contain collections; these must be from built_collection. In

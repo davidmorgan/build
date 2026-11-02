@@ -1,7 +1,7 @@
 // dart format off
 part of '../../../../src/build/library_cycle_graph/phased_value.dart';
 
-// === built_value_generator:br_part contribution.
+// === built_value_generator:built_value contribution.
 Serializer<PhasedValue<Object?>> _$phasedValueSerializer =
     _$PhasedValueSerializer();
 Serializer<ExpiringValue<Object?>> _$expiringValueSerializer =

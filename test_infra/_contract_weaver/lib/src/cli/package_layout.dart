@@ -4,8 +4,7 @@
 
 import 'package:built_value/built_value.dart';
 
-part 'package_layout.g.dart';
-
+part '../../_br_/src/cli/package_layout.part.dart';
 /// Where the package to weave lives.
 abstract class PackageLayout
     implements Built<PackageLayout, PackageLayoutBuilder> {
