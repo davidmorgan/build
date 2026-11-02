@@ -229,8 +229,9 @@ abstract class Value implements Built<Value, ValueBuilder> {
     });
 
     group('suggests', () {
-      test('to import part file', () async {
-        expect(await generate('''library value;
+      test('nothing about a part file, which build_runner adds', () async {
+        expect(
+            await generate('''library value;
 import 'package:built_value/built_value.dart';
 abstract class Value implements Built<Value, ValueBuilder> {
   Value._();
@@ -239,7 +240,9 @@ abstract class Value implements Built<Value, ValueBuilder> {
 abstract class ValueBuilder implements Builder<Value, ValueBuilder> {
   ValueBuilder._();
   factory ValueBuilder() = _\$ValueBuilder;
-}'''), contains("1. Import generated part: part 'value.g.dart';"));
+}'''),
+            allOf(contains(r'class _$Value extends Value'),
+                isNot(contains('Import generated part'))));
       });
 
       test('to make value class abstract', () async {

@@ -85,8 +85,9 @@ void main() {
 1. Specify a type for field "aNull".'''));
       });
 
-      test('with error on missing part statement', () async {
-        expect(await generate(r'''
+      test('without error on missing part statement', () async {
+        expect(
+            await generate(r'''
 library test_enum;
 
 import 'package:built_value/built_value.dart';
@@ -103,9 +104,9 @@ class TestEnum extends EnumClass {
   static BuiltSet<TestEnum> get values => _$values;
   static TestEnum valueOf(String name) => _$valueOf(name);
 }
-'''), contains(r'''Please make the following changes to use EnumClass:
-
-1. Import generated part: part 'test_enum.g.dart';'''));
+'''),
+            allOf(contains(r'const TestEnum _$yes'),
+                isNot(contains('Import generated part'))));
       });
 
       test('with error on non-const static fields', () async {
