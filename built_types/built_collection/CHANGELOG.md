@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.0.1-wip
+
+- Remove the null checks for unsound null safety, which can no longer run.
+  Remove the library doc section that said builders validate types at
+  runtime; the type system does that.
+
 ## 6.0.0
 
 - Breaking change: `BuiltList.asList`, `BuiltMap.asMap`,

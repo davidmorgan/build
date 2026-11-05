@@ -7,7 +7,6 @@ import 'dart:collection' show UnmodifiableMapView;
 import 'internal/copy_on_write_map.dart';
 
 import 'internal/hash.dart';
-import 'internal/null_safety.dart';
 import 'list.dart';
 
 part 'list_multimap/built_list_multimap.dart';

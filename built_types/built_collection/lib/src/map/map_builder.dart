@@ -108,8 +108,6 @@ class MapBuilder<K, V> {
 
   /// As [Map].
   void operator []=(K key, V value) {
-    _checkKey(key);
-    _checkValue(value);
     _safeMap[key] = value;
   }
 
@@ -124,18 +122,11 @@ class MapBuilder<K, V> {
 
   /// As [Map.putIfAbsent].
   V putIfAbsent(K key, V Function() ifAbsent) {
-    _checkKey(key);
-    return _safeMap.putIfAbsent(key, () {
-      final value = ifAbsent();
-      _checkValue(value);
-      return value;
-    });
+    return _safeMap.putIfAbsent(key, ifAbsent);
   }
 
   /// As [Map.addAll].
   void addAll(Map<K, V> other) {
-    _checkKeys(other.keys);
-    _checkValues(other.values);
     _safeMap.addAll(other);
   }
 
@@ -198,36 +189,4 @@ class MapBuilder<K, V> {
   }
 
   Map<K, V> _createMap() => _mapFactory != null ? _mapFactory!() : <K, V>{};
-
-  void _checkKey(K key) {
-    if (isSoundMode) return;
-    if (null is K) return;
-    if (identical(key, null)) {
-      throw ArgumentError('null key');
-    }
-  }
-
-  void _checkKeys(Iterable<K> keys) {
-    if (isSoundMode) return;
-    if (null is K) return;
-    for (final key in keys) {
-      _checkKey(key);
-    }
-  }
-
-  void _checkValue(V value) {
-    if (isSoundMode) return;
-    if (null is V) return;
-    if (identical(value, null)) {
-      throw ArgumentError('null value');
-    }
-  }
-
-  void _checkValues(Iterable<V> values) {
-    if (isSoundMode) return;
-    if (null is V) return;
-    for (final value in values) {
-      _checkValue(value);
-    }
-  }
 }

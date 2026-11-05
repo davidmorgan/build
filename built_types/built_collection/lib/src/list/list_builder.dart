@@ -66,7 +66,6 @@ class ListBuilder<E> {
 
   /// As [List].
   void operator []=(int index, E element) {
-    _maybeCheckElement(element);
     _safeList[index] = element;
   }
 
@@ -75,7 +74,6 @@ class ListBuilder<E> {
 
   /// As [List.first].
   set first(E value) {
-    _maybeCheckElement(value);
     _safeList.first = value;
   }
 
@@ -84,7 +82,6 @@ class ListBuilder<E> {
 
   /// As [List.last].
   set last(E value) {
-    _maybeCheckElement(value);
     _safeList.last = value;
   }
 
@@ -99,26 +96,12 @@ class ListBuilder<E> {
 
   /// As [List.add].
   void add(E value) {
-    _maybeCheckElement(value);
     _safeList.add(value);
   }
 
   /// As [List.addAll].
   void addAll(Iterable<E> iterable) {
-    // Add directly to the underlying `List` then check elements there, for
-    // performance. Roll back the changes if validation fails.
-    final safeList = _safeList;
-    final lengthBefore = safeList.length;
-    safeList.addAll(iterable);
-    if (!_needsNullCheck) return;
-    try {
-      for (var i = lengthBefore; i != safeList.length; ++i) {
-        _checkElement(safeList[i]);
-      }
-    } catch (_) {
-      safeList.removeRange(lengthBefore, safeList.length);
-      rethrow;
-    }
+    _safeList.addAll(iterable);
   }
 
   /// As [List.reversed], but updates the builder in place. Returns nothing.
@@ -144,33 +127,17 @@ class ListBuilder<E> {
 
   /// As [List.insert].
   void insert(int index, E element) {
-    _maybeCheckElement(element);
     _safeList.insert(index, element);
   }
 
   /// As [List.insertAll].
   void insertAll(int index, Iterable<E> iterable) {
-    // Add directly to the underlying `List` then check elements there, for
-    // performance. Roll back the changes if validation fails.
-    final safeList = _safeList;
-    final lengthBefore = safeList.length;
-    safeList.insertAll(index, iterable);
-    if (!_needsNullCheck) return;
-    final insertedLength = safeList.length - lengthBefore;
-    try {
-      for (var i = index; i != index + insertedLength; ++i) {
-        _checkElement(safeList[i]);
-      }
-    } catch (_) {
-      safeList.removeRange(index, index + insertedLength);
-      rethrow;
-    }
+    _safeList.insertAll(index, iterable);
   }
 
   /// As [List.setAll].
   void setAll(int index, Iterable<E> iterable) {
     iterable = evaluateIterable(iterable);
-    _maybeCheckElements(iterable);
     _safeList.setAll(index, iterable);
   }
 
@@ -203,7 +170,6 @@ class ListBuilder<E> {
   /// As [List.setRange].
   void setRange(int start, int end, Iterable<E> iterable, [int skipCount = 0]) {
     iterable = evaluateIterable(iterable);
-    _maybeCheckElements(iterable);
     _safeList.setRange(start, end, iterable, skipCount);
   }
 
@@ -214,14 +180,12 @@ class ListBuilder<E> {
 
   /// As [List.fillRange], but requires a value.
   void fillRange(int start, int end, E fillValue) {
-    _maybeCheckElement(fillValue);
     _safeList.fillRange(start, end, fillValue);
   }
 
   /// As [List.replaceRange].
   void replaceRange(int start, int end, Iterable<E> iterable) {
     iterable = evaluateIterable(iterable);
-    _maybeCheckElements(iterable);
     _safeList.replaceRange(start, end, iterable);
   }
 
@@ -230,7 +194,6 @@ class ListBuilder<E> {
   /// As [Iterable.map], but updates the builder in place. Returns nothing.
   void map(E Function(E) f) {
     final result = _list.map(f).toList(growable: true);
-    _maybeCheckElements(result);
     _setSafeList(result);
   }
 
@@ -242,7 +205,6 @@ class ListBuilder<E> {
   /// As [Iterable.expand], but updates the builder in place. Returns nothing.
   void expand(Iterable<E> Function(E) f) {
     final result = _list.expand(f).toList(growable: true);
-    _maybeCheckElements(result);
     _setSafeList(result);
   }
 
@@ -287,24 +249,5 @@ class ListBuilder<E> {
       _setSafeList(List<E>.from(_list, growable: true));
     }
     return _list;
-  }
-
-  bool get _needsNullCheck => !isSoundMode && null is! E;
-
-  void _maybeCheckElement(E element) {
-    if (_needsNullCheck) _checkElement(element);
-  }
-
-  void _checkElement(E element) {
-    if (identical(element, null)) {
-      throw ArgumentError('null element');
-    }
-  }
-
-  void _maybeCheckElements(Iterable<E> elements) {
-    if (!_needsNullCheck) return;
-    for (final element in elements) {
-      _checkElement(element);
-    }
   }
 }

@@ -232,24 +232,9 @@ abstract class BuiltSet<E> implements Iterable<E>, BuiltIterable<E> {
 class _BuiltSet<E> extends BuiltSet<E> {
   _BuiltSet.withSafeSet(super.setFactory, super.set) : super._();
 
-  _BuiltSet.from(Iterable iterable) : super._(null, Set<E>.from(iterable)) {
-    _maybeCheckForNull();
-  }
+  _BuiltSet.from(Iterable iterable) : super._(null, Set<E>.from(iterable));
 
-  _BuiltSet.of(Iterable<E> iterable) : super._(null, <E>{}..addAll(iterable)) {
-    _maybeCheckForNull();
-  }
-
-  bool get _needsNullCheck => !isSoundMode && null is! E;
-
-  void _maybeCheckForNull() {
-    if (!_needsNullCheck) return;
-    for (final element in _set) {
-      if (identical(element, null)) {
-        throw ArgumentError('iterable contained invalid element: null');
-      }
-    }
-  }
+  _BuiltSet.of(Iterable<E> iterable) : super._(null, <E>{}..addAll(iterable));
 
   bool hasExactElementType(Type type) => E == type;
 }

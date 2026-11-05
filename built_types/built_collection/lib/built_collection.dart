@@ -79,14 +79,6 @@
 /// explicit element, key or value types.
 ///
 ///
-/// # Built Collections Reject Wrong-type Elements, Keys and Values
-///
-/// Collections that happen to contain elements, keys or values that are not of
-/// the right type can lead to difficult-to-find bugs. So, all Built
-/// Collections and their builders are aggressive about validating types, even
-/// with checked mode disabled.
-///
-///
 /// # Built Collections Avoid Copying Unnecessarily
 ///
 /// Built Collections and their builder and helper types collaborate to avoid

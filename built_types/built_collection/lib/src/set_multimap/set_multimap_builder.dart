@@ -100,8 +100,6 @@ class SetMultimapBuilder<K, V> {
   /// As [SetMultimap.add].
   void add(K key, V value) {
     _makeWriteableCopy();
-    _checkKey(key);
-    _checkValue(value);
     _getValuesBuilder(key).add(value);
   }
 
@@ -189,22 +187,6 @@ class SetMultimapBuilder<K, V> {
       } else {
         throw ArgumentError('map contained invalid key: $key');
       }
-    }
-  }
-
-  void _checkKey(K key) {
-    if (isSoundMode) return;
-    if (null is K) return;
-    if (identical(key, null)) {
-      throw ArgumentError('invalid key: $key');
-    }
-  }
-
-  void _checkValue(V value) {
-    if (isSoundMode) return;
-    if (null is V) return;
-    if (identical(value, null)) {
-      throw ArgumentError('invalid value: $value');
     }
   }
 }

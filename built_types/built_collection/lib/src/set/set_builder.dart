@@ -110,14 +110,12 @@ class SetBuilder<E> {
 
   /// As [Set.add].
   bool add(E value) {
-    _maybeCheckElement(value);
     return _safeSet.add(value);
   }
 
   /// As [Set.addAll].
   void addAll(Iterable<E> iterable) {
     iterable = evaluateIterable(iterable);
-    _maybeCheckElements(iterable);
     _safeSet.addAll(iterable);
   }
 
@@ -156,7 +154,6 @@ class SetBuilder<E> {
   /// As [Iterable.map], but updates the builder in place. Returns nothing.
   void map(E Function(E) f) {
     final result = _createSet()..addAll(_set.map(f));
-    _maybeCheckElements(result);
     _setSafeSet(result);
   }
 
@@ -168,7 +165,6 @@ class SetBuilder<E> {
   /// As [Iterable.expand], but updates the builder in place. Returns nothing.
   void expand(Iterable<E> Function(E) f) {
     final result = _createSet()..addAll(_set.expand(f));
-    _maybeCheckElements(result);
     _setSafeSet(result);
   }
 
@@ -226,23 +222,4 @@ class SetBuilder<E> {
   }
 
   Set<E> _createSet() => _setFactory != null ? _setFactory!() : <E>{};
-
-  bool get _needsNullCheck => !isSoundMode && null is! E;
-
-  void _maybeCheckElement(E element) {
-    if (_needsNullCheck) _checkElement(element);
-  }
-
-  void _checkElement(E element) {
-    if (identical(element, null)) {
-      throw ArgumentError('null element');
-    }
-  }
-
-  void _maybeCheckElements(Iterable<E> elements) {
-    if (!_needsNullCheck) return;
-    for (final element in elements) {
-      _checkElement(element);
-    }
-  }
 }

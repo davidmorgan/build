@@ -8,7 +8,6 @@ import 'dart:math' show Random;
 import 'internal/copy_on_write_list.dart';
 import 'internal/hash.dart';
 import 'internal/iterables.dart';
-import 'internal/null_safety.dart';
 import 'iterable.dart' show BuiltIterable;
 import 'set.dart' show BuiltSet;
 

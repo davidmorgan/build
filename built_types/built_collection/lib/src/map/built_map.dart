@@ -44,7 +44,7 @@ abstract class BuiltMap<K, V> {
   ///
   /// `K` and `V` are inferred from `map`.
   factory BuiltMap.of(Map<K, V> map) {
-    return _BuiltMap<K, V>.copyAndCheckForNull(map.keys, (k) => map[k] as V);
+    return _BuiltMap<K, V>.copy(map.keys, (k) => map[k] as V);
   }
 
   /// Creates a [MapBuilder], applies updates to it, and builds.
@@ -186,19 +186,10 @@ class _BuiltMap<K, V> extends BuiltMap<K, V> {
     }
   }
 
-  _BuiltMap.copyAndCheckForNull(Iterable<K> keys, V Function(K) lookup)
+  _BuiltMap.copy(Iterable<K> keys, V Function(K) lookup)
     : super._(null, <K, V>{}) {
-    final checkKeys = !isSoundMode && null is! K;
-    final checkValues = !isSoundMode && null is! V;
     for (final key in keys) {
-      if (checkKeys && identical(key, null)) {
-        throw ArgumentError('map contained invalid key: null');
-      }
-      final value = lookup(key);
-      if (checkValues && value == null) {
-        throw ArgumentError('map contained invalid value: null');
-      }
-      _map[key] = value;
+      _map[key] = lookup(key);
     }
   }
 

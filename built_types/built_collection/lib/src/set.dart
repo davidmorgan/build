@@ -5,7 +5,6 @@
 import 'internal/copy_on_write_set.dart';
 import 'internal/hash.dart';
 import 'internal/iterables.dart';
-import 'internal/null_safety.dart';
 import 'internal/unmodifiable_set.dart';
 import 'iterable.dart' show BuiltIterable;
 import 'list.dart' show BuiltList;

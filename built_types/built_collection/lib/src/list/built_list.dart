@@ -247,25 +247,10 @@ class _BuiltList<E> extends BuiltList<E> {
   _BuiltList.withSafeList(super.list) : super._();
 
   _BuiltList.from([Iterable iterable = const []])
-    : super._(List<E>.from(iterable, growable: false)) {
-    _maybeCheckForNull();
-  }
+    : super._(List<E>.from(iterable, growable: false));
 
   _BuiltList.of(Iterable<E> iterable)
-    : super._(List<E>.from(iterable, growable: false)) {
-    _maybeCheckForNull();
-  }
-
-  bool get _needsNullCheck => !isSoundMode && null is! E;
-
-  void _maybeCheckForNull() {
-    if (!_needsNullCheck) return;
-    for (final element in _list) {
-      if (identical(element, null)) {
-        throw ArgumentError('iterable contained invalid element: null');
-      }
-    }
-  }
+    : super._(List<E>.from(iterable, growable: false));
 
   bool hasExactElementType(Type type) => E == type;
 }
