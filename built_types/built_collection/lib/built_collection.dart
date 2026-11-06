@@ -21,7 +21,7 @@
 /// See below for details on each of these points.
 ///
 ///
-/// # Recommend Style
+/// # Recommended Style
 ///
 /// A project can benefit greatly from using Built Collections throughout.
 /// Methods that will not mutate a collection can accept the "built" version,
@@ -72,11 +72,11 @@
 /// comparisons.
 ///
 ///
-/// # Built Collections Require Generic Type Parameters
+/// # Give Built Collections Explicit Type Parameters
 ///
 /// A `List<dynamic>` is error-prone because it can be assigned to a `List` of
-/// any type without warning. So, all Built Collections must be created with
-/// explicit element, key or value types.
+/// any type without warning. So, create Built Collections with explicit
+/// element, key or value types.
 ///
 ///
 /// # Built Collections Avoid Copying Unnecessarily

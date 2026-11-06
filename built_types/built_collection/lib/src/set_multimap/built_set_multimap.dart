@@ -4,14 +4,14 @@
 
 part of '../set_multimap.dart';
 
-/// The Built Collection [SetMultimap].
+/// The Built Collection `SetMultimap`.
 ///
-/// It implements the non-mutating part of the [SetMultimap] interface.
+/// It implements the non-mutating part of the `SetMultimap` interface.
 /// Iteration over keys is in the same order in which they were inserted.
 /// Modifications are made via [SetMultimapBuilder].
 ///
 /// See the
-/// [Built Collection library documentation](#built_collection/built_collection)
+/// [Built Collection library documentation](https://pub.dev/documentation/built_collection/latest/built_collection/)
 /// for the general properties of Built Collections.
 abstract class BuiltSetMultimap<K, V> {
   final Map<K, BuiltSet<V>> _map;
@@ -24,7 +24,7 @@ abstract class BuiltSetMultimap<K, V> {
   Iterable<K>? _keys;
   Iterable<V>? _values;
 
-  /// Instantiates with elements from a [Map], [SetMultimap] or
+  /// Instantiates with elements from a [Map], `SetMultimap` or
   /// [BuiltSetMultimap].
   factory BuiltSetMultimap([multimap = const {}]) {
     if (multimap is _BuiltSetMultimap &&
@@ -74,7 +74,7 @@ abstract class BuiltSetMultimap<K, V> {
   /// Deep hashCode.
   ///
   /// A `BuiltSetMultimap` is only equal to another `BuiltSetMultimap` with
-  /// equal key/values pairs in any order. Then, the `hashCode` is guaranteed
+  /// equal key/value pairs in any order. Then, the `hashCode` is guaranteed
   /// to be the same.
   @override
   int get hashCode {
@@ -90,7 +90,7 @@ abstract class BuiltSetMultimap<K, V> {
   /// Deep equality.
   ///
   /// A `BuiltSetMultimap` is only equal to another `BuiltSetMultimap` with
-  /// equal key/values pairs in any order.
+  /// equal key/value pairs in any order.
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
@@ -106,7 +106,7 @@ abstract class BuiltSetMultimap<K, V> {
   /// Returns an unmodifiable [Map] view without copying its entries.
   ///
   /// Useful when producing or using APIs that need the [Map] interface.
-  /// Unlike [toMap], which returns a mutable copy, the returned map throws if
+  /// Unlike [toMap], which returns a mutable copy-on-write wrapper, the returned map throws if
   /// you try to modify it.
   /// The values are immutable [BuiltSet]s.
   Map<K, Iterable<V>> asMap() => UnmodifiableMapView<K, Iterable<V>>(_map);
@@ -116,19 +116,19 @@ abstract class BuiltSetMultimap<K, V> {
 
   // SetMultimap.
 
-  /// As [SetMultimap], but results are [BuiltSet]s and not mutable.
+  /// As `SetMultimap`, but results are [BuiltSet]s and not mutable.
   BuiltSet<V>? operator [](Object? key) {
     final result = _map[key];
     return identical(result, null) ? _emptySet : result;
   }
 
-  /// As [SetMultimap.containsKey].
+  /// As `SetMultimap.containsKey`.
   bool containsKey(Object? key) => _map.containsKey(key);
 
-  /// As [SetMultimap.containsValue].
+  /// As `SetMultimap.containsValue`.
   bool containsValue(Object? value) => values.contains(value);
 
-  /// As [SetMultimap.forEach].
+  /// As `SetMultimap.forEach`.
   void forEach(void Function(K, V) f) {
     _map.forEach((key, values) {
       for (final value in values) {
@@ -137,30 +137,30 @@ abstract class BuiltSetMultimap<K, V> {
     });
   }
 
-  /// As [SetMultimap.forEachKey].
+  /// As `SetMultimap.forEachKey`.
   void forEachKey(void Function(K, Iterable<V>) f) {
     _map.forEach((key, values) {
       f(key, values);
     });
   }
 
-  /// As [SetMultimap.isEmpty].
+  /// As `SetMultimap.isEmpty`.
   bool get isEmpty => _map.isEmpty;
 
-  /// As [SetMultimap.isNotEmpty].
+  /// As `SetMultimap.isNotEmpty`.
   bool get isNotEmpty => _map.isNotEmpty;
 
-  /// As [SetMultimap.keys], but result is stable; it always returns the same
+  /// As `SetMultimap.keys`, but result is stable; it always returns the same
   /// instance.
   Iterable<K> get keys {
     _keys ??= _map.keys;
     return _keys!;
   }
 
-  /// As [SetMultimap.length].
+  /// As `SetMultimap.length`.
   int get length => _map.length;
 
-  /// As [SetMultimap.values], but result is stable; it always returns the
+  /// As `SetMultimap.values`, but result is stable; it always returns the
   /// same instance.
   Iterable<V> get values {
     _values ??= _map.values.expand((x) => x);

@@ -10,8 +10,7 @@ part of '../list.dart';
 /// Modifications are made via [ListBuilder].
 ///
 /// See the
-/// [Built Collection library documentation]
-/// (#built_collection/built_collection)
+/// [Built Collection library documentation](https://pub.dev/documentation/built_collection/latest/built_collection/)
 /// for the general properties of Built Collections.
 abstract class BuiltList<E> implements Iterable<E>, BuiltIterable<E> {
   final List<E> _list;
@@ -31,8 +30,6 @@ abstract class BuiltList<E> implements Iterable<E>, BuiltIterable<E> {
   }
 
   /// Instantiates with elements from an [Iterable<E>].
-  ///
-  /// `E` must not be `dynamic`.
   factory BuiltList.of(Iterable<E> iterable) {
     if (iterable is _BuiltList<E> && iterable.hasExactElementType(E)) {
       return iterable;
@@ -92,16 +89,16 @@ abstract class BuiltList<E> implements Iterable<E>, BuiltIterable<E> {
   /// Returns an unmodifiable [List] view without copying its elements.
   ///
   /// Useful when producing or using APIs that need the [List] interface.
-  /// Unlike [toList], which returns a mutable copy, the returned list throws
+  /// Unlike [toList], which returns a mutable copy-on-write wrapper, the returned list throws
   /// if you try to modify it.
   List<E> asList() => UnmodifiableListView<E>(_list);
 
   // List.
 
-  /// As [List.elementAt].
+  /// As [List]'s `operator []`.
   E operator [](int index) => _list[index];
 
-  /// As [List.+].
+  /// As [List]'s `operator +`.
   BuiltList<E> operator +(BuiltList<E> other) =>
       _BuiltList<E>.withSafeList(_list + other._list);
 

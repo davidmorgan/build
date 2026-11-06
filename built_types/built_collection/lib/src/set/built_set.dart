@@ -9,11 +9,12 @@ typedef _SetFactory<E> = Set<E> Function();
 /// The Built Collection [Set].
 ///
 /// It implements [Iterable] and the non-mutating part of the [Set] interface.
-/// Iteration is in the same order in which the elements were inserted.
+/// Iteration is in the same order in which the elements were inserted, unless
+/// a different base was set with [SetBuilder.withBase].
 /// Modifications are made via [SetBuilder].
 ///
 /// See the
-/// [Built Collection library documentation](#built_collection/built_collection)
+/// [Built Collection library documentation](https://pub.dev/documentation/built_collection/latest/built_collection/)
 /// for the general properties of Built Collections.
 abstract class BuiltSet<E> implements Iterable<E>, BuiltIterable<E> {
   final _SetFactory<E>? _setFactory;
@@ -92,7 +93,7 @@ abstract class BuiltSet<E> implements Iterable<E>, BuiltIterable<E> {
   /// Returns an unmodifiable [Set] view without copying its elements.
   ///
   /// Useful when producing or using APIs that need the [Set] interface.
-  /// Unlike [toSet], which returns a mutable copy, the returned set throws if
+  /// Unlike [toSet], which returns a mutable copy-on-write wrapper, the returned set throws if
   /// you try to modify it.
   Set<E> asSet() => UnmodifiableSetView<E>(_set);
 

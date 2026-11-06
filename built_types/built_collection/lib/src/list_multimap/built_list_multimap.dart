@@ -4,15 +4,14 @@
 
 part of '../list_multimap.dart';
 
-/// The Built Collection [ListMultimap].
+/// The Built Collection `ListMultimap`.
 ///
-/// It implements the non-mutating part of the [ListMultimap] interface.
+/// It implements the non-mutating part of the `ListMultimap` interface.
 /// Iteration over keys is in the same order in which they were inserted.
 /// Modifications are made via [ListMultimapBuilder].
 ///
 /// See the
-/// [Built Collection library documentation]
-/// (#built_collection/built_collection)
+/// [Built Collection library documentation](https://pub.dev/documentation/built_collection/latest/built_collection/)
 /// for the general properties of Built Collections.
 abstract class BuiltListMultimap<K, V> {
   final Map<K, BuiltList<V>> _map;
@@ -25,7 +24,7 @@ abstract class BuiltListMultimap<K, V> {
   Iterable<K>? _keys;
   Iterable<V>? _values;
 
-  /// Instantiates with elements from a [Map], [ListMultimap] or
+  /// Instantiates with elements from a [Map], `ListMultimap` or
   /// [BuiltListMultimap].
   factory BuiltListMultimap([multimap = const {}]) {
     if (multimap is _BuiltListMultimap &&
@@ -68,7 +67,7 @@ abstract class BuiltListMultimap<K, V> {
   /// Deep hashCode.
   ///
   /// A `BuiltListMultimap` is only equal to another `BuiltListMultimap` with
-  /// equal key/values pairs in any order. Then, the `hashCode` is guaranteed
+  /// equal key/value pairs in any order. Then, the `hashCode` is guaranteed
   /// to be the same.
   @override
   int get hashCode {
@@ -84,7 +83,7 @@ abstract class BuiltListMultimap<K, V> {
   /// Deep equality.
   ///
   /// A `BuiltListMultimap` is only equal to another `BuiltListMultimap` with
-  /// equal key/values pairs in any order.
+  /// equal key/value pairs in any order.
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
@@ -103,26 +102,26 @@ abstract class BuiltListMultimap<K, V> {
   /// Returns an unmodifiable [Map] view without copying its entries.
   ///
   /// Useful when producing or using APIs that need the [Map] interface.
-  /// Unlike [toMap], which returns a mutable copy, the returned map throws if
+  /// Unlike [toMap], which returns a mutable copy-on-write wrapper, the returned map throws if
   /// you try to modify it.
   /// The values are immutable [BuiltList]s.
   Map<K, Iterable<V>> asMap() => UnmodifiableMapView<K, Iterable<V>>(_map);
 
   // ListMultimap.
 
-  /// As [ListMultimap], but results are [BuiltList]s and not mutable.
+  /// As `ListMultimap`, but results are [BuiltList]s and not mutable.
   BuiltList<V> operator [](Object? key) {
     final result = _map[key];
     return result ?? _emptyList;
   }
 
-  /// As [ListMultimap.containsKey].
+  /// As `ListMultimap.containsKey`.
   bool containsKey(Object? key) => _map.containsKey(key);
 
-  /// As [ListMultimap.containsValue].
+  /// As `ListMultimap.containsValue`.
   bool containsValue(Object? value) => values.contains(value);
 
-  /// As [ListMultimap.forEach].
+  /// As `ListMultimap.forEach`.
   void forEach(void Function(K, V) f) {
     _map.forEach((key, values) {
       for (final value in values) {
@@ -131,30 +130,30 @@ abstract class BuiltListMultimap<K, V> {
     });
   }
 
-  /// As [ListMultimap.forEachKey].
+  /// As `ListMultimap.forEachKey`.
   void forEachKey(void Function(K, Iterable<V>) f) {
     _map.forEach((key, values) {
       f(key, values);
     });
   }
 
-  /// As [ListMultimap.isEmpty].
+  /// As `ListMultimap.isEmpty`.
   bool get isEmpty => _map.isEmpty;
 
-  /// As [ListMultimap.isNotEmpty].
+  /// As `ListMultimap.isNotEmpty`.
   bool get isNotEmpty => _map.isNotEmpty;
 
-  /// As [ListMultimap.keys], but result is stable; it always returns the same
+  /// As `ListMultimap.keys`, but result is stable; it always returns the same
   /// instance.
   Iterable<K> get keys {
     _keys ??= _map.keys;
     return _keys!;
   }
 
-  /// As [ListMultimap.length].
+  /// As `ListMultimap.length`.
   int get length => _map.length;
 
-  /// As [ListMultimap.values], but result is stable; it always returns the
+  /// As `ListMultimap.values`, but result is stable; it always returns the
   /// same instance.
   Iterable<V> get values {
     _values ??= _map.values.expand((x) => x);

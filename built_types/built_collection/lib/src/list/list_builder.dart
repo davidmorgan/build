@@ -9,7 +9,7 @@ part of '../list.dart';
 /// It implements the mutating part of the [List] interface.
 ///
 /// See the
-/// [Built Collection library documentation](#built_collection/built_collection)
+/// [Built Collection library documentation](https://pub.dev/documentation/built_collection/latest/built_collection/)
 /// for the general properties of Built Collections.
 class ListBuilder<E> {
   late List<E> _list;
@@ -61,10 +61,10 @@ class ListBuilder<E> {
 
   // Based on List.
 
-  /// As [List.elementAt].
+  /// As [List]'s `operator []`.
   E operator [](int index) => _list[index];
 
-  /// As [List].
+  /// As [List]'s `operator []=`.
   void operator []=(int index, E element) {
     _safeList[index] = element;
   }

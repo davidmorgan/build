@@ -9,7 +9,7 @@ part of '../set.dart';
 /// It implements the mutating part of the [Set] interface.
 ///
 /// See the
-/// [Built Collection library documentation](#built_collection/built_collection)
+/// [Built Collection library documentation](https://pub.dev/documentation/built_collection/latest/built_collection/)
 /// for the general properties of Built Collections.
 class SetBuilder<E> {
   /// Used by [_createSet] to instantiate [_set]. The default value is `null`.
@@ -71,10 +71,10 @@ class SetBuilder<E> {
   /// Uses `base` as the collection type for all sets created by this builder.
   ///
   ///     // Iterates over elements in ascending order.
-  ///     new SetBuilder<int>()..withBase(() => new SplayTreeSet<int>());
+  ///     SetBuilder<int>()..withBase(() => SplayTreeSet<int>());
   ///
   ///     // Uses custom equality.
-  ///     new SetBuilder<int>()..withBase(() => new LinkedHashSet<int>(
+  ///     SetBuilder<int>()..withBase(() => LinkedHashSet<int>(
   ///         equals: (int a, int b) => a % 255 == b % 255,
   ///         hashCode: (int n) => (n % 255).hashCode));
   ///

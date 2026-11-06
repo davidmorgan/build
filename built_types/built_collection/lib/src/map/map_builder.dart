@@ -9,7 +9,7 @@ part of '../map.dart';
 /// It implements the mutating part of the [Map] interface.
 ///
 /// See the
-/// [Built Collection library documentation](#built_collection/built_collection)
+/// [Built Collection library documentation](https://pub.dev/documentation/built_collection/latest/built_collection/)
 /// for the general properties of Built Collections.
 class MapBuilder<K, V> {
   /// Used by [_createMap] to instantiate [_map]. The default value is `null`.
@@ -36,7 +36,7 @@ class MapBuilder<K, V> {
     updates(this);
   }
 
-  /// Replaces all elements with elements from a [Map] or [BuiltMap].
+  /// Replaces all key/value pairs with those from a [Map] or [BuiltMap].
   void replace(Object map) {
     if (map is _BuiltMap<K, V> && map._mapFactory == _mapFactory) {
       _setOwner(map);
@@ -59,13 +59,13 @@ class MapBuilder<K, V> {
 
   /// Uses `base` as the collection type for all maps created by this builder.
   ///
-  ///     // Iterates over elements in ascending order.
-  ///     new MapBuilder<int, String>()
-  ///       ..withBase(() => new SplayTreeMap<int, String>());
+  ///     // Iterates over keys in ascending order.
+  ///     MapBuilder<int, String>()
+  ///       ..withBase(() => SplayTreeMap<int, String>());
   ///
   ///     // Uses custom equality.
-  ///     new MapBuilder<int, String>()
-  ///       ..withBase(() => new LinkedHashMap<int, String>(
+  ///     MapBuilder<int, String>()
+  ///       ..withBase(() => LinkedHashMap<int, String>(
   ///           equals: (int a, int b) => a % 255 == b % 255,
   ///           hashCode: (int n) => (n % 255).hashCode));
   ///
@@ -103,10 +103,10 @@ class MapBuilder<K, V> {
 
   // Based on Map.
 
-  /// As [Map].
+  /// As [Map]'s `operator []`.
   V? operator [](Object? key) => _map[key];
 
-  /// As [Map].
+  /// As [Map]'s `operator []=`.
   void operator []=(K key, V value) {
     _safeMap[key] = value;
   }

@@ -6,10 +6,10 @@ part of '../list_multimap.dart';
 
 /// The Built Collection builder for [BuiltListMultimap].
 ///
-/// It implements the mutating part of the [ListMultimap] interface.
+/// It implements the mutating part of the `ListMultimap` interface.
 ///
 /// See the
-/// [Built Collection library documentation](#built_collection/built_collection)
+/// [Built Collection library documentation](https://pub.dev/documentation/built_collection/latest/built_collection/)
 /// for the general properties of Built Collections.
 class ListMultimapBuilder<K, V> {
   // BuiltLists copied from another instance so they can be reused directly for
@@ -21,7 +21,7 @@ class ListMultimapBuilder<K, V> {
   // ListBuilders for keys that are being changed.
   late Map<K, ListBuilder<V>> _builderMap;
 
-  /// Instantiates with elements from a [Map], [ListMultimap] or
+  /// Instantiates with elements from a [Map], `ListMultimap` or
   /// [BuiltListMultimap].
   factory ListMultimapBuilder([multimap = const {}]) {
     return ListMultimapBuilder<K, V>._uninitialized()..replace(multimap);
@@ -52,7 +52,7 @@ class ListMultimapBuilder<K, V> {
     updates(this);
   }
 
-  /// Replaces all elements with elements from a [Map], [ListMultimap] or
+  /// Replaces all elements with elements from a [Map], `ListMultimap` or
   /// [BuiltListMultimap].
   ///
   /// Any [ListBuilder]s associated with this collection are disconnected.
@@ -102,28 +102,28 @@ class ListMultimapBuilder<K, V> {
 
   // Based on ListMultimap.
 
-  /// As [ListMultimap.add].
+  /// As `ListMultimap.add`.
   void add(K key, V value) {
     _makeWriteableCopy();
     _getValuesBuilder(key).add(value);
   }
 
-  /// As [ListMultimap.addValues].
+  /// As `ListMultimap.addValues`.
   void addValues(K key, Iterable<V> values) {
-    // _disown is called in add.
+    // add calls _makeWriteableCopy.
     for (final value in values) {
       add(key, value);
     }
   }
 
-  /// As [ListMultimap.remove].
+  /// As `ListMultimap.remove`.
   bool remove(Object? key, V? value) {
     if (key is! K) return false;
     _makeWriteableCopy();
     return _getValuesBuilder(key).remove(value);
   }
 
-  /// As [ListMultimap.removeAll], but results are [BuiltList]s.
+  /// As `ListMultimap.removeAll`, but results are [BuiltList]s.
   BuiltList<V> removeAll(Object? key) {
     if (key is! K) return BuiltList<V>();
     _makeWriteableCopy();
@@ -137,7 +137,7 @@ class ListMultimapBuilder<K, V> {
     return old;
   }
 
-  /// As [ListMultimap.clear].
+  /// As `ListMultimap.clear`.
   ///
   /// Any [ListBuilder]s associated with this collection are disconnected.
   void clear() {
@@ -147,7 +147,7 @@ class ListMultimapBuilder<K, V> {
     _builderMap.clear();
   }
 
-  /// As [ListMultimap], but results are [ListBuilder]s.
+  /// As `ListMultimap`, but results are [ListBuilder]s.
   ListBuilder<V> operator [](Object? key) {
     _makeWriteableCopy();
     return key is K ? _getValuesBuilder(key) : ListBuilder<V>();

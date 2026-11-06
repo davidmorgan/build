@@ -6,10 +6,10 @@ part of '../set_multimap.dart';
 
 /// The Built Collection builder for [BuiltSetMultimap].
 ///
-/// It implements the mutating part of the [SetMultimap] interface.
+/// It implements the mutating part of the `SetMultimap` interface.
 ///
 /// See the
-/// [Built Collection library documentation](#built_collection/built_collection)
+/// [Built Collection library documentation](https://pub.dev/documentation/built_collection/latest/built_collection/)
 /// for the general properties of Built Collections.
 class SetMultimapBuilder<K, V> {
   // BuiltSets copied from another instance so they can be reused directly for
@@ -21,7 +21,7 @@ class SetMultimapBuilder<K, V> {
   // SetBuilders for keys that are being changed.
   late Map<K, SetBuilder<V>> _builderMap;
 
-  /// Instantiates with elements from a [Map], [SetMultimap] or
+  /// Instantiates with elements from a [Map], `SetMultimap` or
   /// [BuiltSetMultimap].
   factory SetMultimapBuilder([multimap = const {}]) {
     return SetMultimapBuilder<K, V>._uninitialized()..replace(multimap);
@@ -49,7 +49,7 @@ class SetMultimapBuilder<K, V> {
     updates(this);
   }
 
-  /// Replaces all elements with elements from a [Map], [SetMultimap] or
+  /// Replaces all elements with elements from a [Map], `SetMultimap` or
   /// [BuiltSetMultimap].
   void replace(dynamic multimap) {
     if (multimap is _BuiltSetMultimap<K, V>) {
@@ -97,21 +97,21 @@ class SetMultimapBuilder<K, V> {
 
   // Based on SetMultimap.
 
-  /// As [SetMultimap.add].
+  /// As `SetMultimap.add`.
   void add(K key, V value) {
     _makeWriteableCopy();
     _getValuesBuilder(key).add(value);
   }
 
-  /// As [SetMultimap.addValues].
+  /// As `SetMultimap.addValues`.
   void addValues(K key, Iterable<V> values) {
-    // _disown is called in add.
+    // add calls _makeWriteableCopy.
     for (final value in values) {
       add(key, value);
     }
   }
 
-  /// As [SetMultimap.remove] but returns nothing.
+  /// As `SetMultimap.remove` but returns nothing.
   void remove(Object? key, V? value) {
     if (key is K) {
       _makeWriteableCopy();
@@ -119,7 +119,7 @@ class SetMultimapBuilder<K, V> {
     }
   }
 
-  /// As [SetMultimap.removeAll] but returns nothing.
+  /// As `SetMultimap.removeAll` but returns nothing.
   void removeAll(Object? key) {
     if (key is K) {
       _makeWriteableCopy();
@@ -129,7 +129,7 @@ class SetMultimapBuilder<K, V> {
     }
   }
 
-  /// As [SetMultimap.clear].
+  /// As `SetMultimap.clear`.
   void clear() {
     _makeWriteableCopy();
 

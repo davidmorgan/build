@@ -9,11 +9,12 @@ typedef _MapFactory<K, V> = Map<K, V> Function();
 /// The Built Collection [Map].
 ///
 /// It implements the non-mutating part of the [Map] interface. Iteration over
-/// keys is in the same order in which they were inserted. Modifications are
-/// made via [MapBuilder].
+/// keys is in the same order in which they were inserted, unless a different
+/// base was set with [MapBuilder.withBase]. Modifications are made via
+/// [MapBuilder].
 ///
 /// See the
-/// [Built Collection library documentation](#built_collection/built_collection)
+/// [Built Collection library documentation](https://pub.dev/documentation/built_collection/latest/built_collection/)
 /// for the general properties of Built Collections.
 abstract class BuiltMap<K, V> {
   final _MapFactory<K, V>? _mapFactory;
@@ -64,7 +65,7 @@ abstract class BuiltMap<K, V> {
   /// Returns an unmodifiable [Map] view without copying its entries.
   ///
   /// Useful when producing or using APIs that need the [Map] interface.
-  /// Unlike [toMap], which returns a mutable copy, the returned map throws if
+  /// Unlike [toMap], which returns a mutable copy-on-write wrapper, the returned map throws if
   /// you try to modify it.
   /// The view retains the key equality of this map's base collection.
   Map<K, V> asMap() => UnmodifiableMapView<K, V>(_map);
@@ -118,7 +119,7 @@ abstract class BuiltMap<K, V> {
 
   // Map.
 
-  /// As [Map].
+  /// As [Map]'s `operator []`.
   V? operator [](Object? key) => _map[key];
 
   /// As [Map.containsKey].
