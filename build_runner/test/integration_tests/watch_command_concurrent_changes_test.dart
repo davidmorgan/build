@@ -68,8 +68,12 @@ class TestBuilder implements Builder {
     // Wait for the build to start then delete the input.
     await watch.expect('builder_pkg:test_builder');
     tester.delete('root_pkg/lib/a.txt');
-    await watch.expect(BuildLog.successPattern);
-    expect(tester.read('root_pkg/lib/a.txt.copy'), 'a');
+    // The second build can delete the output before it is read here, so check
+    // the log for the write instead.
+    expect(
+      await watch.expectAndGetLine(BuildLog.successPattern),
+      contains('wrote 1 output'),
+    );
     // Second build was triggered.
     await watch.expect(BuildLog.successPattern);
     expect(tester.read('root_pkg/lib/a.txt.copy'), null);
